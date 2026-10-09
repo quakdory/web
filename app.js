@@ -10,7 +10,7 @@ let currentUser = null;
 let currentProfile = null;
 let currentFilter = 'all';
 
-// 발로란트 선택 요원 임시 저장 변수 (주/부 역할군별 최대 3개)
+// 발로란트 선택 요원 임시 저장 변수
 let tempSelectedAgents = {
   main: [],
   sub: []
@@ -85,7 +85,6 @@ async function fetchValorantAgents() {
 // 2. 인증 (Auth) 및 세션 관리
 // =============================================================
 
-// 회원가입 처리 (아이디 방식 + 자동 로그인 방지)
 async function handleSignUp(e) {
   e.preventDefault();
   const username = document.getElementById('signupUsername').value;
@@ -94,7 +93,6 @@ async function handleSignUp(e) {
 
   const email = makeEmailFromUsername(username);
 
-  // 1) Supabase Auth 계정 생성
   const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
   if (error) {
@@ -102,7 +100,6 @@ async function handleSignUp(e) {
     return;
   }
 
-  // 2) profiles 테이블에 프로필 저장 (upsert 사용으로 중복 키 에러 방지)
   if (data.user) {
     const { error: profileError } = await supabaseClient
       .from('profiles')
@@ -113,14 +110,12 @@ async function handleSignUp(e) {
     }
   }
 
-  // 3) 회원가입 직후 세션을 종료하여 로그인 화면 유지
   await supabaseClient.auth.signOut();
 
   alert('회원가입이 완료되었습니다! 생성한 아이디와 비밀번호로 로그인해 주세요.');
   document.getElementById('signupForm').reset();
 }
 
-// 로그인 처리
 async function handleLogin(e) {
   e.preventDefault();
   const username = document.getElementById('loginUsername').value;
@@ -138,12 +133,10 @@ async function handleLogin(e) {
   }
 }
 
-// 로그아웃 처리
 async function handleLogout() {
   await supabaseClient.auth.signOut();
 }
 
-// 유저 로그인 상태 및 프로필 확인
 async function checkAuthState() {
   const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
 
@@ -155,7 +148,6 @@ async function checkAuthState() {
   if (session) {
     currentUser = session.user;
 
-    // profiles 테이블 조회
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
@@ -168,7 +160,6 @@ async function checkAuthState() {
 
     currentProfile = profile;
 
-    // UI 컨테이너 제어
     const authContainer = document.getElementById('authContainer');
     const appContainer = document.getElementById('appContainer');
     const nicknameElem = document.getElementById('userNickname');
@@ -177,7 +168,6 @@ async function checkAuthState() {
     if (authContainer) authContainer.style.display = 'none';
     if (appContainer) appContainer.style.display = 'block';
 
-    // 닉네임 및 권한 배지 반영
     const displayNickname = profile?.nickname || currentUser.email.split('@')[0];
     if (nicknameElem) nicknameElem.textContent = displayNickname;
 
@@ -203,7 +193,6 @@ async function checkAuthState() {
   }
 }
 
-// 인증 상태 실시간 감지
 supabaseClient.auth.onAuthStateChange(() => {
   checkAuthState();
 });
@@ -212,7 +201,6 @@ supabaseClient.auth.onAuthStateChange(() => {
 // 3. 발로란트 요원 및 티어 이미지 선택기 제어
 // =============================================================
 
-// 티어 선택 UI 동적 생성 함수
 function renderTierPicker(selectedTierName = 'Unranked') {
   const container = document.getElementById('valoTierContainer');
   if (!container) return;
@@ -235,7 +223,6 @@ function renderTierPicker(selectedTierName = 'Unranked') {
   });
 }
 
-// 티어 버튼 클릭 처리 함수
 function selectTier(tierName, btnEl) {
   document.getElementById('valoTier').value = tierName;
 
@@ -244,7 +231,6 @@ function selectTier(tierName, btnEl) {
   btnEl.classList.add('selected');
 }
 
-// 요원 선택기 생성 함수
 function updateAgentSelection(type) {
   const roleSelect = document.getElementById(type === 'main' ? 'valoMainRole' : 'valoSubRole');
   const container = document.getElementById(type === 'main' ? 'valoMainAgentContainer' : 'valoSubAgentContainer');
@@ -323,7 +309,6 @@ function openProfileModal() {
   const valo = currentProfile.valo_info || {};
   document.getElementById('valoId').value = valo.game_id || '';
 
-  // 티어 이미지 선택기 렌더링
   renderTierPicker(valo.tier || 'Unranked');
 
   if (valo.main_role) {
@@ -408,7 +393,7 @@ async function saveFullProfile(e) {
 }
 
 // =============================================================
-// 5. UI / 네비게이션 / 내전(Scrim) 관리
+// 5. UI / 네비게이션 제어
 // =============================================================
 
 function toggleTheme() {
@@ -417,18 +402,34 @@ function toggleTheme() {
   if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
 }
 
+// 상단 메인 탭 전환
 function showTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-  document.getElementById(tabId)?.classList.add('active');
+  
+  const targetTab = document.getElementById(tabId) || document.getElementById(tabId + 'Tab');
+  if (targetTab) targetTab.classList.add('active');
+
+  // '팀 구성' 탭이 열릴 경우 '자동' 서브탭 활성화 및 내전 목록 로딩
+  if (tabId === 'teamTab' || tabId === 'team') {
+    showTeamSubtab('auto');
+  }
 }
 
+// 팀 구성 탭 내부의 서브탭 전환 (자동 / 드래프트 / 경매 등)
 function showTeamSubtab(subtabId) {
   document.querySelectorAll('.team-view').forEach(view => view.classList.remove('active'));
-  document.getElementById(subtabId + 'View')?.classList.add('active');
+  
+  const targetView = document.getElementById(subtabId + 'View');
+  if (targetView) targetView.classList.add('active');
+
+  // '자동' 서브탭이 선택되면 내전 선택 드롭다운 목록 갱신
+  if (subtabId === 'auto') {
+    loadScrimOptionsForTeamTab();
+  }
 }
 
 function goToMain() {
-  showTab('scrim');
+  showTab('scrimTab');
   filterGame('all');
 }
 
@@ -441,7 +442,10 @@ function closeModal() {
   document.getElementById('scrimForm')?.reset();
 }
 
-// 내전 목록 및 참가자(scrim_participants) 조인 조회
+// =============================================================
+// 6. 내전(Scrim) 관리
+// =============================================================
+
 async function fetchScrims() {
   const list = document.getElementById('scrimList');
   if (!list) return;
@@ -472,7 +476,6 @@ async function fetchScrims() {
   renderScrims(scrims);
 }
 
-// 내전 카드 UI 렌더링 및 참가 상태 감지
 function renderScrims(scrims) {
   const list = document.getElementById('scrimList');
   if (!list) return;
@@ -488,17 +491,13 @@ function renderScrims(scrims) {
     const currentCount = participants.length;
     const isFull = currentCount >= scrim.max_players;
     
-    // 현재 유저의 참가 여부 확인
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
-
-    // 참가자 닉네임 목록 가공
     const participantNames = participants.map(p => p.profiles?.nickname || '알 수 없음').join(', ');
 
     const card = document.createElement('div');
     card.className = 'scrim-card';
     card.setAttribute('data-game', scrim.game);
 
-    // 버튼 제어 (참가 취소 / 마감 / 참가 신청)
     let actionBtnHtml = '';
     if (isJoined) {
       actionBtnHtml = `<button class="btn-secondary btn-sm" onclick="cancelScrim('${scrim.id}')">참가 취소</button>`;
@@ -557,12 +556,15 @@ async function createScrim(event) {
   }
 }
 
-// 내전 참가 신청 처리
 async function applyScrim(scrimId, currentCount, maxPlayers) {
-  if (!currentUser) {
-    alert('로그인이 필요한 서비스입니다.');
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  
+  if (!session || !session.user) {
+    alert('로그인이 필요한 서비스입니다. 로그인 후 다시 시도해 주세요.');
     return;
   }
+
+  currentUser = session.user;
 
   if (currentCount >= maxPlayers) {
     alert('이미 정원이 가득 찬 내전입니다.');
@@ -590,9 +592,15 @@ async function applyScrim(scrimId, currentCount, maxPlayers) {
   fetchScrims();
 }
 
-// 내전 참가 취소 처리
 async function cancelScrim(scrimId) {
-  if (!currentUser) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session || !session.user) {
+    alert('로그인이 필요합니다.');
+    return;
+  }
+
+  currentUser = session.user;
 
   if (!confirm('정말 내전 참가를 취소하시겠습니까?')) return;
 
@@ -633,6 +641,109 @@ async function deleteScrim(scrimId) {
     alert('삭제되었습니다.');
     fetchScrims();
   }
+}
+
+// =============================================================
+// 7. 메인 상단 탭 "팀 구성 (자동 서브탭)" 로직
+// =============================================================
+
+async function loadScrimOptionsForTeamTab() {
+  const selectEl = document.getElementById('teamScrimSelect');
+  if (!selectEl) return;
+
+  selectEl.innerHTML = '<option value="">내전을 불러오는 중...</option>';
+
+  try {
+    const { data: scrims, error } = await supabaseClient
+      .from('scrims')
+      .select('id, title, game, current_players, max_players')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('내전 목록 불러오기 오류:', error);
+      selectEl.innerHTML = '<option value="">내전 목록을 불러오지 못했습니다.</option>';
+      return;
+    }
+
+    if (!scrims || scrims.length === 0) {
+      selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
+      return;
+    }
+
+    selectEl.innerHTML = '<option value="">-- 내전을 선택해 주세요 --</option>';
+    scrims.forEach(scrim => {
+      const opt = document.createElement('option');
+      opt.value = scrim.id;
+      opt.textContent = `[${scrim.game.toUpperCase()}] ${scrim.title} (${scrim.current_players}/${scrim.max_players}명)`;
+      selectEl.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('내전 옵션 로딩 예외 발생:', err);
+    selectEl.innerHTML = '<option value="">불러오기 중 오류가 발생했습니다.</option>';
+  }
+}
+
+async function generateRandomTeamsFromTab() {
+  const selectEl = document.getElementById('teamScrimSelect');
+  const scrimId = selectEl ? selectEl.value : null;
+
+  if (!scrimId) {
+    alert('팀을 나눌 내전을 먼저 선택해 주세요.');
+    return;
+  }
+
+  const { data: participants, error } = await supabaseClient
+    .from('scrim_participants')
+    .select(`
+      user_id,
+      profiles ( nickname, valo_info )
+    `)
+    .eq('scrim_id', scrimId);
+
+  if (error || !participants || participants.length === 0) {
+    alert('선택한 내전에 참가자가 없거나 목록을 불러올 수 없습니다.');
+    return;
+  }
+
+  const shuffled = [...participants];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const half = Math.ceil(shuffled.length / 2);
+  const teamA = shuffled.slice(0, half);
+  const teamB = shuffled.slice(half);
+
+  renderTeamList('teamAList', teamA);
+  renderTeamList('teamBList', teamB);
+}
+
+function renderTeamList(elementId, teamMembers) {
+  const listEl = document.getElementById(elementId);
+  if (!listEl) return;
+  listEl.innerHTML = '';
+
+  if (teamMembers.length === 0) {
+    listEl.innerHTML = '<li>배정된 팀원이 없습니다.</li>';
+    return;
+  }
+
+  teamMembers.forEach(member => {
+    const profile = member.profiles || {};
+    const valo = profile.valo_info || {};
+    const tier = valo.tier || 'Unranked';
+    const mainRole = valo.main_role ? ` (${valo.main_role})` : '';
+
+    const li = document.createElement('li');
+    li.style.padding = '8px 0';
+    li.style.borderBottom = '1px solid #eee';
+    li.innerHTML = `
+      <strong>${profile.nickname || '알 수 없음'}</strong> 
+      <span style="font-size:0.85rem; color:#666;">[${tier}]${mainRole}</span>
+    `;
+    listEl.appendChild(li);
+  });
 }
 
 // 문서 로드 완료 시 API 로딩 및 초기 세션 검사
