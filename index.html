@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내전 & 팀 구성 커뮤니티</title>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================================================= -->
+  <!-- 1. 로그인/회원가입 화면 (로그인 전 표시) -->
+  <!-- ============================================================= -->
+  <div id="authContainer" class="auth-container">
+    <div class="auth-box">
+      <h2>🎮 MATCHMAKER 로그인</h2>
+      
+      <!-- 로그인 폼 -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginUsername">아이디</label>
+          <input type="text" id="loginUsername" placeholder="아이디 입력" required />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">비밀번호</label>
+          <input type="password" id="loginPassword" placeholder="비밀번호 입력" required />
+        </div>
+        <button type="submit" class="btn-primary full-width">로그인</button>
+      </form>
+
+      <hr class="divider" />
+
+      <!-- 회원가입 폼 -->
+      <h3>계정이 없으신가요?</h3>
+      <form id="signupForm" onsubmit="handleSignUp(event)">
+        <div class="form-group">
+          <label for="signupUsername">아이디</label>
+          <input type="text" id="signupUsername" placeholder="사용할 아이디" required />
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">비밀번호</label>
+          <input type="password" id="signupPassword" placeholder="6자리 이상" minlength="6" required />
+        </div>
+        <div class="form-group">
+          <label for="signupNickname">닉네임</label>
+          <input type="text" id="signupNickname" placeholder="사용할 닉네임" required />
+        </div>
+        <button type="submit" class="btn-secondary full-width">회원가입</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- 2. 서비스 메인 화면 (로그인 후 표시) -->
+  <!-- ============================================================= -->
+  <div id="appContainer" class="app-container" style="display: none;">
+    <!-- 상단 네비게이션 바 -->
+    <header class="navbar">
+      <div class="logo" onclick="goToMain()" style="cursor: pointer;">🎮 도도도동</div>
+      <nav class="nav-links">
+        <button onclick="showTab('scrim')">내전</button>
+        <button onclick="showTab('team')">팀 구성</button>
+        <button onclick="showTab('map')">맵 확인</button>
+        <button onclick="showTab('sns')">SNS</button>
+      </nav>
+      
+      <!-- 로그인 유저 정보 -->
+      <div class="user-info">
+        <span id="userBadge" class="badge">일반유저</span>
+        <span id="userNickname">로딩 중...</span>님
+        <button onclick="openProfileModal()" class="btn-sm">프로필 수정</button>
+        <button onclick="handleLogout()" class="btn-sm">로그아웃</button>
+        <button id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
+      </div>
+    </header>
+
+    <!-- 메인 콘텐츠 영역 -->
+    <main class="container">
+      <!-- 1. 내전 탭 -->
+      <section id="scrim" class="tab-content active">
+        <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h2>진행 중인 내전</h2>
+          <button class="btn-primary" onclick="openModal()">+ 새 내전 생성</button>
+        </div>
+        <div class="game-filter">
+          <button onclick="filterGame('all')">전체</button>
+          <button onclick="filterGame('valo')">발로란트</button>
+          <button onclick="filterGame('ow')">오버워치</button>
+          <button onclick="filterGame('lol')">리그 오브 레전드</button>
+        </div>
+        <div id="scrimList" class="scrim-list">
+          <!-- JS로 내전 카드가 생성될 위치 -->
+        </div>
+      </section>
+
+      <!-- 2. 팀 구성 탭 -->
+      <section id="team" class="tab-content">
+        <h2>팀 구성 방식 선택</h2>
+        <div class="team-subtabs">
+          <button onclick="showTeamSubtab('auction')">경매</button>
+          <button onclick="showTeamSubtab('draft')">드래프트</button>
+          <button onclick="showTeamSubtab('auto')">자동</button>
+        </div>
+
+        <!-- 경매 화면 -->
+        <div id="auctionView" class="team-view active">
+          <h3>💰 경매 팀 구성</h3>
+          <p>팀장이 포인트를 사용하여 참가자를 입찰합니다.</p>
+          <div class="auction-container">
+            <div class="player-pool">
+              <h4>대기 참가자</h4>
+              <ul id="auctionPlayers"></ul>
+            </div>
+            <div class="auction-board">
+              <h4>현재 입찰 진행</h4>
+              <div id="activeAuction">참가자를 선택하세요</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 드래프트 화면 -->
+        <div id="draftView" class="team-view">
+          <h3>📋 드래프트 팀 구성</h3>
+          <p>팀장이 순서대로 참가자를 지명합니다.</p>
+          <div id="draftBoard">드래프트 판이 표시될 구역</div>
+        </div>
+
+        <!-- 자동 화면 -->
+        <div id="autoView" class="team-view">
+          <h3>🎲 자동 팀 구성</h3>
+          <p>티어/포지션 기반 자동 균형 팀 생성</p>
+          <button onclick="runAutoTeam()">팀 자동 생성하기</button>
+        </div>
+      </section>
+
+      <!-- 3. 맵 확인 탭 -->
+      <section id="map" class="tab-content">
+        <h2>게임별 맵 정보</h2>
+        <p>각 게임의 주요 맵 가이드 및 전략 정보를 확인할 수 있습니다.</p>
+      </section>
+
+      <!-- 4. SNS 탭 -->
+      <section id="sns" class="tab-content">
+        <h2>커뮤니티 피드</h2>
+        <p>유저들의 전적 자랑 및 플레이 후기</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- 3. 모달 영역 (프로필 수정 및 내전 생성) -->
+  <!-- ============================================================= -->
+
+  <!-- 프로필 설정 모달 -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content modal-lg">
+      <h3>⚙️ 프로필 및 게임 계정 설정</h3>
+      <form id="profileForm" onsubmit="saveFullProfile(event)">
+        
+        <!-- 1. 기본 계정 정보 -->
+        <div class="section-box">
+          <h4>계정 정보</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>아이디</label>
+              <input type="text" id="editUsername" disabled readonly />
+            </div>
+            <div class="form-group">
+              <label>닉네임</label>
+              <input type="text" id="editNickname" required />
+            </div>
+            <div class="form-group">
+              <label>새 비밀번호 (변경 시에만 입력)</label>
+              <input type="password" id="editPassword" placeholder="변경할 비밀번호" minlength="6" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 게임별 프로필 (3분할 블록) -->
+        <div class="section-box">
+          <h4>게임별 프로필 설정</h4>
+          <div class="game-profile-grid">
+            
+            <!-- 발로란트 블록 -->
+            <div class="game-card valo-card">
+              <h5>🔴 VALORANT</h5>
+              
+              <!-- 게임 아이디 (test#test 형식) -->
+              <div class="form-group">
+                <label>게임 태그 (아이디#태그)</label>
+                <input type="text" id="valoId" placeholder="예: HIDE#KR1" pattern="^.+#.+$" title="'아이디#태그' 형식으로 입력해 주세요." />
+              </div>
+
+              <!-- 발로란트 티어 선택 (이미지 Picker 방식) -->
+<div class="form-group">
+  <label>티어 선택</label>
+  <!-- 선택된 티어 값을 저장할 숨겨진 input -->
+  <input type="hidden" id="valoTier" value="Unranked" />
+  
+  <!-- 티어 아이콘 버튼들이 생성될 컨테이너 -->
+  <div id="valoTierContainer" class="tier-image-picker"></div>
+</div>
+
+              <!-- 주 역할군 & 요원 (이미지 Picker 방식) -->
+              <div class="role-group">
+                <div class="form-group">
+                  <label>주 역할군 <span class="required">*필수</span></label>
+                  <select id="valoMainRole" onchange="updateAgentSelection('main')" required>
+                    <option value="">선택하세요</option>
+                    <option value="타격대">타격대</option>
+                    <option value="척후대">척후대</option>
+                    <option value="감시자">감시자</option>
+                    <option value="전략가">전략가</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>주 역할군 선호 요원 (최대 3개, 1번 필수)</label>
+                  <div id="valoMainAgentContainer" class="agent-image-picker"></div>
+                </div>
+              </div>
+
+              <!-- 부 역할군 & 요원 (이미지 Picker 방식) -->
+              <div class="role-group">
+                <div class="form-group">
+                  <label>부 역할군 (선택)</label>
+                  <select id="valoSubRole" onchange="updateAgentSelection('sub')">
+                    <option value="">선택 안 함</option>
+                    <option value="타격대">타격대</option>
+                    <option value="척후대">척후대</option>
+                    <option value="감시자">감시자</option>
+                    <option value="전략가">전략가</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>부 역할군 선호 요원 (최대 3개)</label>
+                  <div id="valoSubAgentContainer" class="agent-image-picker"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 오버워치 2 블록 -->
+            <div class="game-card ow-card">
+              <h5>🟠 OVERWATCH 2</h5>
+              <p class="placeholder-text">오버워치 프로필 입력란 준비 중입니다.</p>
+            </div>
+
+            <!-- 리그 오브 레전드 블록 -->
+            <div class="game-card lol-card">
+              <h5>🔵 LEAGUE OF LEGENDS</h5>
+              <p class="placeholder-text">LoL 프로필 입력란 준비 중입니다.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
+          <button type="submit" class="btn-primary">설정 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 내전 생성 모달 -->
+  <div id="scrimModal" class="modal">
+    <div class="modal-content">
+      <h3>새 내전 만들기</h3>
+      <form id="scrimForm" onsubmit="createScrim(event)">
+        <div class="form-group">
+          <label for="scrimGame">종목</label>
+          <select id="scrimGame" required>
+            <option value="lol">League of Legends</option>
+            <option value="valo">VALORANT</option>
+            <option value="ow">Overwatch 2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="scrimTitle">내전 제목</label>
+          <input type="text" id="scrimTitle" placeholder="예: [실버~플레] 즐겜 내전 10인" required />
+        </div>
+        <div class="form-group">
+          <label for="scrimMax">최대 인원</label>
+          <input type="number" id="scrimMax" value="10" min="2" max="20" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
+          <button type="submit" class="btn-primary">생성하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 스크립트 연결 -->
+  <script src="./app.js"></script>
+</body>
+</html>
+
+<!-- 
+ =============================================================
+ 📝 주요 수정 내역 요약
+ =============================================================
+ 1. [요원 이미지 선택기 컨테이너 반영]
+    - 기존 <select id="valoMainAgent1"> 등의 드롭다운을 제거하고, 이미지 버튼들이 유동적으로 들어갈 <div id="valoMainAgentContainer" class="agent-image-picker"> 구역으로 업데이트했습니다.
+    - select의 event listener를 updateAgentSelection() 함수로 연결했습니다.
+
+ 2. [불필요/중복 주석 정돈]
+    - 하단 하드코딩되었던 무거운 주석들을 정돈하여 파일 구조를 한눈에 파악하기 쉽게 유지했습니다.
+ =============================================================
+-->
