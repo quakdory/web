@@ -124,9 +124,62 @@
 
         <!-- 드래프트 화면 -->
         <div id="draftView" class="team-view">
-          <h3>📋 드래프트 팀 구성</h3>
-          <p>팀장이 순서대로 참가자를 지명합니다.</p>
-          <div id="draftBoard">드래프트 판이 표시될 구역</div>
+          <div style="margin-bottom: 20px;">
+            <h3>📋 드래프트 팀 구성</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">내전을 선택하고 팀장(캡틴)을 지정한 뒤 드래프트를 진행합니다.</p>
+          </div>
+
+          <!-- 내전 선택 및 캡틴 설정 영역 -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+            <select id="draftScrimSelect" style="padding: 10px 14px; font-size: 0.95rem; flex: 1; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-element); color: var(--text-main);" onchange="loadDraftParticipants()">
+              <option value="">내전을 불러오는 중...</option>
+            </select>
+            <button type="button" class="btn-primary" onclick="startDraft()" style="padding: 10px 16px;">
+              ⚡ 드래프트 시작
+            </button>
+          </div>
+
+          <!-- 드래프트 진행 보드 (숨김 상태로 시작하여 시작 시 활성화) -->
+          <div id="draftBoardContainer" style="display: none;">
+            <!-- 현재 턴 안내 배너 -->
+            <div id="draftTurnBanner" style="padding: 12px 20px; background: var(--accent-glow); border: 1px solid var(--accent-purple); border-radius: var(--radius-sm); margin-bottom: 20px; font-weight: 800; text-align: center; color: var(--text-main);">
+              팀장을 설정하고 드래프트를 시작해 주세요.
+            </div>
+
+            <!-- 드래프트 양옆 배치 (참가자 풀 vs A/B 팀 현황) -->
+            <div class="form-grid-2col" style="align-items: start;">
+              <!-- 왼쪽: 남은 대기 참가자 풀 -->
+              <div class="form-sub-card">
+                <h4 style="margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">대기 참가자 풀</h4>
+                <ul id="draftPlayerPoolList" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                  <!-- JS로 동적 생성 -->
+                </ul>
+              </div>
+
+              <!-- 오른쪽: 팀별 구성 현황 -->
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- A팀 카드 -->
+                <div class="form-sub-card" style="border-top: 4px solid #007bff;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="color: #007bff; margin: 0;">A 팀 (캡틴: <span id="teamACaptainName">미지정</span>)</h4>
+                  </div>
+                  <ul id="draftTeamAList" style="list-style: none; padding: 0; margin: 0; min-height: 60px;">
+                    <li style="color: var(--text-muted); font-size: 0.85rem;">팀원이 없습니다.</li>
+                  </ul>
+                </div>
+
+                <!-- B팀 카드 -->
+                <div class="form-sub-card" style="border-top: 4px solid #dc3545;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="color: #dc3545; margin: 0;">B 팀 (캡틴: <span id="teamBCaptainName">미지정</span>)</h4>
+                  </div>
+                  <ul id="draftTeamBList" style="list-style: none; padding: 0; margin: 0; min-height: 60px;">
+                    <li style="color: var(--text-muted); font-size: 0.85rem;">팀원이 없습니다.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 자동 화면 -->

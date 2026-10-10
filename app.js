@@ -510,7 +510,12 @@ function showTeamSubtab(subtabId) {
   document.querySelectorAll('.team-view').forEach(view => view.classList.remove('active'));
   const targetView = document.getElementById(subtabId + 'View');
   if (targetView) targetView.classList.add('active');
-  if (subtabId === 'auto') loadScrimOptionsForTeamTab();
+  
+  if (subtabId === 'auto') {
+    loadScrimOptionsForTeamTab();
+  } else if (subtabId === 'draft') {
+    loadDraftScrimOptions(); // 드래프트 탭용 내전 목록 로드
+  }
 }
 
 function goToMain() {
@@ -719,3 +724,194 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkAuthState();
   subscribeToRealtimeChanges();
 });
+// =============================================================
+// 드래프트 팀 구성 시스템 로직
+// =============================================================
+
+let draftState = {
+  scrimId: null,
+  participants: [],
+  pool: [],
+  teamA: [],
+  teamB: [],
+  captainA: null,
+  captainB: null,
+  turn: 'A', // 'A' 또는 'B'
+  isStarted: false
+};
+
+// 드래프트 탭 진입 시 내전 목록 로드
+async function loadDraftScrimOptions() {
+  const selectEl = document.getElementById('draftScrimSelect');
+  if (!selectEl) return;
+  selectEl.innerHTML = '<option value="">내전을 불러오는 중...</option>';
+
+  const { data: scrims, error } = await supabaseClient.from('scrims').select('id, title, game, current_players, max_players').order('created_at', { ascending: false });
+  if (error || !scrims || scrims.length === 0) {
+    selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
+    return;
+  }
+
+  selectEl.innerHTML = '<option value="">-- 내전을 선택해 주세요 --</option>';
+  scrims.forEach(scrim => {
+    const opt = document.createElement('option');
+    opt.value = scrim.id;
+    opt.textContent = `[${scrim.game.toUpperCase()}] ${scrim.title} (${scrim.current_players}/${scrim.max_players}명)`;
+    selectEl.appendChild(opt);
+  });
+}
+
+// 내전 선택 시 참가자 목록 불러오기
+async function loadDraftParticipants() {
+  const scrimId = document.getElementById('draftScrimSelect')?.value;
+  const boardContainer = document.getElementById('draftBoardContainer');
+  
+  if (!scrimId) {
+    if (boardContainer) boardContainer.style.display = 'none';
+    return;
+  }
+
+  draftState.scrimId = scrimId;
+  const { data: participants, error } = await supabaseClient.from('scrim_participants').select(`user_id, profiles ( nickname, valo_info, ow_info )`).eq('scrim_id', scrimId);
+  
+  if (error || !participants || participants.length === 0) {
+    alert('참가자가 없는 내전입니다.');
+    if (boardContainer) boardContainer.style.display = 'none';
+    return;
+  }
+
+  draftState.participants = participants;
+  if (boardContainer) boardContainer.style.display = 'block';
+  
+  // 초기화 및 캡틴 선택 모달 또는 자동 지정 준비
+  initDraftSetup();
+}
+
+// 드래프트 준비 상태 설정 (참가자 중 상위 2명을 기본 캡틴으로 지정하거나 선택)
+function initDraftSetup() {
+  draftState.pool = [...draftState.participants];
+  draftState.teamA = [];
+  draftState.teamB = [];
+  draftState.isStarted = false;
+
+  // 첫 번째, 두 번째 참가자를 각각 A팀, B팀 캡틴으로 임시 지정
+  if (draftState.pool.length >= 2) {
+    draftState.captainA = draftState.pool[0];
+    draftState.captainB = draftState.pool[1];
+    
+    // 캡틴은 풀에서 제외하고 각각 팀에 먼저 포함
+    draftState.teamA.push(draftState.captainA);
+    draftState.teamB.push(draftState.captainB);
+    draftState.pool.splice(0, 2);
+  }
+
+  document.getElementById('teamACaptainName').textContent = draftState.captainA?.profiles?.nickname || '없음';
+  document.getElementById('teamBCaptainName').textContent = draftState.captainB?.profiles?.nickname || '없음';
+  
+  renderDraftBoard();
+}
+
+// 드래프트 시작 버튼
+function startDraft() {
+  if (!draftState.scrimId || draftState.participants.length < 3) {
+    alert('드래프트를 진행하려면 최소 3명 이상의 참가자가 필요합니다.');
+    return;
+  }
+  draftState.isStarted = true;
+  draftState.turn = 'A'; // A팀부터 지명 시작
+  renderDraftBoard();
+}
+
+// 드래프트 보드 화면 렌더링
+function renderDraftBoard() {
+  const banner = document.getElementById('draftTurnBanner');
+  const poolList = document.getElementById('draftPlayerPoolList');
+  const teamAList = document.getElementById('draftTeamAList');
+  const teamBList = document.getElementById('draftTeamBList');
+
+  if (!draftState.isStarted) {
+    banner.textContent = "설정이 완료되었습니다. [⚡ 드래프트 시작] 버튼을 눌러주세요.";
+    banner.style.background = 'var(--bg-element)';
+  } else if (draftState.pool.length === 0) {
+    banner.textContent = "🎉 모든 드래프트 지명이 완료되었습니다!";
+    banner.style.background = 'rgba(16, 185, 129, 0.2)';
+  } else {
+    const currentTeamName = draftState.turn === 'A' ? 'A 팀' : 'B 팀';
+    const captainName = draftState.turn === 'A' ? draftState.captainA?.profiles?.nickname : draftState.captainB?.profiles?.nickname;
+    banner.textContent = `🎯 현재 턴: [${currentTeamName}] (지명자: ${captainName} 님) - 대기 중인 참가자를 선택하세요!`;
+    banner.style.background = 'var(--accent-glow)';
+  }
+
+  // 1. 대기 풀 렌더링
+  poolList.innerHTML = '';
+  if (draftState.pool.length === 0) {
+    poolList.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">대기 중인 참가자가 없습니다.</li>';
+  } else {
+    draftState.pool.forEach((member, index) => {
+      const profile = member.profiles || {};
+      const valoTier = profile.valo_info?.tier || 'Unranked';
+      
+      const li = document.createElement('li');
+      li.style.display = 'flex';
+      li.style.justify0 = 'space-between';
+      li.style.alignItems = 'center';
+      li.style.padding = '10px 14px';
+      li.style.background = 'var(--bg-element)';
+      li.style.borderRadius = 'var(--radius-sm)';
+      li.style.border = '1px solid var(--border-color)';
+      
+      li.innerHTML = `
+        <div>
+          <strong>${profile.nickname || '알 수 없음'}</strong>
+          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">[${valoTier}]</span>
+        </div>
+        ${draftState.isStarted && draftState.pool.length > 0 ? `<button class="btn-primary btn-sm" onclick="pickPlayer(${index})">지명</button>` : ''}
+      `;
+      poolList.appendChild(li);
+    });
+  }
+
+  // 2. A팀 멤버 리스트 렌더링
+  teamAList.innerHTML = '';
+  draftState.teamA.forEach((member, idx) => {
+    const p = member.profiles || {};
+    const li = document.createElement('li');
+    li.style.padding = '6px 0';
+    li.style.borderBottom = '1px solid var(--border-color)';
+    li.style.fontSize = '0.9rem';
+    li.style.color = 'var(--text-main)';
+    li.innerHTML = `• ${p.nickname || '알 수 없음'} ${idx === 0 ? '<span style="color:var(--accent-purple); font-weight:800; font-size:0.75rem;">[캡틴]</span>' : ''}`;
+    teamAList.appendChild(li);
+  });
+
+  // 3. B팀 멤버 리스트 렌더링
+  teamBList.innerHTML = '';
+  draftState.teamB.forEach((member, idx) => {
+    const p = member.profiles || {};
+    const li = document.createElement('li');
+    li.style.padding = '6px 0';
+    li.style.borderBottom = '1px solid var(--border-color)';
+    li.style.fontSize = '0.9rem';
+    li.style.color = 'var(--text-main)';
+    li.innerHTML = `• ${p.nickname || '알 수 없음'} ${idx === 0 ? '<span style="color:var(--accent-purple); font-weight:800; font-size:0.75rem;">[캡틴]</span>' : ''}`;
+    teamBList.appendChild(li);
+  });
+}
+
+// 참가자 지명 액션 (지그재그 턴 교대)
+function pickPlayer(poolIndex) {
+  if (!draftState.isStarted || draftState.pool.length === 0) return;
+
+  const picked = draftState.pool.splice(poolIndex, 1)[0];
+
+  if (draftState.turn === 'A') {
+    draftState.teamA.push(picked);
+    // 남은 인원이 있으면 턴 교체 (공정한 지정을 위해 홀수/짝수턴 규칙 적용 가능, 간단히 1명씩 번갈아 지명)
+    draftState.turn = 'B';
+  } else {
+    draftState.teamB.push(picked);
+    draftState.turn = 'A';
+  }
+
+  renderDraftBoard();
+}
