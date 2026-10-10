@@ -181,103 +181,94 @@
   <!-- 3. 모달 영역 (프로필 수정 및 내전 생성) -->
   <!-- ============================================================= -->
 
-  <!-- 프로필 설정 모달 -->
-  <div id="profileModal" class="modal">
-    <div class="modal-content modal-lg">
-      <h3>⚙️ 프로필 및 게임 계정 설정</h3>
-      <form id="profileForm" onsubmit="saveFullProfile(event)">
-        
-        <div class="section-box">
-          <h4>계정 정보</h4>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>아이디</label>
-              <input type="text" id="editUsername" disabled readonly />
-            </div>
-            <div class="form-group">
-              <label>닉네임</label>
-              <input type="text" id="editNickname" required />
-            </div>
-            <div class="form-group">
-              <label>새 비밀번호 (변경 시에만 입력)</label>
-              <input type="password" id="editPassword" placeholder="변경할 비밀번호" minlength="6" />
-            </div>
-          </div>
-        </div>
-
+  <!-- 2. 게임별 프로필 (게임 선택 탭 방식) -->
         <div class="section-box">
           <h4>게임별 프로필 설정</h4>
-          <div class="game-profile-grid">
+          
+          <!-- 게임 선택 서브탭 버튼 -->
+          <div class="game-profile-tabs">
+            <button type="button" class="game-tab-btn active" onclick="switchGameProfileTab('valo')">🔴 VALORANT</button>
+            <button type="button" class="game-tab-btn" onclick="switchGameProfileTab('ow')">🟠 OVERWATCH 2</button>
+            <button type="button" class="game-tab-btn" onclick="switchGameProfileTab('lol')">🔵 LEAGUE OF LEGENDS</button>
+          </div>
+
+          <!-- 게임별 설정을 담는 패널 컨테이너 -->
+          <div class="game-profile-panels">
             
-            <div class="game-card valo-card">
-              <h5>🔴 VALORANT</h5>
-              
-              <div class="form-group">
-                <label>게임 태그 (아이디#태그)</label>
-                <input type="text" id="valoId" placeholder="예: HIDE#KR1" pattern="^.+#.+$" title="'아이디#태그' 형식으로 입력해 주세요." />
-              </div>
+            <!-- 1) 발로란트 패널 -->
+            <div id="valoProfilePanel" class="game-panel active">
+              <div class="form-grid-2col">
+                <!-- 게임 아이디 & 티어 -->
+                <div class="form-sub-card">
+                  <div class="form-group">
+                    <label>게임 태그 (아이디#태그)</label>
+                    <input type="text" id="valoId" placeholder="예: HIDE#KR1" pattern="^.+#.+$" title="'아이디#태그' 형식으로 입력해 주세요." />
+                  </div>
 
-              <div class="form-group">
-                <label>티어 선택</label>
-                <input type="hidden" id="valoTier" value="Unranked" />
-                <div id="valoTierContainer" class="tier-image-picker"></div>
-              </div>
+                  <div class="form-group">
+                    <label>티어 선택</label>
+                    <input type="hidden" id="valoTier" value="Unranked" />
+                    <div id="valoTierContainer" class="tier-image-picker"></div>
+                  </div>
+                </div>
 
-              <div class="role-group">
-                <div class="form-group">
-                  <label>주 역할군 <span class="required">*필수</span></label>
-                  <select id="valoMainRole" onchange="updateAgentSelection('main')" required>
-                    <option value="">선택하세요</option>
-                    <option value="타격대">타격대</option>
-                    <option value="척후대">척후대</option>
-                    <option value="감시자">감시자</option>
-                    <option value="전략가">전략가</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>주 역할군 선호 요원 (최대 3개, 1번 필수)</label>
-                  <div id="valoMainAgentContainer" class="agent-image-picker"></div>
-                </div>
-              </div>
+                <!-- 주/부 역할군 및 요원 선택 -->
+                <div class="form-sub-card">
+                  <div class="role-group" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                      <label>주 역할군 <span class="required">*필수</span></label>
+                      <select id="valoMainRole" onchange="updateAgentSelection('main')">
+                        <option value="">선택하세요</option>
+                        <option value="타격대">타격대</option>
+                        <option value="척후대">척후대</option>
+                        <option value="감시자">감시자</option>
+                        <option value="전략가">전략가</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>주 역할군 선호 요원 (최대 3개, 1번 필수)</label>
+                      <div id="valoMainAgentContainer" class="agent-image-picker"></div>
+                    </div>
+                  </div>
 
-              <div class="role-group">
-                <div class="form-group">
-                  <label>부 역할군 (선택)</label>
-                  <select id="valoSubRole" onchange="updateAgentSelection('sub')">
-                    <option value="">선택 안 함</option>
-                    <option value="타격대">타격대</option>
-                    <option value="척후대">척후대</option>
-                    <option value="감시자">감시자</option>
-                    <option value="전략가">전략가</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>부 역할군 선호 요원 (최대 3개)</label>
-                  <div id="valoSubAgentContainer" class="agent-image-picker"></div>
+                  <div class="role-group">
+                    <div class="form-group">
+                      <label>부 역할군 (선택)</label>
+                      <select id="valoSubRole" onchange="updateAgentSelection('sub')">
+                        <option value="">선택 안 함</option>
+                        <option value="타격대">타격대</option>
+                        <option value="척후대">척후대</option>
+                        <option value="감시자">감시자</option>
+                        <option value="전략가">전략가</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>부 역할군 선호 요원 (최대 3개)</label>
+                      <div id="valoSubAgentContainer" class="agent-image-picker"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="game-card ow-card">
-              <h5>🟠 OVERWATCH 2</h5>
-              <p class="placeholder-text">오버워치 프로필 입력란 준비 중입니다.</p>
+            <!-- 2) 오버워치 2 패널 -->
+            <div id="owProfilePanel" class="game-panel">
+              <div class="form-sub-card">
+                <h5>🟠 OVERWATCH 2 프로필</h5>
+                <p class="placeholder-text" style="padding: 20px 0; color: #94a3b8;">오버워치 프로필 및 주 포지션 설정 기능 준비 중입니다.</p>
+              </div>
             </div>
 
-            <div class="game-card lol-card">
-              <h5>🔵 LEAGUE OF LEGENDS</h5>
-              <p class="placeholder-text">LoL 프로필 입력란 준비 중입니다.</p>
+            <!-- 3) 리그 오브 레전드 패널 -->
+            <div id="lolProfilePanel" class="game-panel">
+              <div class="form-sub-card">
+                <h5>🔵 LEAGUE OF LEGENDS 프로필</h5>
+                <p class="placeholder-text" style="padding: 20px 0; color: #94a3b8;">리그 오브 레전드 소환사 정보 및 라인 설정 기능 준비 중입니다.</p>
+              </div>
             </div>
 
           </div>
         </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
-          <button type="submit" class="btn-primary">설정 저장</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- 내전 생성 모달 -->
   <div id="scrimModal" class="modal">

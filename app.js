@@ -767,3 +767,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkAuthState();
   subscribeToRealtimeChanges();
 });
+// 프로필 모달 내 게임 선택 탭 전환 함수
+function switchGameProfileTab(gameCode) {
+  // 모든 탭 버튼 비활성화
+  document.querySelectorAll('.game-tab-btn').forEach(btn => btn.classList.remove('active'));
+  // 모든 게임 패널 숨김
+  document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+
+  // 선택한 탭 버튼 및 패널 활성화
+  const targetPanel = document.getElementById(`${gameCode}ProfilePanel`);
+  const targetBtn = Array.from(document.querySelectorAll('.game-tab-btn')).find(btn => 
+    btn.getAttribute('onclick')?.includes(`'${gameCode}'`)
+  );
+
+  if (targetPanel) targetPanel.classList.add('active');
+  if (targetBtn) targetBtn.classList.add('active');
+}
