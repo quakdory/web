@@ -612,3 +612,12 @@ body.dark-mode #teamBList li {
   border-bottom-color: var(--border-color) !important;
   color: var(--text-main) !important;
 }
+
+#authContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+}
