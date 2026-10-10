@@ -786,64 +786,65 @@ function switchGameProfileTab(gameCode) {
 // 오버워치 2 영웅 데이터 (안정적인 이미지 CDN 적용)
 const OW_HERO_DATA = {
   "돌격": [
-    { name: "D.Va", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/76e2553b306b3bc5b48bc27dbba9535e5d326ef7d3b04323bc17904baed57d05.png" },
-    { name: "디몬", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "도미나", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "해저드", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "둠피스트", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4df62900224d3dbf5e2da8b7884d8bca3d38e7fb0f9a25b39920d3f237efbdf3.png" },
-    { name: "마우가", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/1beceea89330a0d922031db242b6a22f281e28bbd912467d58a8a1edcd23a5bb.png" },
-    { name: "시그마", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7f08d0e513813840742d13b48231a4cc2dfb5c87a5554fb9148d82141503cbfb.png" },
-    { name: "윈스턴", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/8a1b9f71fb2c67623910c283aa0e12d1fb9d1df5e8ce12fb781b0f5923b320d3.png" },
-    { name: "라인하르트", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7f2da5ec390be1071da509311025a1f6a1e7806fcf1b72e59276d495d033efb1.png" },
-    { name: "로드호그", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/b5c7774ae0f7e411b025fa825c09e3e7f9ee1ff0cf5efc42fc3ec3c88029c9ef.png" },
-    { name: "자리야", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/f46f332aa6c299245ef45c381c1537b8303f0b2f15ea4117ae8da1a1ed61476d.png" },
-    { name: "오리사", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/3973918ddae617aeecb08f51a134ae24f57c170d10d9f0490b3967385a0684f8.png" },
-    { name: "레킹볼", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/a434199c0b62e49c95105260840bba0ec9976378e9f4296fb9e9f6bf193c76d2.png" },
-    { name: "정커퀸", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/92534f3b1456d9876fae1f76d47918a24c2efef1b32f5f14e5bfa70d04b3ebef.png" },
-    { name: "라마트라", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9bb87a64115161327117e3f8430b809228eb38e2d274f8ff417036d0f81fb5f0.png" }
+    { name: "D.Va", img: "images/heroes/디바.png" },
+    { name: "디몬", img: "images/heroes/디몬.png" },
+    { name: "도미나", img: "images/heroes/도미나.png" },
+    { name: "해저드", img: "images/heroes/해저드.png" },
+    { name: "둠피스트", img: "images/heroes/둠피스트.png" },
+    { name: "마우가", img: "images/heroes/마우가.png" },
+    { name: "시그마", img: "images/heroes/시그마.png" },
+    { name: "윈스턴", img: "images/heroes/윈스턴.png" },
+    { name: "라인하르트", img: "images/heroes/라인하르트.png" },
+    { name: "로드호그", img: "images/heroes/로드호그.png" },
+    { name: "자리야", img: "images/heroes/자리야.png" },
+    { name: "오리사", img: "images/heroes/오리사.png" },
+    { name: "레킹볼", img: "images/heroes/레킹볼.png" },
+    { name: "정커퀸", img: "images/heroes/정커퀸.png" },
+    { name: "라마트라", img: "images/heroes/라마트라.png" }
   ],
   "공격": [
-    { name: "겐지", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/03f90e03e5c9ea24fa6fa37b12b23447385efb783359d997274044944d18725b.png" },
-    { name: "맥크리(캐서디)", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/f47055e82eb75b8a531d054d86b97621c17242fa521f5bc9123ae434aa3bbf69.png" },
-    { name: "리퍼", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/54203796cb50a6dd2f32f3f7b2f5110bfedbe17a58a74b9d0b8332c969b82881.png" },
-    { name: "솔저: 76", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/67ff506ecbecc5cb293b6e8a8b1ef2d3ef1ecbb3bc57b22bc437cb10cfb75fef.png" },
-    { name: "솜브라", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/ce0699be2c24efb5ef60d5c80dbb5c2a13ccfb793ea515d9111c8cb4e112cb92.png" },
-    { name: "트레이서", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/2e128ef3e414f52623b3aa7738f72c08b2eb040ea4fc29094762e861d8ef31a9.png" },
-    { name: "메이", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/83b3dff6a3949fef9034c207e997a47ef09210e7b8d4bb9f4ea5254199aa4cb4.png" },
-    { name: "바스티온", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/8a1b9f71fb2c67623910c283aa0e12d1fb9d1df5e8ce12fb781b0f5923b320d3.png" },
-    { name: "한조", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9e0be103c8008892f25b20677c770fb5635c0245039beee79db8118fefb07a50.png" },
-    { name: "토르비욘", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7641f9d45e5ef01a14b0b14bf4e8c1873138b329623e1f0e4b01da42a0b275bf.png" },
-    { name: "위도우메이커", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/70860533512b9a7b744d03d36b85e054ae0d9f0adba10e5e019f29119bb9bc27.png" },
-    { name: "정크랫", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/3a8c3e86c12c5bde6b0200ccb4b568be220f86641e7d23ea54db0ef4c9955403.png" },
-    { name: "파라", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/6727284b3917d05777dfdbdf7643b2f567b3ad26f23c921389efbb49bf326693.png" },
-    { name: "시메트라", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/1d91aa893693bb699a0ef81878d6b8b1b590e00be989a3b680190ee0d20d7ae4.png" },
-    { name: "애쉬", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/db3e7c859d09f7b03bdf89e13bfa4b1df8cd29910a39f60bc931d8c1c5a98bf4.png" },
-    { name: "에코", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/e021a8d05e3ec3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad.png" },
-    { name: "소준", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/41973a90757a3e819b02a9b736b415a77f9038289bfadbb37d36efd7a3ed142a.png" },
-    { name: "벤처", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "시온", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "시에라", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "엠레", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "벤데타", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "안란", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "프레야", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "독트린", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "우양", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" }
+    { name: "겐지", img: "images/heroes/겐지.png" },
+    { name: "캐서디", img: "images/heroes/캐서디.png" },
+    { name: "리퍼", img: "images/heroes/리퍼.png" },
+    { name: "솔저: 76", img: "images/heroes/솔저.png" },
+    { name: "트레이서", img: "images/heroes/트레이서.png" },
+    { name: "메이", img: "images/heroes/메이.png" },
+    { name: "바스티온", img: "images/heroes/바스티온.png" },
+    { name: "한조", img: "images/heroes/한조.png" },
+    { name: "토르비욘", img: "images/heroes/토르비욘.png" },
+    { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },
+    { name: "정크랫", img: "images/heroes/정크랫.png" },
+    { name: "파라", img: "images/heroes/파라.png" },
+    { name: "시메트라", img: "images/heroes/시메트라.png" },
+    { name: "애쉬", img: "images/heroes/애쉬.png" },
+    { name: "에코", img: "images/heroes/에코.png" },
+    { name: "소전", img: "images/heroes/소전.png" },
+    { name: "벤처", img: "images/heroes/벤처.png" },
+    { name: "시온", img: "images/heroes/시온.png" },
+    { name: "시에라", img: "images/heroes/시에라.png" },
+    { name: "엠레", img: "images/heroes/엠레.png" },
+    { name: "벤데타", img: "images/heroes/벤데타.png" },
+    { name: "안란", img: "images/heroes/안란.png" },
+    { name: "프레야", img: "images/heroes/프레야.png" },
+
   ],
   "지원": [
-    { name: "메르시", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/672cfa9df70aa2fb23431bf1c65ea9b02aa87b7a67232231b14daef4da17e0ef.png" },
-    { name: "루시우", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/0bfcb4d4d142d13b48231a4cc2dfb5c87a5554fb9148d82141503cbfb9bb87a64.png" },
-    { name: "아나", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/41973a90757a3e819b02a9b736b415a77f9038289bfadbb37d36efd7a3ed142a.png" },
-    { name: "젠야타", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/1beceea89330a0d922031db242b6a22f281e28bbd912467d58a8a1edcd23a5bb.png" },
-    { name: "바티스트", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/4df62900224d3dbf5e2da8b7884d8bca3d38e7fb0f9a25b39920d3f237efbdf3.png" },
-    { name: "모이라", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/7f08d0e513813840742d13b48231a4cc2dfb5c87a5554fb9148d82141503cbfb.png" },
-    { name: "브리기테", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/8a1b9f71fb2c67623910c283aa0e12d1fb9d1df5e8ce12fb781b0f5923b320d3.png" },
-    { name: "키리코", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/db3e7c859d09f7b03bdf89e13bfa4b1df8cd29910a39f60bc931d8c1c5a98bf4.png" },
-    { name: "일리아리", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/92534f3b1456d9876fae1f76d47918a24c2efef1b32f5f14e5bfa70d04b3ebef.png" },
-    { name: "라이프위버", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/9bb87a64115161327117e3f8430b809228eb38e2d274f8ff417036d0f81fb5f0.png" },
-    { name: "주노", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/41973a90757a3e819b02a9b736b415a77f9038289bfadbb37d36efd7a3ed142a.png" },
-    { name: "제트팩캣", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" },
-    { name: "미즈키", img: "https://d15f34w2p8l1cc.cloudfront.net/overwatch/d9c79f45f8f3c3065a4395a1262d04a6c8e39213bc033a3cd84d9426f34e3ad3.png" }
+    { name: "독트린", img: "images/heroes/독트린.png" },
+    { name: "우양", img: "images/heroes/우양.png" },
+    { name: "솜브라", img: "images/heroes/솜브라.png" },
+    { name: "메르시", img: "images/heroes/메르시.png" },
+    { name: "루시우", img: "images/heroes/루시우.png" },
+    { name: "아나", img: "images/heroes/아나.png" },
+    { name: "젠야타", img: "images/heroes/젠야타.png" },
+    { name: "바티스트", img: "images/heroes/바티스트.png" },
+    { name: "모이라", img: "images/heroes/모이라.png" },
+    { name: "브리기테", img: "images/heroes/브리기테.png" },
+    { name: "키리코", img: "images/heroes/키리코.png" },
+    { name: "일리아리", img: "images/heroes/일리아리.png" },
+    { name: "라이프위버", img: "images/heroes/라이프위버.png" },
+    { name: "주노", img: "images/heroes/주노.png" },
+    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" },
+    { name: "미즈키", img: "images/heroes/미즈키.png" }
   ]
 };
 
@@ -852,7 +853,6 @@ let owSelectedHeroes = {
   sub: []
 };
 
-// 오버워치 역할군 선택 시 영웅 목록 렌더링
 function updateOWHeroSelection(type) {
   const roleSelect = document.getElementById(type === 'main' ? 'owMainRole' : 'owSubRole');
   const container = document.getElementById(type === 'main' ? 'owMainHeroContainer' : 'owSubHeroContainer');
@@ -876,12 +876,15 @@ function updateOWHeroSelection(type) {
     btn.className = 'agent-btn';
     btn.onclick = () => toggleOWHeroSelect(type, hero.name, btn);
 
+    // 로컬 이미지 파일 렌더링 (이미지가 없을 경우 이니셜 대체)
     btn.innerHTML = `
-      <img src="${hero.img}" alt="${hero.name}" title="${hero.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-      <div style="display:none; width:100%; aspect-ratio:1/1; background:var(--bg-element); border-radius:4px; justify-content:center; align-items:center; font-weight:800; font-size:0.75rem; color:var(--accent-purple);">
-        ${hero.name.substring(0, 3)}
+      <div style="width: 100%; aspect-ratio: 1/1; background: var(--bg-element); border-radius: 6px; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color);">
+        <img src="${hero.img}" alt="${hero.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <div style="display:none; width:100%; height:100%; justify-content:center; align-items:center; font-weight:900; font-size:0.8rem; color:var(--accent-purple);">
+          ${hero.name.substring(0, 2)}
+        </div>
       </div>
-      <span class="agent-name">${hero.name}</span>
+      <span class="agent-name" style="margin-top: 6px; font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">${hero.name}</span>
       <div class="select-badge"></div>
     `;
     container.appendChild(btn);
