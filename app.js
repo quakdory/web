@@ -1157,10 +1157,11 @@ const OW_MAP_DATA_BY_MODE = {
     { name: "콜로세오", img: "images/maps/ove/콜로세오.png" },
     { name: "루나사피", img: "images/maps/ove/루나사피.png" }
   ],
-  "플래시포인트": 
+  "플래시포인트": [
     { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.png" },
     { name: "수라바사", img: "images/maps/ove/수라바사.png" },
     { name: "아틀리스", img: "images/maps/ove/아틀리스.png" }
+]
 };
 
 async function initializeMapVeto(scrimId, gameType) {
