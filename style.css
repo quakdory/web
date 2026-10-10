@@ -577,3 +577,38 @@ body.dark-mode #teamAList li span,
 body.dark-mode #teamBList li span {
   color: var(--text-muted) !important;
 }
+/* ============================================================= */
+/* 팀 구성 탭 다크모드 흰색 배경 완벽 차단 및 강제 적용           */
+/* ============================================================= */
+
+/* 자동 팀 나누기 드롭다운 select 박스 다크모드 */
+body.dark-mode #teamScrimSelect {
+  background-color: var(--bg-element) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-mode #teamScrimSelect option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+}
+
+/* 팀 나누기 결과 박스 전체 컨테이너 및 내부 배경 */
+body.dark-mode #teamResultContainer > div {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+/* A팀 / B팀 내부 리스트 영역 */
+body.dark-mode #teamAList,
+body.dark-mode #teamBList {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+}
+
+body.dark-mode #teamAList li,
+body.dark-mode #teamBList li {
+  border-bottom-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
