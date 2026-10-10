@@ -688,20 +688,42 @@ function renderTeamList(elementId, teamMembers) {
   listEl.innerHTML = '';
 
   if (teamMembers.length === 0) {
-    listEl.innerHTML = '<li>배정된 팀원이 없습니다.</li>';
+    listEl.innerHTML = '<li style="padding: 10px; color: var(--text-muted);">배정된 팀원이 없습니다.</li>';
     return;
   }
 
   teamMembers.forEach(member => {
     const profile = member.profiles || {};
     const valo = profile.valo_info || {};
-    const tier = valo.tier || 'Unranked';
-    const mainRole = valo.main_role ? ` (${valo.main_role})` : '';
+    const ow = profile.ow_info || {};
+    
+    const tier = valo.tier || ow.tier || 'Unranked';
+    const mainRole = valo.main_role || ow.main_role || '미설정';
+    const mainAgents = valo.main_agents || ow.main_heroes || [];
+    
+    const agentsText = mainAgents.length > 0 ? `(${mainAgents.join(', ')})` : '';
 
     const li = document.createElement('li');
-    li.style.padding = '8px 0';
-    li.style.borderBottom = '1px solid var(--border-color)';
-    li.innerHTML = `<strong>${profile.nickname || '알 수 없음'}</strong> <span style="font-size:0.85rem; color:var(--text-muted);">[${tier}]${mainRole}</span>`;
+    li.style.display = 'flex';
+    li.style.justifyContent = 'space-between';
+    li.style.alignItems = 'center';
+    li.style.padding = '10px 12px';
+    li.style.marginBottom = '6px';
+    li.style.background = 'var(--bg-element)';
+    li.style.borderRadius = 'var(--radius-sm)';
+    li.style.border = '1px solid var(--border-color)';
+    li.style.fontSize = '0.9rem';
+
+    li.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <strong style="color: var(--text-main);">${profile.nickname || '알 수 없음'}</strong>
+        <span style="font-size: 0.75rem; padding: 2px 6px; background: var(--accent-glow); color: var(--accent-purple); border-radius: 4px; font-weight: 700;">${mainRole}</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        <span style="margin-right: 6px;">[${tier}]</span>
+        <span style="color: var(--text-main); font-weight: 500;">${agentsText}</span>
+      </div>
+    `;
     listEl.appendChild(li);
   });
 }
@@ -885,13 +907,19 @@ function renderLiveDraftBoard(scrim) {
     }
   }
 
+  // 대기 풀 렌더링 (닉네임, 주역할군 배지, 티어, 주력 영웅 표시 적용)
   poolList.innerHTML = '';
   if (pool.length === 0) {
     poolList.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">대기 참가자가 없습니다.</li>';
   } else {
     pool.forEach((member, idx) => {
       const p = member.profiles || {};
-      const tier = p.valo_info?.tier || p.ow_info?.tier || 'Unranked';
+      const valo = p.valo_info || {};
+      const ow = p.ow_info || {};
+      const tier = valo.tier || ow.tier || 'Unranked';
+      const mainRole = valo.main_role || ow.main_role || '미설정';
+      const mainItems = valo.main_agents || ow.main_heroes || [];
+      const agentsText = mainItems.length > 0 ? `(${mainItems.slice(0, 2).join(', ')})` : '';
 
       const li = document.createElement('li');
       li.style.display = 'flex';
@@ -904,8 +932,14 @@ function renderLiveDraftBoard(scrim) {
 
       li.innerHTML = `
         <div>
-          <strong>${p.nickname || '알 수 없음'}</strong>
-          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">[${tier}]</span>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+            <strong style="font-size: 0.95rem; color: var(--text-main);">${p.nickname || '알 수 없음'}</strong>
+            <span style="font-size: 0.75rem; padding: 2px 6px; background: var(--accent-glow); color: var(--accent-purple); border-radius: 4px; font-weight: 700;">${mainRole}</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">
+            <span style="margin-right: 6px;">[${tier}]</span>
+            <span style="color: var(--text-main); font-weight: 500;">${agentsText}</span>
+          </div>
         </div>
         ${isMyTurn ? `<button class="btn-primary btn-sm" onclick="executePick(${idx})">지명하기</button>` : ''}
       `;
@@ -913,27 +947,43 @@ function renderLiveDraftBoard(scrim) {
     });
   }
 
-  teamAList.innerHTML = '';
-  teamA.forEach((m, idx) => {
-    const nick = m.profiles?.nickname || '알 수 없음';
-    const li = document.createElement('li');
-    li.style.padding = '6px 0';
-    li.style.borderBottom = '1px solid var(--border-color)';
-    li.style.fontSize = '0.9rem';
-    li.innerHTML = `• ${nick} ${idx === 0 ? '<span style="color:var(--accent-purple); font-weight:800; font-size:0.75rem;">[캡틴]</span>' : ''}`;
-    teamAList.appendChild(li);
-  });
+  // 내부 헬퍼 함수: 팀원 리스트 렌더링 (주역할군 배지 및 캡틴 표시 적용)
+  const renderTeamMemberList = (containerEl, members, captainId) => {
+    containerEl.innerHTML = '';
+    if (members.length === 0) {
+      containerEl.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 6px;">팀원이 없습니다.</li>';
+      return;
+    }
+    members.forEach((m) => {
+      const p = m.profiles || {};
+      const valo = p.valo_info || {};
+      const ow = p.ow_info || {};
+      const mainRole = valo.main_role || ow.main_role || '미설정';
+      const isCaptain = m.user_id === captainId;
 
-  teamBList.innerHTML = '';
-  teamB.forEach((m, idx) => {
-    const nick = m.profiles?.nickname || '알 수 없음';
-    const li = document.createElement('li');
-    li.style.padding = '6px 0';
-    li.style.borderBottom = '1px solid var(--border-color)';
-    li.style.fontSize = '0.9rem';
-    li.innerHTML = `• ${nick} ${idx === 0 ? '<span style="color:var(--accent-purple); font-weight:800; font-size:0.75rem;">[캡틴]</span>' : ''}`;
-    teamBList.appendChild(li);
-  });
+      const li = document.createElement('li');
+      li.style.display = 'flex';
+      li.style.justifyContent = 'space-between';
+      li.style.alignItems = 'center';
+      li.style.padding = '8px 4px';
+      li.style.borderBottom = '1px solid var(--border-color)';
+      li.style.fontSize = '0.9rem';
+
+      li.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <strong style="color: var(--text-main);">${p.nickname || '알 수 없음'}</strong>
+          <span style="font-size: 0.75rem; padding: 2px 6px; background: var(--accent-glow); color: var(--accent-purple); border-radius: 4px; font-weight: 700;">${mainRole}</span>
+        </div>
+        <div>
+          ${isCaptain ? '<span style="color: var(--accent-purple); font-weight: 800; font-size: 0.75rem; background: var(--accent-glow); padding: 2px 6px; border-radius: 4px;">👑 캡틴</span>' : ''}
+        </div>
+      `;
+      containerEl.appendChild(li);
+    });
+  };
+
+  renderTeamMemberList(teamAList, teamA, scrim.captain_a);
+  renderTeamMemberList(teamBList, teamB, scrim.captain_b);
 }
 
 async function executePick(poolIndex) {
