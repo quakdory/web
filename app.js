@@ -1098,3 +1098,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkAuthState();
   subscribeToRealtimeChanges();
 });
+
+function switchAuthView(viewType) {
+  const loginView = document.getElementById('loginView');
+  const signupView = document.getElementById('signupView');
+
+  if (viewType === 'signup') {
+    if (loginView) loginView.style.display = 'none';
+    if (signupView) signupView.style.display = 'block';
+  } else {
+    if (loginView) loginView.style.display = 'block';
+    if (signupView) signupView.style.display = 'none';
+  }
+}
