@@ -1,36 +1,32 @@
 /* ============================================================= */
-/* VALORANT VIOLET TACTICAL ESPORTS THEME (PURPLE EDITION)       */
+/* LOL.PS STYLE & VIOLET TACTICAL DASHBOARD THEME                */
 /* ============================================================= */
 
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
-  --bg-main: #0f1219;
-  --bg-card: #161a24;
-  --bg-card-hover: #1e2330;
-  --bg-sub: #10141e;
+  --bg-main: #0b0e14;
+  --bg-card: #131822;
+  --bg-card-hover: #19202e;
+  --bg-sub: #0f131c;
   
-  /* 메인 컬러: 퍼플 / 바이올렛 계열 */
-  --val-purple: #9333ea;
-  --val-purple-hover: #a855f7;
-  --val-purple-glow: rgba(147, 51, 234, 0.5);
-  --val-cyan: #00f0ff;
-  --val-gray: #ece8e1;
-  --val-muted: #768079;
+  --accent-purple: #8b5cf6;
+  --accent-purple-hover: #7c3aed;
+  --accent-glow: rgba(139, 92, 246, 0.25);
   
-  --text-main: #ece8e1;
-  --text-muted: #8b978f;
-  --border-color: #262c3a;
-  --border-active: #a855f7;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border-color: #1e293b;
+  --border-active: #8b5cf6;
   
   --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-  --radius-sharp: 2px;
+  --radius-md: 8px;
 }
 
 body.dark-mode {
-  --bg-main: #090b10;
-  --bg-card: #11141d;
-  --border-color: #1d222e;
+  --bg-main: #07090e;
+  --bg-card: #0f131c;
+  --border-color: #161e2e;
 }
 
 * {
@@ -43,16 +39,12 @@ body {
   font-family: var(--font-family);
   background-color: var(--bg-main);
   color: var(--text-main);
-  background-image: 
-    radial-gradient(circle at 15% 20%, rgba(147, 51, 234, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(0, 240, 255, 0.03) 0%, transparent 45%);
-  background-attachment: fixed;
   min-height: 100vh;
   line-height: 1.5;
 }
 
 /* ============================================================= */
-/* 커스텀 스크롤바 */
+/* 스크롤바 디자인 */
 /* ============================================================= */
 ::-webkit-scrollbar {
   width: 6px;
@@ -62,11 +54,11 @@ body {
   background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
-  background: #262c3a;
-  border-radius: var(--radius-sharp);
+  background: #1e293b;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--val-purple);
+  background: var(--accent-purple);
 }
 
 /* ============================================================= */
@@ -83,32 +75,18 @@ body {
 .auth-box {
   background: var(--bg-card);
   padding: 2.5rem;
-  border-radius: var(--radius-sharp);
+  border-radius: var(--radius-md);
   width: 100%;
   max-width: 420px;
   border: 1px solid var(--border-color);
-  border-top: 3px solid var(--val-purple);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .auth-box h2, .auth-box h3 {
   text-align: center;
-  margin-bottom: 1.8rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
   color: var(--text-main);
-  position: relative;
-}
-
-.auth-box h2::after {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 2px;
-  background: var(--val-purple);
-  margin: 8px auto 0;
 }
 
 /* Input Styles */
@@ -118,21 +96,21 @@ input[type="email"],
 select,
 textarea {
   width: 100%;
-  padding: 11px 14px;
+  padding: 10px 14px;
   margin-bottom: 1rem;
   background-color: var(--bg-sub);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  border-radius: var(--radius-sharp);
+  border-radius: 6px;
   font-family: var(--font-family);
   font-size: 0.95rem;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--val-purple-hover);
-  box-shadow: 0 0 8px var(--val-purple-glow);
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 /* Buttons */
@@ -141,25 +119,20 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-  background-color: var(--val-purple);
+  background-color: var(--accent-purple);
   color: #ffffff;
   border: none;
-  padding: 11px 20px;
-  border-radius: var(--radius-sharp);
-  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
   font-size: 0.95rem;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.15s ease;
 }
 
 .btn-primary:hover {
-  background-color: var(--val-purple-hover);
-  box-shadow: 0 0 16px var(--val-purple-glow);
-  transform: translateY(-1px);
+  background-color: var(--accent-purple-hover);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .btn-secondary {
@@ -167,133 +140,129 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-main);
   border: 1px solid var(--border-color);
   padding: 10px 18px;
-  border-radius: var(--radius-sharp);
-  font-weight: 600;
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-secondary:hover {
-  background-color: #1e2330;
+  background-color: #1e293b;
   border-color: var(--text-muted);
 }
 
 .btn-danger {
-  background-color: #d63031;
+  background-color: #ef4444;
   color: white;
   border: none;
   padding: 8px 14px;
-  border-radius: var(--radius-sharp);
+  border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-sm {
-  padding: 6px 12px;
+  padding: 5px 10px;
   font-size: 0.85rem;
 }
 
 .divider {
-  margin: 1.8rem 0;
+  margin: 1.5rem 0;
   border: 0;
   border-top: 1px solid var(--border-color);
 }
 
 /* ============================================================= */
-/* 상단 네비게이션 바 */
+/* 상단 네비게이션 바 (lol.ps 스타일 헤더) */
 /* ============================================================= */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2.5rem;
+  padding: 0.8rem 2rem;
   background-color: var(--bg-card);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .logo {
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 2px;
+  font-size: 1.25rem;
+  font-weight: 800;
   color: var(--text-main);
-  text-transform: uppercase;
+  letter-spacing: -0.5px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.logo::before {
-  content: '///';
-  color: var(--val-purple);
-  font-size: 1.1rem;
+.logo span {
+  color: var(--accent-purple);
 }
 
 .nav-links {
   display: flex;
-  gap: 10px;
+  gap: 6px;
 }
 
 .nav-links button, .game-filter button, .team-subtabs button {
-  padding: 9px 18px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-sub);
-  color: var(--text-main);
-  border-radius: var(--radius-sharp);
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .nav-links button:hover, .game-filter button:hover, .team-subtabs button:hover {
-  border-color: var(--val-purple);
-  color: var(--val-purple-hover);
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .nav-links button.active, .game-filter button.active, .team-subtabs button.active {
-  background-color: var(--val-purple);
-  color: #ffffff;
-  border-color: var(--val-purple);
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--accent-purple);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 #userNickname {
-  font-weight: 700;
-  color: var(--val-gray);
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .badge {
-  padding: 4px 10px;
-  border-radius: var(--radius-sharp);
+  padding: 3px 8px;
+  border-radius: 4px;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   background-color: var(--bg-sub);
-  color: var(--val-muted);
+  color: var(--text-muted);
   border: 1px solid var(--border-color);
-  text-transform: uppercase;
 }
 
 .badge.admin {
-  background-color: var(--val-purple);
-  color: #ffffff;
-  border: none;
+  background-color: rgba(139, 92, 246, 0.2);
+  color: var(--accent-purple);
+  border-color: rgba(139, 92, 246, 0.4);
 }
 
 /* ============================================================= */
-/* 메인 컨텐츠 및 카드 레이아웃 */
+/* 메인 컨테이너 및 데이터 카드 디자인 */
 /* ============================================================= */
 .container {
-  max-width: 1080px;
-  margin: 2.5rem auto;
+  max-width: 1100px;
+  margin: 2rem auto;
   padding: 0 1.2rem;
 }
 
@@ -305,22 +274,19 @@ input:focus, select:focus, textarea:focus {
   display: block;
 }
 
-/* Scrim Card */
+/* Scrim Card (lol.ps 모듈형 카드 레이아웃) */
 .scrim-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--val-purple);
-  border-radius: var(--radius-sharp);
-  padding: 1.4rem;
-  margin-bottom: 1.4rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: all 0.15s ease;
 }
 
 .scrim-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-active);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ============================================================= */
@@ -329,7 +295,7 @@ input:focus, select:focus, textarea:focus {
 .game-profile-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  gap: 16px;
   margin-top: 12px;
 }
 
@@ -340,24 +306,24 @@ input:focus, select:focus, textarea:focus {
 }
 
 .game-card {
-  background: var(--bg-card);
+  background: var(--bg-sub);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sharp);
-  padding: 18px;
+  border-radius: var(--radius-md);
+  padding: 14px;
 }
 
 .game-card h5 {
   margin-top: 0;
-  margin-bottom: 14px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--val-gray);
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 6px;
 }
 
 .required {
-  color: var(--val-purple-hover);
+  color: var(--accent-purple);
   font-size: 0.8rem;
   margin-left: 4px;
 }
@@ -365,33 +331,33 @@ input:focus, select:focus, textarea:focus {
 /* 요원 Picker 박스 */
 .agent-image-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-  gap: 8px;
-  margin-top: 10px;
-  padding: 10px;
-  background: var(--bg-sub);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-sharp);
-  min-height: 80px;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  min-height: 75px;
 }
 
 .agent-btn {
   position: relative;
   background: none;
-  border: 2px solid transparent;
+  border: 1px solid var(--border-color);
   padding: 0;
   cursor: pointer;
-  border-radius: var(--radius-sharp);
+  border-radius: 4px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
 }
 
 .agent-btn:hover {
-  transform: scale(1.06);
-  border-color: rgba(168, 85, 247, 0.6);
+  border-color: var(--accent-purple);
+  transform: translateY(-1px);
 }
 
 .agent-btn img {
@@ -403,9 +369,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .agent-name {
-  font-size: 10px;
-  color: var(--text-main);
-  margin-top: 3px;
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 2px;
   text-align: center;
   width: 100%;
   overflow: hidden;
@@ -414,26 +380,27 @@ input:focus, select:focus, textarea:focus {
 }
 
 .agent-btn.selected {
-  border-color: var(--val-purple-hover);
-  box-shadow: 0 0 10px var(--val-purple-glow);
+  border-color: var(--accent-purple);
+  background-color: rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 1px var(--accent-purple);
 }
 
 .select-badge {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  background-color: var(--val-purple-hover);
+  top: 2px;
+  right: 2px;
+  background-color: var(--accent-purple);
   color: white;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .agent-btn.selected .select-badge {
@@ -450,8 +417,8 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 18, 25, 0.88);
-  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   justify-content: center;
   align-items: center;
@@ -465,16 +432,16 @@ input:focus, select:focus, textarea:focus {
 .modal-content {
   background-color: var(--bg-card);
   color: var(--text-main);
-  padding: 30px;
-  border-radius: var(--radius-sharp);
+  padding: 24px;
+  border-radius: var(--radius-md);
   width: 100%;
-  max-width: 520px;
-  border: 1px solid var(--val-purple);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  max-width: 500px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
   max-height: 90vh;
   overflow-y: auto;
 }
 
 .modal-content.modal-lg {
-  max-width: 920px;
+  max-width: 900px;
 }
