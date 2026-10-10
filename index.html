@@ -239,6 +239,7 @@
 
                 <!-- 주/부 역할군 및 요원 선택 -->
                 <div class="form-sub-card">
+                  <!-- 주 역할군 영역 -->
                   <div class="role-group" style="margin-bottom: 16px;">
                     <div class="form-group">
                       <label>주 역할군 <span class="required">*필수</span></label>
@@ -252,10 +253,13 @@
                     </div>
                     <div class="form-group">
                       <label>주 역할군 선호 요원 (최대 3개, 1번 필수)</label>
-                      <div id="valoMainAgentContainer" class="agent-image-picker"></div>
+                      <div id="valoMainAgentContainer" class="agent-image-picker">
+                        <p class="placeholder-text" style="font-size: 0.85rem; color: #9ca3af; grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>
+                      </div>
                     </div>
                   </div>
 
+                  <!-- 부 역할군 영역 -->
                   <div class="role-group">
                     <div class="form-group">
                       <label>부 역할군 (선택)</label>
@@ -269,7 +273,9 @@
                     </div>
                     <div class="form-group">
                       <label>부 역할군 선호 요원 (최대 3개)</label>
-                      <div id="valoSubAgentContainer" class="agent-image-picker"></div>
+                      <div id="valoSubAgentContainer" class="agent-image-picker">
+                        <p class="placeholder-text" style="font-size: 0.85rem; color: #9ca3af; grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
