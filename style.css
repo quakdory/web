@@ -591,3 +591,23 @@ input:focus, select:focus, textarea:focus {
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+/* 셀렉트 박스 및 드롭다운 옵션 색상 강제 고정 */
+select {
+  background-color: #0c101a !important;
+  color: #f3f4f6 !important;
+  border: 1px solid var(--border-color);
+}
+
+select option {
+  background-color: #111726 !important;
+  color: #ffffff !important;
+  padding: 10px;
+}
+
+/* 마우스를 올렸을 때(hover)의 스타일 */
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #a855f7 !important;
+  color: #ffffff !important;
+}
