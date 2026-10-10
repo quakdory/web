@@ -435,7 +435,7 @@ input:focus, select:focus, textarea:focus {
 
 /* 모달 기본 활성화 */
 .modal {
-  display: none;
+  display: none !important; /* 평소에는 화면에서 완전히 숨김 */
   position: fixed;
   top: 0;
   left: 0;
@@ -450,6 +450,7 @@ input:focus, select:focus, textarea:focus {
   padding: 24px;
 }
 
+/* active 클래스가 붙을 때만 화면에 Flex 형태로 표시 */
 .modal.active {
   display: flex !important;
 }
