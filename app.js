@@ -1111,3 +1111,124 @@ function switchAuthView(viewType) {
     if (signupView) signupView.style.display = 'none';
   }
 }
+
+// 발로란트 맵 데이터
+const VALO_MAP_DATA = [
+  { name: '어센트', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt720076a084c68831/60ee111425dc2c4ff2c7f465/Ascent_LoadingScreen.png' },
+  { name: '바인드', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt7c85854746f13bc4/5ee7333cf9704e0ffe63a350/Bind_LoadingScreen.png' },
+  { name: '헤이븐', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt56f5e3df16d566e5/5ee7333c16260e0ffe1f4215/Haven_LoadingScreen.png' },
+  { name: '로터스', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/bltecccd334e3a0937a/63b27b87c71fb26487e4ea6a/Lotus_Loading_Screen.png' },
+  { name: '선셋', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt181515b026613867/64de581c37c22cb87ee64188/Sunset_Loading_Screen.png' },
+  { name: '아이스박스', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt36d6c697816110f2/5f79563402777174e2a1b945/Icebox_LoadingScreen.png' },
+  { name: '펄', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt42b87e2213717df0/629c48873d6e5c544d6da3a7/Pearl_LoadingScreen.png' }
+];
+
+// 오버워치 모드별 맵 데이터
+const OW_MAP_DATA_BY_MODE = {
+  "쟁탈 (Control)": [
+    { name: "일리오스", img: "images/maps/ilios.png" },
+    { name: "네팔", img: "images/maps/nepal.png" },
+    { name: "부산", img: "images/maps/busan.png" },
+    { name: "남극 반도", img: "images/maps/antarctic_peninsula.png" }
+  ],
+  "화물 (Escort)": [
+    { name: "리알토", img: "images/maps/rialto.png" },
+    { name: "서킷 로얄", img: "images/maps/circuit_royal.png" },
+    { name: "지브롤터", img: "images/maps/gibraltar.png" },
+    { name: "쓰레기촌", img: "images/maps/junkertown.png" }
+  ],
+  "혼합 (Hybrid)": [
+    { name: "왕의 길", img: "images/maps/kings_row.png" },
+    { name: "아이헨발데", img: "images/maps/eichenwalde.png" },
+    { name: "블리자드 월드", img: "images/maps/blizzard_world.png" },
+    { name: "미드타운", img: "images/maps/midtown.png" }
+  ],
+  "밀어내기 (Push)": [
+    { name: "콜로세오", img: "images/maps/colosseo.png" },
+    { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
+    { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
+  ]
+};
+
+function renderMapVerificationView(gameType) {
+  const container = document.getElementById('mapVerificationContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (gameType === 'valorant') {
+    container.innerHTML = `
+      <h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 발로란트 전장 목록</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+        ${VALO_MAP_DATA.map(map => `
+          <div style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; text-align: center;">
+            <div style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
+              <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if (gameType === 'overwatch') {
+    let html = `<h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 오버워치 모드별 전장 목록</h3>`;
+    
+    Object.keys(OW_MAP_DATA_BY_MODE).forEach(modeName => {
+      const maps = OW_MAP_DATA_BY_MODE[modeName];
+      html += `
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: var(--accent-purple); margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">📌 ${modeName}</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+            ${maps.map(map => `
+              <div style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="width: 100%; aspect-ratio: 16/9; background: var(--bg-card); border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color);">
+                  <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                  <span style="display:none; font-size:0.8rem; font-weight:700; color:var(--accent-purple);">${map.name}</span>
+                </div>
+                <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+}
+
+// 발로란트 맵 데이터
+const VALO_MAP_DATA = [
+  { name: '어센트', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt720076a084c68831/60ee111425dc2c4ff2c7f465/Ascent_LoadingScreen.png' },
+  { name: '바인드', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt7c85854746f13bc4/5ee7333cf9704e0ffe63a350/Bind_LoadingScreen.png' },
+  { name: '헤이븐', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt56f5e3df16d566e5/5ee7333c16260e0ffe1f4215/Haven_LoadingScreen.png' },
+  { name: '로터스', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/bltecccd334e3a0937a/63b27b87c71fb26487e4ea6a/Lotus_Loading_Screen.png' },
+  { name: '선셋', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt181515b026613867/64de581c37c22cb87ee64188/Sunset_Loading_Screen.png' },
+  { name: '아이스박스', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt36d6c697816110f2/5f79563402777174e2a1b945/Icebox_LoadingScreen.png' },
+  { name: '펄', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt42b87e2213717df0/629c48873d6e5c544d6da3a7/Pearl_LoadingScreen.png' }
+];
+
+// 오버워치 모드별 맵 데이터
+const OW_MAP_DATA_BY_MODE = {
+  "쟁탈 (Control)": [
+    { name: "일리오스", img: "images/maps/ilios.png" },
+    { name: "네팔", img: "images/maps/nepal.png" },
+    { name: "부산", img: "images/maps/busan.png" },
+    { name: "남극 반도", img: "images/maps/antarctic_peninsula.png" }
+  ],
+  "화물 (Escort)": [
+    { name: "리알토", img: "images/maps/rialto.png" },
+    { name: "서킷 로얄", img: "images/maps/circuit_royal.png" },
+    { name: "지브롤터", img: "images/maps/gibraltar.png" },
+    { name: "쓰레기촌", img: "images/maps/junkertown.png" }
+  ],
+  "혼합 (Hybrid)": [
+    { name: "왕의 길", img: "images/maps/kings_row.png" },
+    { name: "아이헨발데", img: "images/maps/eichenwalde.png" },
+    { name: "블리자드 월드", img: "images/maps/blizzard_world.png" },
+    { name: "미드타운", img: "images/maps/midtown.png" }
+  ],
+  "밀어내기 (Push)": [
+    { name: "콜로세오", img: "images/maps/colosseo.png" },
+    { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
+    { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
+  ]
+};
