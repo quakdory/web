@@ -34,17 +34,17 @@ const VALO_TIER_DATA = [
   { name: 'Radiant', label: '레디언트', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/smallicon.png' }
 ];
 
-// 오버워치 2 실제 티어 아이콘 경로 적용[cite: 6]
 const OW_TIER_DATA = [
-  { name: "언랭크", value: "Unranked", icon: "images/tiers/.png" },[cite: 6]
-  { name: "브론즈", value: "Bronze", icon: "images/tiers/브론즈.png" },[cite: 6]
-  { name: "실버", value: "Silver", icon: "images/tiers/실버.png" },[cite: 6]
-  { name: "골드", value: "Gold", icon: "images/tiers/골드.png" },[cite: 6]
-  { name: "플래티넘", value: "Platinum", icon: "images/tiers/플래티넘.png" },[cite: 6]
-  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/다이아몬드.png" },[cite: 6]
-  { name: "마스터", value: "Master", icon: "images/tiers/마스터.png" },[cite: 6]
-  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/그랜드마스터.png"},[cite: 6]
-  { name: "챔피언", value: "Champion", icon: "images/tiers/챔피언.png"}[cite: 6]
+  { name: "언랭크", value: "Unranked", icon: "images/tiers/unranked.png" },
+  { name: "브론즈", value: "Bronze", icon: "images/tiers/bronze.png" },
+  { name: "실버", value: "Silver", icon: "images/tiers/silver.png" },
+  { name: "골드", value: "Gold", icon: "images/tiers/gold.png" },
+  { name: "플래티넘", value: "Platinum", icon: "images/tiers/platinum.png" },
+  { name: "에메랄드", value: "Emerald", icon: "images/tiers/emerald.png" },
+  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/diamond.png" },
+  { name: "마스터", value: "Master", icon: "images/tiers/master.png" },
+  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/grandmaster.png" },
+  { name: "챔피언", value: "Champion", icon: "images/tiers/champion.png" }
 ];
 
 let owSelectedHeroes = { main: [], sub: [] };
@@ -205,41 +205,40 @@ function selectOWTier(tierValue, btnEl) {
   btnEl.classList.add('selected');
 }
 
-// 오버워치 영웅 데이터[cite: 6]
 const OW_HERO_DATA = {
   "돌격": [
-    { name: "D.Va", img: "images/heroes/디바.png" }, { name: "디몬", img: "images/heroes/디몬.png" },[cite: 6]
-    { name: "도미나", img: "images/heroes/도미나.png" }, { name: "해저드", img: "images/heroes/해저드.png" },[cite: 6]
-    { name: "둠피스트", img: "images/heroes/둠피스트.png" }, { name: "마우가", img: "images/heroes/마우가.png" },[cite: 6]
-    { name: "시그마", img: "images/heroes/시그마.png" }, { name: "윈스턴", img: "images/heroes/윈스턴.png" },[cite: 6]
-    { name: "라인하르트", img: "images/heroes/라인하르트.png" }, { name: "로드호그", img: "images/heroes/로드호그.png" },[cite: 6]
-    { name: "자리야", img: "images/heroes/자리야.png" }, { name: "오리사", img: "images/heroes/오리사.png" },[cite: 6]
-    { name: "레킹볼", img: "images/heroes/레킹볼.png" }, { name: "정커퀸", img: "images/heroes/정커퀸.png" },[cite: 6]
-    { name: "라마트라", img: "images/heroes/라마트라.png" }[cite: 6]
+    { name: "D.Va", img: "images/heroes/디바.png" }, { name: "디몬", img: "images/heroes/디몬.png" },
+    { name: "도미나", img: "images/heroes/도미나.png" }, { name: "해저드", img: "images/heroes/해저드.png" },
+    { name: "둠피스트", img: "images/heroes/둠피스트.png" }, { name: "마우가", img: "images/heroes/마우가.png" },
+    { name: "시그마", img: "images/heroes/시그마.png" }, { name: "윈스턴", img: "images/heroes/윈스턴.png" },
+    { name: "라인하르트", img: "images/heroes/라인하르트.png" }, { name: "로드호그", img: "images/heroes/로드호그.png" },
+    { name: "자리야", img: "images/heroes/자리야.png" }, { name: "오리사", img: "images/heroes/오리사.png" },
+    { name: "레킹볼", img: "images/heroes/레킹볼.png" }, { name: "정커퀸", img: "images/heroes/정커퀸.png" },
+    { name: "라마트라", img: "images/heroes/라마트라.png" }
   ],
   "공격": [
-    { name: "겐지", img: "images/heroes/겐지.png" }, { name: "캐서디", img: "images/heroes/캐서디.png" },[cite: 6]
-    { name: "리퍼", img: "images/heroes/리퍼.png" }, { name: "솔저: 76", img: "images/heroes/솔저.png" },[cite: 6]
-    { name: "트레이서", img: "images/heroes/트레이서.png" }, { name: "메이", img: "images/heroes/메이.png" },[cite: 6]
-    { name: "바스티온", img: "images/heroes/바스티온.png" }, { name: "한조", img: "images/heroes/한조.png" },[cite: 6]
-    { name: "토르비욘", img: "images/heroes/토르비욘.png" }, { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },[cite: 6]
-    { name: "정크랫", img: "images/heroes/정크랫.png" }, { name: "파라", img: "images/heroes/파라.png" },[cite: 6]
-    { name: "시메트라", img: "images/heroes/시메트라.png" }, { name: "애쉬", img: "images/heroes/애쉬.png" },[cite: 6]
-    { name: "에코", img: "images/heroes/에코.png" }, { name: "소전", img: "images/heroes/소전.png" },[cite: 6]
-    { name: "벤처", img: "images/heroes/벤처.png" }, { name: "시온", img: "images/heroes/시온.png" },[cite: 6]
-    { name: "시에라", img: "images/heroes/시에라.png" }, { name: "엠레", img: "images/heroes/엠레.png" },[cite: 6]
-    { name: "벤데타", img: "images/heroes/벤데타.png" }, { name: "안란", img: "images/heroes/안란.png" },[cite: 6]
-    { name: "프레야", img: "images/heroes/프레야.png" }[cite: 6]
+    { name: "겐지", img: "images/heroes/겐지.png" }, { name: "캐서디", img: "images/heroes/캐서디.png" },
+    { name: "리퍼", img: "images/heroes/리퍼.png" }, { name: "솔저: 76", img: "images/heroes/솔저.png" },
+    { name: "트레이서", img: "images/heroes/트레이서.png" }, { name: "메이", img: "images/heroes/메이.png" },
+    { name: "바스티온", img: "images/heroes/바스티온.png" }, { name: "한조", img: "images/heroes/한조.png" },
+    { name: "토르비욘", img: "images/heroes/토르비욘.png" }, { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },
+    { name: "정크랫", img: "images/heroes/정크랫.png" }, { name: "파라", img: "images/heroes/파라.png" },
+    { name: "시메트라", img: "images/heroes/시메트라.png" }, { name: "애쉬", img: "images/heroes/애쉬.png" },
+    { name: "에코", img: "images/heroes/에코.png" }, { name: "소전", img: "images/heroes/소전.png" },
+    { name: "벤처", img: "images/heroes/벤처.png" }, { name: "시온", img: "images/heroes/시온.png" },
+    { name: "시에라", img: "images/heroes/시에라.png" }, { name: "엠레", img: "images/heroes/엠레.png" },
+    { name: "벤데타", img: "images/heroes/벤데타.png" }, { name: "안란", img: "images/heroes/안란.png" },
+    { name: "프레야", img: "images/heroes/프레야.png" }
   ],
   "지원": [
-    { name: "독트린", img: "images/heroes/독트린.png" }, { name: "우양", img: "images/heroes/우양.png" },[cite: 6]
-    { name: "솜브라", img: "images/heroes/솜브라.png" }, { name: "메르시", img: "images/heroes/메르시.png" },[cite: 6]
-    { name: "루시우", img: "images/heroes/루시우.png" }, { name: "아나", img: "images/heroes/아나.png" },[cite: 6]
-    { name: "젠야타", img: "images/heroes/젠야타.png" }, { name: "바티스트", img: "images/heroes/바티스트.png" },[cite: 6]
-    { name: "모이라", img: "images/heroes/모이라.png" }, { name: "브리기테", img: "images/heroes/브리기테.png" },[cite: 6]
-    { name: "키리코", img: "images/heroes/키리코.png" }, { name: "일리아리", img: "images/heroes/일리아리.png" },[cite: 6]
-    { name: "라이프위버", img: "images/heroes/라이프위버.png" }, { name: "주노", img: "images/heroes/주노.png" },[cite: 6]
-    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" }, { name: "미즈키", img: "images/heroes/미즈키.png" }[cite: 6]
+    { name: "독트린", img: "images/heroes/독트린.png" }, { name: "우양", img: "images/heroes/우양.png" },
+    { name: "솜브라", img: "images/heroes/솜브라.png" }, { name: "메르시", img: "images/heroes/메르시.png" },
+    { name: "루시우", img: "images/heroes/루시우.png" }, { name: "아나", img: "images/heroes/아나.png" },
+    { name: "젠야타", img: "images/heroes/젠야타.png" }, { name: "바티스트", img: "images/heroes/바티스트.png" },
+    { name: "모이라", img: "images/heroes/모이라.png" }, { name: "브리기테", img: "images/heroes/브리기테.png" },
+    { name: "키리코", img: "images/heroes/키리코.png" }, { name: "일리아리", img: "images/heroes/일리아리.png" },
+    { name: "라이프위버", img: "images/heroes/라이프위버.png" }, { name: "주노", img: "images/heroes/주노.png" },
+    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" }, { name: "미즈키", img: "images/heroes/미즈키.png" }
   ]
 };
 
@@ -513,7 +512,7 @@ function showTeamSubtab(subtabId) {
   if (subtabId === 'auto') {
     loadScrimOptionsForTeamTab();
   } else if (subtabId === 'draft') {
-    loadDraftScrimOptions(); // 실시간 드래프트 탭용 내전 목록 로드
+    loadDraftScrimOptions(); 
   }
 }
 
@@ -720,7 +719,6 @@ function subscribeToRealtimeChanges() {
 // =============================================================
 // 실시간 팀장 드래프트 시스템 로직 (방장 지정 + 턴 권한 제어)
 // =============================================================
-
 let activeDraftScrim = null;
 let draftChannel = null;
 
