@@ -1290,3 +1290,57 @@ function renderMapVetoBoard(scrim) {
   `;
   container.innerHTML = html;
 }
+
+// 게임별 맵 확인 화면 렌더링 함수
+function renderMapVerificationView(gameType = 'overwatch') {
+  const container = document.getElementById('mapVerificationContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // 탭 형태로 게임을 선택할 수 있는 버튼 추가
+  let html = `
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button class="btn-secondary" onclick="renderMapVerificationView('overwatch')" style="flex:1;">오버워치 모드별 전장</button>
+      <button class="btn-secondary" onclick="renderMapVerificationView('valorant')" style="flex:1;">발로란트 맵</button>
+    </div>
+  `;
+
+  if (gameType === 'valorant') {
+    html += `
+      <h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 발로란트 전장 목록</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+        ${VALO_MAP_DATA.map(map => `
+          <div style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; text-align: center;">
+            <div style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
+              <img src="${map.img}" alt="${map.name}" style="width: 100\%; height: 100\%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/160x90?text=${encodeURIComponent(map.name)}'" />
+            </div>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else {
+    html += `<h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 오버워치 모드별 전장 목록</h3>`;
+    
+    Object.keys(OW_MAP_DATA_BY_MODE).forEach(modeName => {
+      const maps = OW_MAP_DATA_BY_MODE[modeName];
+      html += `
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: var(--accent-purple); margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">📌 ${modeName}</h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+            ${maps.map(map => `
+              <div style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; text-align: center;">
+                <div style="width: 100%; aspect-ratio: 16/9; background: var(--bg-card); border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color);">
+                  <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                  <span style="display:none; font-size:0.8rem; font-weight:700; color:var(--accent-purple);">${map.name}</span>
+                </div>
+                <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+  }
+  container.innerHTML = html;
+}
