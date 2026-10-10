@@ -34,18 +34,17 @@ const VALO_TIER_DATA = [
   { name: 'Radiant', label: '레디언트', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/smallicon.png' }
 ];
 
-// 오버워치 2 실제 티어 아이콘 경로 적용
+// 오버워치 2 실제 티어 아이콘 경로 적용[cite: 6]
 const OW_TIER_DATA = [
-  { name: "언랭크", value: "Unranked", icon: "images/tiers/.png" },
-  { name: "브론즈", value: "Bronze", icon: "images/tiers/브론즈.png" },
-  { name: "실버", value: "Silver", icon: "images/tiers/실버.png" },
-  { name: "골드", value: "Gold", icon: "images/tiers/골드.png" },
-  { name: "플래티넘", value: "Platinum", icon: "images/tiers/플래티넘.png" },
-  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/다이아몬드.png" },
-  { name: "마스터", value: "Master", icon: "images/tiers/마스터.png" },
-  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/그랜드마스터.png"},
-  { name: "챔피언", value: "Champion", icon: "images/tiers/챔피언.png"}
-
+  { name: "언랭크", value: "Unranked", icon: "images/tiers/.png" },[cite: 6]
+  { name: "브론즈", value: "Bronze", icon: "images/tiers/브론즈.png" },[cite: 6]
+  { name: "실버", value: "Silver", icon: "images/tiers/실버.png" },[cite: 6]
+  { name: "골드", value: "Gold", icon: "images/tiers/골드.png" },[cite: 6]
+  { name: "플래티넘", value: "Platinum", icon: "images/tiers/플래티넘.png" },[cite: 6]
+  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/다이아몬드.png" },[cite: 6]
+  { name: "마스터", value: "Master", icon: "images/tiers/마스터.png" },[cite: 6]
+  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/그랜드마스터.png"},[cite: 6]
+  { name: "챔피언", value: "Champion", icon: "images/tiers/챔피언.png"}[cite: 6]
 ];
 
 let owSelectedHeroes = { main: [], sub: [] };
@@ -206,41 +205,41 @@ function selectOWTier(tierValue, btnEl) {
   btnEl.classList.add('selected');
 }
 
-// 오버워치 영웅 데이터
+// 오버워치 영웅 데이터[cite: 6]
 const OW_HERO_DATA = {
   "돌격": [
-    { name: "D.Va", img: "images/heroes/디바.png" }, { name: "디몬", img: "images/heroes/디몬.png" },
-    { name: "도미나", img: "images/heroes/도미나.png" }, { name: "해저드", img: "images/heroes/해저드.png" },
-    { name: "둠피스트", img: "images/heroes/둠피스트.png" }, { name: "마우가", img: "images/heroes/마우가.png" },
-    { name: "시그마", img: "images/heroes/시그마.png" }, { name: "윈스턴", img: "images/heroes/윈스턴.png" },
-    { name: "라인하르트", img: "images/heroes/라인하르트.png" }, { name: "로드호그", img: "images/heroes/로드호그.png" },
-    { name: "자리야", img: "images/heroes/자리야.png" }, { name: "오리사", img: "images/heroes/오리사.png" },
-    { name: "레킹볼", img: "images/heroes/레킹볼.png" }, { name: "정커퀸", img: "images/heroes/정커퀸.png" },
-    { name: "라마트라", img: "images/heroes/라마트라.png" }
+    { name: "D.Va", img: "images/heroes/디바.png" }, { name: "디몬", img: "images/heroes/디몬.png" },[cite: 6]
+    { name: "도미나", img: "images/heroes/도미나.png" }, { name: "해저드", img: "images/heroes/해저드.png" },[cite: 6]
+    { name: "둠피스트", img: "images/heroes/둠피스트.png" }, { name: "마우가", img: "images/heroes/마우가.png" },[cite: 6]
+    { name: "시그마", img: "images/heroes/시그마.png" }, { name: "윈스턴", img: "images/heroes/윈스턴.png" },[cite: 6]
+    { name: "라인하르트", img: "images/heroes/라인하르트.png" }, { name: "로드호그", img: "images/heroes/로드호그.png" },[cite: 6]
+    { name: "자리야", img: "images/heroes/자리야.png" }, { name: "오리사", img: "images/heroes/오리사.png" },[cite: 6]
+    { name: "레킹볼", img: "images/heroes/레킹볼.png" }, { name: "정커퀸", img: "images/heroes/정커퀸.png" },[cite: 6]
+    { name: "라마트라", img: "images/heroes/라마트라.png" }[cite: 6]
   ],
   "공격": [
-    { name: "겐지", img: "images/heroes/겐지.png" }, { name: "캐서디", img: "images/heroes/캐서디.png" },
-    { name: "리퍼", img: "images/heroes/리퍼.png" }, { name: "솔저: 76", img: "images/heroes/솔저.png" },
-    { name: "트레이서", img: "images/heroes/트레이서.png" }, { name: "메이", img: "images/heroes/메이.png" },
-    { name: "바스티온", img: "images/heroes/바스티온.png" }, { name: "한조", img: "images/heroes/한조.png" },
-    { name: "토르비욘", img: "images/heroes/토르비욘.png" }, { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },
-    { name: "정크랫", img: "images/heroes/정크랫.png" }, { name: "파라", img: "images/heroes/파라.png" },
-    { name: "시메트라", img: "images/heroes/시메트라.png" }, { name: "애쉬", img: "images/heroes/애쉬.png" },
-    { name: "에코", img: "images/heroes/에코.png" }, { name: "소전", img: "images/heroes/소전.png" },
-    { name: "벤처", img: "images/heroes/벤처.png" }, { name: "시온", img: "images/heroes/시온.png" },
-    { name: "시에라", img: "images/heroes/시에라.png" }, { name: "엠레", img: "images/heroes/엠레.png" },
-    { name: "벤데타", img: "images/heroes/벤데타.png" }, { name: "안란", img: "images/heroes/안란.png" },
-    { name: "프레야", img: "images/heroes/프레야.png" }
+    { name: "겐지", img: "images/heroes/겐지.png" }, { name: "캐서디", img: "images/heroes/캐서디.png" },[cite: 6]
+    { name: "리퍼", img: "images/heroes/리퍼.png" }, { name: "솔저: 76", img: "images/heroes/솔저.png" },[cite: 6]
+    { name: "트레이서", img: "images/heroes/트레이서.png" }, { name: "메이", img: "images/heroes/메이.png" },[cite: 6]
+    { name: "바스티온", img: "images/heroes/바스티온.png" }, { name: "한조", img: "images/heroes/한조.png" },[cite: 6]
+    { name: "토르비욘", img: "images/heroes/토르비욘.png" }, { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },[cite: 6]
+    { name: "정크랫", img: "images/heroes/정크랫.png" }, { name: "파라", img: "images/heroes/파라.png" },[cite: 6]
+    { name: "시메트라", img: "images/heroes/시메트라.png" }, { name: "애쉬", img: "images/heroes/애쉬.png" },[cite: 6]
+    { name: "에코", img: "images/heroes/에코.png" }, { name: "소전", img: "images/heroes/소전.png" },[cite: 6]
+    { name: "벤처", img: "images/heroes/벤처.png" }, { name: "시온", img: "images/heroes/시온.png" },[cite: 6]
+    { name: "시에라", img: "images/heroes/시에라.png" }, { name: "엠레", img: "images/heroes/엠레.png" },[cite: 6]
+    { name: "벤데타", img: "images/heroes/벤데타.png" }, { name: "안란", img: "images/heroes/안란.png" },[cite: 6]
+    { name: "프레야", img: "images/heroes/프레야.png" }[cite: 6]
   ],
   "지원": [
-    { name: "독트린", img: "images/heroes/독트린.png" }, { name: "우양", img: "images/heroes/우양.png" },
-    { name: "솜브라", img: "images/heroes/솜브라.png" }, { name: "메르시", img: "images/heroes/메르시.png" },
-    { name: "루시우", img: "images/heroes/루시우.png" }, { name: "아나", img: "images/heroes/아나.png" },
-    { name: "젠야타", img: "images/heroes/젠야타.png" }, { name: "바티스트", img: "images/heroes/바티스트.png" },
-    { name: "모이라", img: "images/heroes/모이라.png" }, { name: "브리기테", img: "images/heroes/브리기테.png" },
-    { name: "키리코", img: "images/heroes/키리코.png" }, { name: "일리아리", img: "images/heroes/일리아리.png" },
-    { name: "라이프위버", img: "images/heroes/라이프위버.png" }, { name: "주노", img: "images/heroes/주노.png" },
-    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" }, { name: "미즈키", img: "images/heroes/미즈키.png" }
+    { name: "독트린", img: "images/heroes/독트린.png" }, { name: "우양", img: "images/heroes/우양.png" },[cite: 6]
+    { name: "솜브라", img: "images/heroes/솜브라.png" }, { name: "메르시", img: "images/heroes/메르시.png" },[cite: 6]
+    { name: "루시우", img: "images/heroes/루시우.png" }, { name: "아나", img: "images/heroes/아나.png" },[cite: 6]
+    { name: "젠야타", img: "images/heroes/젠야타.png" }, { name: "바티스트", img: "images/heroes/바티스트.png" },[cite: 6]
+    { name: "모이라", img: "images/heroes/모이라.png" }, { name: "브리기테", img: "images/heroes/브리기테.png" },[cite: 6]
+    { name: "키리코", img: "images/heroes/키리코.png" }, { name: "일리아리", img: "images/heroes/일리아리.png" },[cite: 6]
+    { name: "라이프위버", img: "images/heroes/라이프위버.png" }, { name: "주노", img: "images/heroes/주노.png" },[cite: 6]
+    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" }, { name: "미즈키", img: "images/heroes/미즈키.png" }[cite: 6]
   ]
 };
 
@@ -514,7 +513,7 @@ function showTeamSubtab(subtabId) {
   if (subtabId === 'auto') {
     loadScrimOptionsForTeamTab();
   } else if (subtabId === 'draft') {
-    loadDraftScrimOptions(); // 드래프트 탭용 내전 목록 로드
+    loadDraftScrimOptions(); // 실시간 드래프트 탭용 내전 목록 로드
   }
 }
 
@@ -718,31 +717,13 @@ function subscribeToRealtimeChanges() {
     .subscribe();
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  loadSavedTheme();
-  await fetchValorantAgents();
-  checkAuthState();
-  subscribeToRealtimeChanges();
-});
 // =============================================================
-// 드래프트 팀 구성 시스템 (관리자 캡틴 지정 & 지명 방식 지원)
+// 실시간 팀장 드래프트 시스템 로직 (방장 지정 + 턴 권한 제어)
 // =============================================================
 
-let draftState = {
-  scrimId: null,
-  participants: [],
-  pool: [],
-  teamA: [],
-  teamB: [],
-  captainA: null,
-  captainB: null,
-  mode: 'snake', // 'snake' (A-B-B-A...) 또는 'alternate' (A-B-A-B...)
-  pickOrder: [], // 생성할 지명 순서 배열 예: ['A', 'B', 'B', 'A', 'A', ...]
-  currentPickIndex: 0,
-  isStarted: false
-};
+let activeDraftScrim = null;
+let draftChannel = null;
 
-// 1. 내전 목록 불러오기
 async function loadDraftScrimOptions() {
   const selectEl = document.getElementById('draftScrimSelect');
   if (!selectEl) return;
@@ -763,45 +744,62 @@ async function loadDraftScrimOptions() {
   });
 }
 
-// 2. 내전 선택 시 참가자 목록 불러오기 & 캡틴 지정 드롭다운 구성
-async function loadDraftParticipants() {
+async function loadDraftData() {
   const scrimId = document.getElementById('draftScrimSelect')?.value;
-  const setupBox = document.getElementById('draftSetupBox');
+  const adminBox = document.getElementById('draftAdminBox');
   const boardContainer = document.getElementById('draftBoardContainer');
 
   if (!scrimId) {
-    if (setupBox) setupBox.style.display = 'none';
+    if (adminBox) adminBox.style.display = 'none';
     if (boardContainer) boardContainer.style.display = 'none';
     return;
   }
 
-  draftState.scrimId = scrimId;
-  const { data: participants, error } = await supabaseClient.from('scrim_participants').select(`user_id, profiles ( nickname, valo_info, ow_info )`).eq('scrim_id', scrimId);
+  if (draftChannel) {
+    supabaseClient.removeChannel(draftChannel);
+  }
 
-  if (error || !participants || participants.length < 3) {
-    alert('드래프트를 진행하려면 최소 3명 이상의 참가자가 필요합니다.');
-    if (setupBox) setupBox.style.display = 'none';
-    if (boardContainer) boardContainer.style.display = 'none';
+  const { data: scrim, error } = await supabaseClient.from('scrims').select(`*, scrim_participants ( user_id, profiles ( nickname, valo_info, ow_info ) )`).eq('id', scrimId).single();
+  
+  if (error || !scrim) {
+    alert('내전 정보를 불러오지 못했습니다.');
     return;
   }
 
-  draftState.participants = participants;
-  draftState.isStarted = false;
+  activeDraftScrim = scrim;
 
-  // 캡틴 선택 옵션 채우기
-  populateCaptainSelects(participants);
+  const isHostOrAdmin = currentProfile?.is_admin || (currentUser && scrim.host_id === currentUser.id);
+  if (adminBox) adminBox.style.display = isHostOrAdmin ? 'block' : 'none';
 
-  if (setupBox) setupBox.style.display = 'block';
-  if (boardContainer) boardContainer.style.display = 'none';
+  if (isHostOrAdmin) {
+    populateCaptainSelects(scrim.scrim_participants);
+  }
+
+  if (scrim.draft_status && scrim.draft_status !== 'ready') {
+    if (boardContainer) boardContainer.style.display = 'block';
+    renderLiveDraftBoard(scrim);
+  } else {
+    if (boardContainer) boardContainer.style.display = 'none';
+  }
+
+  draftChannel = supabaseClient.channel(`draft-${scrimId}`)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scrims', filter: `id=eq.${scrimId}` }, payload => {
+      activeDraftScrim = payload.new;
+      activeDraftScrim.scrim_participants = scrim.scrim_participants;
+      if (document.getElementById('draftBoardContainer').style.display === 'block') {
+        renderLiveDraftBoard(activeDraftScrim);
+      }
+    })
+    .subscribe();
 }
 
-// 캡틴 드롭다운 메뉴 채우기
 function populateCaptainSelects(participants) {
   const selectA = document.getElementById('captainASelect');
   const selectB = document.getElementById('captainBSelect');
+  if (!selectA || !selectB) return;
 
-  selectA.innerHTML = '<option value="">A팀 팀장을 선택하세요</option>';
-  selectB.innerHTML = '<option value="">B팀 팀장을 선택하세요</option>';
+  selectA.innerHTML = '<option value="">A팀 팀장 선택</option>';
+  selectB.innerHTML = '<option value="">B팀 팀장 선택</option>';
 
   participants.forEach(p => {
     const nick = p.profiles?.nickname || '알 수 없음';
@@ -810,93 +808,92 @@ function populateCaptainSelects(participants) {
   });
 }
 
-// 동일 유저 중복 선택 방지
-function onCaptainSelectChange() {
-  const capAId = document.getElementById('captainASelect').value;
-  const capBId = document.getElementById('captainBSelect').value;
-
-  if (capAId && capBId && capAId === capBId) {
-    alert('A팀 팀장과 B팀 팀장은 동일한 참가자로 지정할 수 없습니다.');
-    document.getElementById('captainBSelect').value = '';
-  }
-}
-
-// 3. 드래프트 시작 및 지명 순서 배열 생성
-function startDraftProcess() {
-  const capAId = document.getElementById('captainASelect').value;
-  const capBId = document.getElementById('captainBSelect').value;
+async function initializeDraft() {
+  const capA = document.getElementById('captainASelect').value;
+  const capB = document.getElementById('captainBSelect').value;
   const mode = document.getElementById('draftModeSelect').value;
 
-  if (!capAId || !capBId) {
-    alert('A팀과 B팀 팀장을 모두 지정해 주세요.');
+  if (!capA || !capB) {
+    alert('A팀과 B팀 팀장을 모두 선택해 주세요.');
+    return;
+  }
+  if (capA === capB) {
+    alert('동일 인물을 양팀 팀장으로 지정할 수 없습니다.');
     return;
   }
 
-  draftState.captainA = draftState.participants.find(p => p.user_id === capAId);
-  draftState.captainB = draftState.participants.find(p => p.user_id === capBId);
-  draftState.mode = mode;
+  const participants = activeDraftScrim.scrim_participants || [];
+  const captainAObj = participants.find(p => p.user_id === capA);
+  const captainBObj = participants.find(p => p.user_id === capB);
+  const pool = participants.filter(p => p.user_id !== capA && p.user_id !== capB);
 
-  // 캡틴들은 팀에 먼저 배치하고 대기 풀에서 제외
-  draftState.teamA = [draftState.captainA];
-  draftState.teamB = [draftState.captainB];
-  draftState.pool = draftState.participants.filter(p => p.user_id !== capAId && p.user_id !== capBId);
+  const teamA = [captainAObj];
+  const teamB = [captainBObj];
 
-  // 지명 순서(Order) 패턴 구축
-  const remainingCount = draftState.pool.length;
-  draftState.pickOrder = [];
+  const updatePayload = {
+    draft_status: 'in_progress',
+    captain_a: capA,
+    captain_b: capB,
+    current_turn: 'A',
+    draft_mode: mode,
+    team_a: teamA,
+    team_b: teamB,
+    draft_pool: pool
+  };
 
-  if (mode === 'snake') {
-    // A -> B -> B -> A -> A -> B ...
-    let turnPattern = ['A', 'B', 'B', 'A'];
-    for (let i = 0; i < remainingCount; i++) {
-      draftState.pickOrder.push(turnPattern[i % 4]);
-    }
+  const { error } = await supabaseClient.from('scrims').update(updatePayload).eq('id', activeDraftScrim.id);
+  if (error) {
+    alert('드래프트 시작 실패: ' + error.message);
   } else {
-    // 번갈아 지명: A -> B -> A -> B ...
-    for (let i = 0; i < remainingCount; i++) {
-      draftState.pickOrder.push(i % 2 === 0 ? 'A' : 'B');
-    }
+    document.getElementById('draftBoardContainer').style.display = 'block';
   }
-
-  draftState.currentPickIndex = 0;
-  draftState.isStarted = true;
-
-  document.getElementById('teamACaptainName').textContent = draftState.captainA.profiles?.nickname || '알 수 없음';
-  document.getElementById('teamBCaptainName').textContent = draftState.captainB.profiles?.nickname || '알 수 없음';
-  document.getElementById('draftBoardContainer').style.display = 'block';
-
-  renderDraftBoard();
 }
 
-// 4. 드래프트 화면 업데이트
-function renderDraftBoard() {
+function renderLiveDraftBoard(scrim) {
   const banner = document.getElementById('draftTurnBanner');
   const poolList = document.getElementById('draftPlayerPoolList');
   const teamAList = document.getElementById('draftTeamAList');
   const teamBList = document.getElementById('draftTeamBList');
 
-  const isFinished = draftState.currentPickIndex >= draftState.pickOrder.length || draftState.pool.length === 0;
+  const pool = scrim.draft_pool || [];
+  const teamA = scrim.team_a || [];
+  const teamB = scrim.team_b || [];
+  const currentTurn = scrim.current_turn; 
+  const isFinished = scrim.draft_status === 'finished' || pool.length === 0;
+
+  const currentCaptainId = currentTurn === 'A' ? scrim.captain_a : scrim.captain_b;
+  const isMyTurn = currentUser && currentUser.id === currentCaptainId && !isFinished;
+
+  const participants = scrim.scrim_participants || [];
+  const capAObj = participants.find(p => p.user_id === scrim.captain_a);
+  const capBObj = participants.find(p => p.user_id === scrim.captain_b);
+
+  const capANameElem = document.getElementById('teamACaptainName');
+  const capBNameElem = document.getElementById('teamBCaptainName');
+  if (capANameElem) capANameElem.textContent = capAObj?.profiles?.nickname || '지정 안 됨';
+  if (capBNameElem) capBNameElem.textContent = capBObj?.profiles?.nickname || '지정 안 됨';
 
   if (isFinished) {
-    banner.textContent = "🎉 모든 드래프트 지명이 완료되었습니다!";
+    banner.textContent = "🎉 드래프트가 성공적으로 종료되었습니다!";
     banner.style.background = 'rgba(16, 185, 129, 0.2)';
   } else {
-    const currentTeam = draftState.pickOrder[draftState.currentPickIndex]; // 'A' 또는 'B'
-    const captainNick = currentTeam === 'A' ? draftState.captainA.profiles?.nickname : draftState.captainB.profiles?.nickname;
-    const modeLabel = draftState.mode === 'snake' ? '스네이크' : '번갈아';
-    
-    banner.textContent = `🎯 [${currentTeam} 팀] 턴 (지명자: ${captainNick}) - [${modeLabel} 지명 ${draftState.currentPickIndex + 1}/${draftState.pickOrder.length}]`;
-    banner.style.background = 'var(--accent-glow)';
+    const captainNick = currentTurn === 'A' ? capAObj?.profiles?.nickname : capBObj?.profiles?.nickname;
+    if (isMyTurn) {
+      banner.textContent = `🔥 [내 턴입니다!] 당신은 현재 ${currentTurn}팀 팀장(${captainNick})입니다. 지명할 참가자를 선택하세요!`;
+      banner.style.background = 'rgba(16, 185, 129, 0.3)';
+    } else {
+      banner.textContent = `🎯 현재 [${currentTurn} 팀] 차례입니다. (팀장: ${captainNick} 님 지명 중)`;
+      banner.style.background = 'var(--accent-glow)';
+    }
   }
 
-  // 1) 대기 풀 렌더링
   poolList.innerHTML = '';
-  if (draftState.pool.length === 0) {
+  if (pool.length === 0) {
     poolList.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">대기 참가자가 없습니다.</li>';
   } else {
-    draftState.pool.forEach((member, idx) => {
-      const profile = member.profiles || {};
-      const valoTier = profile.valo_info?.tier || profile.ow_info?.tier || 'Unranked';
+    pool.forEach((member, idx) => {
+      const p = member.profiles || {};
+      const tier = p.valo_info?.tier || p.ow_info?.tier || 'Unranked';
 
       const li = document.createElement('li');
       li.style.display = 'flex';
@@ -909,18 +906,17 @@ function renderDraftBoard() {
 
       li.innerHTML = `
         <div>
-          <strong>${profile.nickname || '알 수 없음'}</strong>
-          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">[${valoTier}]</span>
+          <strong>${p.nickname || '알 수 없음'}</strong>
+          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">[${tier}]</span>
         </div>
-        ${!isFinished ? `<button class="btn-primary btn-sm" onclick="pickPlayer(${idx})">지명</button>` : ''}
+        ${isMyTurn ? `<button class="btn-primary btn-sm" onclick="executePick(${idx})">지명하기</button>` : ''}
       `;
       poolList.appendChild(li);
     });
   }
 
-  // 2) A팀 렌더링
   teamAList.innerHTML = '';
-  draftState.teamA.forEach((m, idx) => {
+  teamA.forEach((m, idx) => {
     const nick = m.profiles?.nickname || '알 수 없음';
     const li = document.createElement('li');
     li.style.padding = '6px 0';
@@ -930,9 +926,8 @@ function renderDraftBoard() {
     teamAList.appendChild(li);
   });
 
-  // 3) B팀 렌더링
   teamBList.innerHTML = '';
-  draftState.teamB.forEach((m, idx) => {
+  teamB.forEach((m, idx) => {
     const nick = m.profiles?.nickname || '알 수 없음';
     const li = document.createElement('li');
     li.style.padding = '6px 0';
@@ -943,19 +938,51 @@ function renderDraftBoard() {
   });
 }
 
-// 5. 선수 지명 실행
-function pickPlayer(poolIndex) {
-  if (draftState.currentPickIndex >= draftState.pickOrder.length || draftState.pool.length === 0) return;
+async function executePick(poolIndex) {
+  if (!activeDraftScrim) return;
 
-  const currentTeam = draftState.pickOrder[draftState.currentPickIndex];
-  const pickedPlayer = draftState.pool.splice(poolIndex, 1)[0];
+  const scrim = activeDraftScrim;
+  const pool = [...(scrim.draft_pool || [])];
+  const teamA = [...(scrim.team_a || [])];
+  const teamB = [...(scrim.team_b || [])];
+  const currentTurn = scrim.current_turn;
 
-  if (currentTeam === 'A') {
-    draftState.teamA.push(pickedPlayer);
+  const picked = pool.splice(poolIndex, 1)[0];
+
+  if (currentTurn === 'A') {
+    teamA.push(picked);
   } else {
-    draftState.teamB.push(pickedPlayer);
+    teamB.push(picked);
   }
 
-  draftState.currentPickIndex++;
-  renderDraftBoard();
+  let nextTurn = currentTurn;
+  const totalPickedCount = teamA.length + teamB.length - 2; 
+
+  if (scrim.draft_mode === 'snake') {
+    const pattern = ['A', 'B', 'B', 'A'];
+    nextTurn = pattern[(totalPickedCount) % 4];
+  } else {
+    nextTurn = currentTurn === 'A' ? 'B' : 'A';
+  }
+
+  const isFinished = pool.length === 0;
+
+  const { error } = await supabaseClient.from('scrims').update({
+    draft_pool: pool,
+    team_a: teamA,
+    team_b: teamB,
+    current_turn: nextTurn,
+    draft_status: isFinished ? 'finished' : 'in_progress'
+  }).eq('id', scrim.id);
+
+  if (error) {
+    alert('지명 실패: ' + error.message);
+  }
 }
+
+document.addEventListener('DOMContentLoaded', async () => {
+  loadSavedTheme();
+  await fetchValorantAgents();
+  checkAuthState();
+  subscribeToRealtimeChanges();
+});

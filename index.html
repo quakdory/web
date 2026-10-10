@@ -125,62 +125,56 @@
         <!-- 드래프트 화면 -->
         <div id="draftView" class="team-view">
           <div style="margin-bottom: 20px;">
-            <h3>📋 드래프트 팀 구성</h3>
-            <p style="font-size: 0.9rem; color: var(--text-muted);">내전을 선택한 후 팀장을 지정하고 원하는 순서 방식으로 드래프트를 진행합니다.</p>
+            <h3>📋 실시간 팀장 드래프트</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">방장이 캡틴을 지정하고 시작하면, 각 팀장이 직접 자신의 턴에 선수를 지명합니다.</p>
           </div>
 
-          <!-- 1. 내전 선택 및 기본 설정 카운터 -->
-          <div style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap;">
-            <select id="draftScrimSelect" style="padding: 10px 14px; font-size: 0.95rem; flex: 1; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-element); color: var(--text-main);" onchange="loadDraftParticipants()">
+          <!-- 1. 내전 선택 -->
+          <div style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center;">
+            <select id="draftScrimSelect" style="padding: 10px 14px; font-size: 0.95rem; flex: 1; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-element); color: var(--text-main);" onchange="loadDraftData()">
               <option value="">내전을 불러오는 중...</option>
             </select>
           </div>
 
-          <!-- 2. 팀장(캡틴) 지정 및 드래프트 방식 설정 영역 -->
-          <div id="draftSetupBox" class="section-box" style="display: none; padding: 18px; margin-bottom: 20px;">
-            <h4 style="margin-bottom: 14px;">👑 팀장 지정 & 방식 설정</h4>
+          <!-- 2. 방장 전용: 캡틴 지정 및 드래프트 설정 박스 -->
+          <div id="draftAdminBox" class="section-box" style="display: none; padding: 18px; margin-bottom: 20px;">
+            <h4 style="margin-bottom: 14px;">👑 [방장 전용] 팀장 지정 & 설정</h4>
             
             <div class="form-grid-2col" style="gap: 16px; margin-bottom: 16px;">
               <div class="form-group" style="margin: 0;">
-                <label>A팀 팀장 <span class="required">*</span></label>
-                <select id="captainASelect" onchange="onCaptainSelectChange()">
-                  <option value="">A팀 팀장을 선택하세요</option>
-                </select>
+                <label>A팀 팀장</label>
+                <select id="captainASelect"><option value="">선택하세요</option></select>
               </div>
-
               <div class="form-group" style="margin: 0;">
-                <label>B팀 팀장 <span class="required">*</span></label>
-                <select id="captainBSelect" onchange="onCaptainSelectChange()">
-                  <option value="">B팀 팀장을 선택하세요</option>
-                </select>
+                <label>B팀 팀장</label>
+                <select id="captainBSelect"><option value="">선택하세요</option></select>
               </div>
             </div>
 
             <div class="form-grid-2col" style="gap: 16px; margin-bottom: 16px;">
               <div class="form-group" style="margin: 0;">
-                <label>드래프트 지명 방식</label>
+                <label>지명 방식</label>
                 <select id="draftModeSelect">
-                  <option value="snake">스네이크 방식 (A → B → B → A → A → B)</option>
-                  <option value="alternate">번갈아 지명 (A → B → A → B → A → B)</option>
+                  <option value="snake">스네이크 방식 (A → B → B → A)</option>
+                  <option value="alternate">번갈아 지명 (A → B → A → B)</option>
                 </select>
               </div>
-
               <div class="form-group" style="margin: 0; display: flex; align-items: flex-end;">
-                <button type="button" class="btn-primary full-width" onclick="startDraftProcess()" style="padding: 12px;">
-                  ⚡ 지정 완료 및 드래프트 시작
+                <button type="button" class="btn-primary full-width" onclick="initializeDraft()" style="padding: 12px;">
+                  ⚡ 드래프트 초기화 및 시작
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- 3. 드래프트 진행 보드 -->
+          <!-- 3. 실시간 드래프트 진행 보드 -->
           <div id="draftBoardContainer" style="display: none;">
-            <!-- 현재 턴 안내 배너 -->
+            <!-- 턴 상태 안내 배너 -->
             <div id="draftTurnBanner" style="padding: 12px 20px; background: var(--accent-glow); border: 1px solid var(--accent-purple); border-radius: var(--radius-sm); margin-bottom: 20px; font-weight: 800; text-align: center; color: var(--text-main);">
-              팀장을 지정하고 드래프트를 시작하세요.
+              드래프트 대기 중...
             </div>
 
-            <!-- 드래프트 현황판 -->
+            <!-- 현황판 레이아웃 -->
             <div class="form-grid-2col" style="align-items: start;">
               <!-- 대기 참가자 풀 -->
               <div class="form-sub-card">
@@ -189,7 +183,7 @@
                 </ul>
               </div>
 
-              <!-- A/B 팀 지명 목록 -->
+              <!-- 팀별 현황 -->
               <div style="display: flex; flex-direction: column; gap: 20px;">
                 <div class="form-sub-card" style="border-top: 4px solid #007bff;">
                   <h4 style="color: #007bff; margin-bottom: 10px;">A 팀 (캡틴: <span id="teamACaptainName">미지정</span>)</h4>
