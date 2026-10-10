@@ -1344,3 +1344,81 @@ function renderMapVerificationView(gameType = 'overwatch') {
   }
   container.innerHTML = html;
 }
+
+// =============================================================
+// 7. 맵 투표 탭 전용 연동 로직
+// =============================================================
+let activeVetoScrim = null;
+let vetoChannel = null;
+
+async function loadVetoScrimOptions() {
+  const selectEl = document.getElementById('vetoScrimSelect');
+  if (!selectEl) return;
+  selectEl.innerHTML = '<option value="">내전을 불러오는 중...</option>';
+
+  const { data: scrims, error } = await supabaseClient.from('scrims').select('id, title, game, current_players, max_players').order('created_at', { ascending: false });
+  if (error || !scrims || scrims.length === 0) {
+    selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
+    return;
+  }
+
+  selectEl.innerHTML = '<option value="">-- 투표를 진행할 내전을 선택해 주세요 --</option>';
+  scrims.forEach(scrim => {
+    const opt = document.createElement('option');
+    opt.value = scrim.id;
+    opt.textContent = `[${scrim.game.toUpperCase()}] ${scrim.title} (${scrim.current_players}/${scrim.max_players}명)`;
+    selectEl.appendChild(opt);
+  });
+}
+
+async function loadVetoData() {
+  const scrimId = document.getElementById('vetoScrimSelect')?.value;
+  const adminBox = document.getElementById('vetoAdminBox');
+  const boardContainer = document.getElementById('mapVetoBoardContainer');
+
+  if (!scrimId) {
+    if (adminBox) adminBox.style.display = 'none';
+    if (boardContainer) boardContainer.innerHTML = '';
+    return;
+  }
+
+  if (vetoChannel) {
+    supabaseClient.removeChannel(vetoChannel);
+  }
+
+  const { data: scrim, error } = await supabaseClient.from('scrims').select(`*`).eq('id', scrimId).single();
+  
+  if (error || !scrim) {
+    alert('내전 정보를 불러오지 못했습니다.');
+    return;
+  }
+
+  activeDraftScrim = scrim; // 밴/픽 클릭 로직과 호환 유지
+
+  const isHostOrAdmin = currentProfile?.is_admin || (currentUser && scrim.host_id === currentUser.id);
+  if (adminBox) adminBox.style.display = isHostOrAdmin ? 'block' : 'none';
+
+  renderMapVetoBoard(scrim);
+
+  vetoChannel = supabaseClient.channel(`veto-${scrimId}`)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scrims', filter: `id=eq.${scrimId}` }, payload => {
+      activeDraftScrim = payload.new;
+      renderMapVetoBoard(payload.new);
+    })
+    .subscribe();
+}
+
+async function startMapVetoByHost(gameType) {
+  const scrimId = document.getElementById('vetoScrimSelect')?.value;
+  if (!scrimId) {
+    alert('내전을 먼저 선택해 주세요.');
+    return;
+  }
+  await initializeMapVeto(scrimId, gameType);
+  loadVetoData();
+}
+
+// 기존 loadMapVetoData 호출부 대체용 헬퍼
+function loadMapVetoData() {
+  loadVetoData();
+}

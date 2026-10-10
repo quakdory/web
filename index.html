@@ -223,6 +223,45 @@
           </div>
         </div>
       </section>
+      <!-- 3. 맵 확인 탭 -->
+      <section id="map" class="tab-content">
+        <h2>게임별 맵 정보</h2>
+        <p>각 게임의 주요 맵 가이드 및 전략 정보를 확인할 수 있습니다.</p>
+        <div id="mapVerificationContainer" style="margin-top: 20px;"></div>
+      </section>
+
+      <!-- 🗺️ [신규] 맵 투표 탭 -->
+      <section id="mapVetoTab" class="tab-content">
+        <h2>실시간 맵 밴/픽 (Veto) 시스템</h2>
+        <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted);">내전을 선택하고 맵 투표를 진행하거나 현황을 확인할 수 있습니다.</p>
+        
+        <!-- 내전 선택 드롭다운 -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
+          <select id="vetoScrimSelect" style="padding: 10px 14px; font-size: 0.95rem; flex: 1; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-element); color: var(--text-main);" onchange="loadVetoData()">
+            <option value="">내전을 불러오는 중...</option>
+          </select>
+        </div>
+
+        <!-- 방장 전용: 맵 투표 시작 버튼 박스 -->
+        <div id="vetoAdminBox" class="section-box" style="display: none; padding: 18px; margin-bottom: 20px;">
+          <h4 style="margin-bottom: 14px;">👑 [방장 전용] 맵 투표 제어</h4>
+          <div style="display: flex; gap: 12px;">
+            <button type="button" class="btn-primary" onclick="startMapVetoByHost('valorant')" style="flex: 1; padding: 12px;">🔴 발로란트 맵 투표 시작</button>
+            <button type="button" class="btn-primary" onclick="startMapVetoByHost('overwatch')" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);">🟠 오버워치 맵 투표 시작</button>
+          </div>
+        </div>
+
+        <!-- 실시간 맵 투표 현황판이 그려질 자리 -->
+        <div id="mapVetoBoardContainer"></div>
+      </section>
+      
+      <nav class="nav-links">
+  <button onclick="showTab('scrim')">내전</button>
+  <button onclick="showTab('team')">팀 구성</button>
+  <button onclick="showTab('map'); renderMapVerificationView('overwatch');">맵 확인</button>
+  <button onclick="showTab('mapVeto'); loadVetoScrimOptions();">🗺️ 맵 투표</button> <!-- 👈 추가 -->
+  <button onclick="showTab('sns')">SNS</button>
+</nav>
 
       <!-- 3. 맵 확인 탭 -->
       <section id="map" class="tab-content">
