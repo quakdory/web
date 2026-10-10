@@ -649,10 +649,30 @@ function switchGameProfileTab(gameCode) {
 // 6. UI / 네비게이션 / 내전(Scrim) 관리
 // =============================================================
 
+// 다크모드 토글 및 로컬 스토리지 저장
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  
+  // 브라우저에 상태 저장
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
   const btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+// 페이지 로드 시 저장된 테마 불러오기
+function loadSavedTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const btn = document.getElementById('themeToggleBtn');
+
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    if (btn) btn.textContent = '☀️';
+  } else {
+    document.body.classList.remove('dark-mode');
+    if (btn) btn.textContent = '🌙';
+  }
 }
 
 function showTab(tabId) {
@@ -1017,6 +1037,7 @@ function subscribeToRealtimeChanges() {
 
 // 초기화 및 실시간 구독 시작
 document.addEventListener('DOMContentLoaded', async () => {
+  loadSavedTheme(); // 저장된 테마 불러오기 실행
   await fetchValorantAgents();
   checkAuthState();
   subscribeToRealtimeChanges();
