@@ -36,15 +36,16 @@ const VALO_TIER_DATA = [
 
 // 오버워치 2 실제 티어 아이콘 경로 적용
 const OW_TIER_DATA = [
-  { name: "언랭크", value: "Unranked", icon: "images/tiers/unranked.png" },
-  { name: "브론즈", value: "Bronze", icon: "images/tiers/bronze.png" },
-  { name: "실버", value: "Silver", icon: "images/tiers/silver.png" },
-  { name: "골드", value: "Gold", icon: "images/tiers/gold.png" },
-  { name: "플래티넘", value: "Platinum", icon: "images/tiers/platinum.png" },
-  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/diamond.png" },
-  { name: "마스터", value: "Master", icon: "images/tiers/master.png" },
-  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/grandmaster.png" },
-  { name: "챔피언", value: "Champion", icon: "images/tiers/champion.png" }
+  { name: "언랭크", value: "Unranked", icon: "images/tiers/.png" },
+  { name: "브론즈", value: "Bronze", icon: "images/tiers/브론즈ng" },
+  { name: "실버", value: "Silver", icon: "images/tiers/실버png" },
+  { name: "골드", value: "Gold", icon: "images/tiers/골드ng" },
+  { name: "플래티넘", value: "Platinum", icon: "images/tiers/플래티넘" },
+  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/다이아몬드.png" },
+  { name: "마스터", value: "Master", icon: "images/tiers/마스터.png" },
+  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/그랜드마스터.png"},
+  { name: "챔피언", value: "Champion", icon: "images/tiers/챔피언.png"}
+
 ];
 
 let owSelectedHeroes = { main: [], sub: [] };
