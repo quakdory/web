@@ -1,128 +1,300 @@
 /* ============================================================= */
-/* OPTION 2: Tactical Modern Dark UI                             */
+/* VALORANT VIOLET TACTICAL ESPORTS THEME (PURPLE EDITION)       */
 /* ============================================================= */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
 :root {
-  --bg-color: #0b0f19;
-  --card-bg: #111827;
-  --card-hover: #1f293d;
-  --text-color: #f3f4f6;
-  --text-muted: #9ca3af;
-  --primary-color: #6366f1;
-  --primary-hover: #4f46e5;
-  --border-color: #1f2937;
-  --radius: 12px;
+  --bg-main: #0f1219;
+  --bg-card: #161a24;
+  --bg-card-hover: #1e2330;
+  --bg-sub: #10141e;
+  
+  /* 메인 컬러: 퍼플 / 바이올렛 계열 */
+  --val-purple: #9333ea;
+  --val-purple-hover: #a855f7;
+  --val-purple-glow: rgba(147, 51, 234, 0.5);
+  --val-cyan: #00f0ff;
+  --val-gray: #ece8e1;
+  --val-muted: #768079;
+  
+  --text-main: #ece8e1;
+  --text-muted: #8b978f;
+  --border-color: #262c3a;
+  --border-active: #a855f7;
+  
+  --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-sharp: 2px;
 }
 
 body.dark-mode {
-  --bg-color: #060911;
-  --card-bg: #0d1322;
-  --border-color: #1a2336;
+  --bg-main: #090b10;
+  --bg-card: #11141d;
+  --border-color: #1d222e;
 }
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(147, 51, 234, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(0, 240, 255, 0.03) 0%, transparent 45%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  line-height: 1.5;
 }
 
+/* ============================================================= */
+/* 커스텀 스크롤바 */
+/* ============================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #262c3a;
+  border-radius: var(--radius-sharp);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--val-purple);
+}
+
+/* ============================================================= */
+/* 로그인 / 회원가입 화면 */
+/* ============================================================= */
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #1e1b4b 0%, var(--bg-color) 70%);
+  padding: 1.5rem;
 }
 
 .auth-box {
-  background: rgba(17, 24, 39, 0.85);
-  backdrop-filter: blur(12px);
+  background: var(--bg-card);
   padding: 2.5rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sharp);
   width: 100%;
-  max-width: 400px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  max-width: 420px;
+  border: 1px solid var(--border-color);
+  border-top: 3px solid var(--val-purple);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
 }
 
 .auth-box h2, .auth-box h3 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #ffffff;
+  margin-bottom: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-main);
+  position: relative;
+}
+
+.auth-box h2::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: var(--val-purple);
+  margin: 8px auto 0;
+}
+
+/* Input Styles */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select,
+textarea {
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 1rem;
+  background-color: var(--bg-sub);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-sharp);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--val-purple-hover);
+  box-shadow: 0 0 8px var(--val-purple-glow);
+}
+
+/* Buttons */
+.full-width {
+  width: 100%;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: white;
+  background-color: var(--val-purple);
+  color: #ffffff;
   border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: var(--radius-sharp);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary:hover {
+  background-color: var(--val-purple-hover);
+  box-shadow: 0 0 16px var(--val-purple-glow);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
 }
 
 .btn-secondary {
-  background-color: #1f2937;
-  color: #e5e7eb;
-  border: 1px solid #374151;
+  background-color: var(--bg-sub);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
   padding: 10px 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-sharp);
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: #374151;
+  background-color: #1e2330;
+  border-color: var(--text-muted);
 }
 
+.btn-danger {
+  background-color: #d63031;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-sharp);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.divider {
+  margin: 1.8rem 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ============================================================= */
+/* 상단 네비게이션 바 */
+/* ============================================================= */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: rgba(17, 24, 39, 0.9);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 2.5rem;
+  background-color: var(--bg-card);
+  border-bottom: 2px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .logo {
-  font-size: 1.3rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--text-main);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo::before {
+  content: '///';
+  color: var(--val-purple);
+  font-size: 1.1rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
 }
 
 .nav-links button, .game-filter button, .team-subtabs button {
-  padding: 8px 16px;
+  padding: 9px 18px;
   border: 1px solid var(--border-color);
-  background: #1f2937;
-  color: var(--text-color);
-  border-radius: 8px;
-  font-weight: 500;
+  background: var(--bg-sub);
+  color: var(--text-main);
+  border-radius: var(--radius-sharp);
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
-.nav-links button:hover, .game-filter button:hover {
-  border-color: var(--primary-color);
-  color: #a5b4fc;
+.nav-links button:hover, .game-filter button:hover, .team-subtabs button:hover {
+  border-color: var(--val-purple);
+  color: var(--val-purple-hover);
 }
 
+.nav-links button.active, .game-filter button.active, .team-subtabs button.active {
+  background-color: var(--val-purple);
+  color: #ffffff;
+  border-color: var(--val-purple);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+#userNickname {
+  font-weight: 700;
+  color: var(--val-gray);
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.75rem;
+  font-weight: 800;
+  background-color: var(--bg-sub);
+  color: var(--val-muted);
+  border: 1px solid var(--border-color);
+  text-transform: uppercase;
+}
+
+.badge.admin {
+  background-color: var(--val-purple);
+  color: #ffffff;
+  border: none;
+}
+
+/* ============================================================= */
+/* 메인 컨텐츠 및 카드 레이아웃 */
+/* ============================================================= */
 .container {
-  max-width: 1050px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  max-width: 1080px;
+  margin: 2.5rem auto;
+  padding: 0 1.2rem;
 }
 
 .tab-content, .team-view {
@@ -133,28 +305,74 @@ body {
   display: block;
 }
 
+/* Scrim Card */
 .scrim-card {
-  background: var(--card-bg);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-bottom: 1.2rem;
-  transition: all 0.2s;
+  border-left: 4px solid var(--val-purple);
+  border-radius: var(--radius-sharp);
+  padding: 1.4rem;
+  margin-bottom: 1.4rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .scrim-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  border-color: var(--border-active);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+/* ============================================================= */
+/* 3분할 게임 카드 & 요원 선택기 */
+/* ============================================================= */
+.game-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .game-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.game-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sharp);
+  padding: 18px;
+}
+
+.game-card h5 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--val-gray);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}
+
+.required {
+  color: var(--val-purple-hover);
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+/* 요원 Picker 박스 */
 .agent-image-picker {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  background: var(--bg-sub);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sharp);
+  min-height: 80px;
 }
 
 .agent-btn {
@@ -163,20 +381,48 @@ body {
   border: 2px solid transparent;
   padding: 0;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-sharp);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.agent-btn:hover {
+  transform: scale(1.06);
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
+.agent-btn img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.agent-name {
+  font-size: 10px;
+  color: var(--text-main);
+  margin-top: 3px;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .agent-btn.selected {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+  border-color: var(--val-purple-hover);
+  box-shadow: 0 0 10px var(--val-purple-glow);
 }
 
 .select-badge {
   position: absolute;
   top: 3px;
   right: 3px;
-  background-color: var(--primary-color);
+  background-color: var(--val-purple-hover);
   color: white;
   width: 18px;
   height: 18px;
@@ -185,8 +431,18 @@ body {
   justify-content: center;
   align-items: center;
   font-size: 11px;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
+.agent-btn.selected .select-badge {
+  opacity: 1;
+}
+
+/* ============================================================= */
+/* 모달 (Modal) 스타일 */
+/* ============================================================= */
 .modal {
   display: none;
   position: fixed;
@@ -194,11 +450,12 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(6px);
+  background-color: rgba(15, 18, 25, 0.88);
+  backdrop-filter: blur(5px);
   z-index: 1000;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 
 .modal.active {
@@ -206,11 +463,18 @@ body {
 }
 
 .modal-content {
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  padding: 28px;
-  border-radius: var(--radius);
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  padding: 30px;
+  border-radius: var(--radius-sharp);
   width: 100%;
   max-width: 520px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--val-purple);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content.modal-lg {
+  max-width: 920px;
 }
