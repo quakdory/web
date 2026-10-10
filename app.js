@@ -47,6 +47,19 @@ const VALO_TIER_DATA = [
   { name: 'Radiant', label: '레디언트', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/smallicon.png' }
 ];
 
+// 오버워치 2 경쟁전 티어 데이터
+const OW_TIER_DATA = [
+  { name: "언랭크", value: "Unranked", icon: "❓" },
+  { name: "브론즈", value: "Bronze", icon: "🥉" },
+  { name: "실버", value: "Silver", icon: "🥈" },
+  { name: "골드", value: "Gold", icon: "🥇" },
+  { name: "플래티넘", value: "Platinum", icon: "💎" },
+  { name: "다이아몬드", value: "Diamond", icon: "💠" },
+  { name: "마스터", value: "Master", icon: "👑" },
+  { name: "그랜드마스터", value: "Grandmaster", icon: "🔥" },
+  { name: "챔피언", value: "Champion", icon: "🌟" }
+];
+
 // 아이디를 가짜 이메일 형식으로 변환하는 도우미 함수
 function makeEmailFromUsername(username) {
   return `${username.trim().toLowerCase()}@myapp.local`;
@@ -162,7 +175,6 @@ async function checkAuthState() {
 
     currentProfile = profile;
 
-    // 화면 전환 명확히 제어 (로그인 박스 숨김, 메인 노출)
     if (authContainer) authContainer.style.display = 'none';
     if (appContainer) appContainer.style.display = 'block';
 
@@ -187,7 +199,6 @@ async function checkAuthState() {
     currentUser = null;
     currentProfile = null;
 
-    // 비로그인 시 로그인 박스 노출, 메인 숨김
     if (authContainer) authContainer.style.display = 'flex';
     if (appContainer) appContainer.style.display = 'none';
   }
@@ -296,7 +307,181 @@ function updateAgentBadges(type) {
 }
 
 // =============================================================
-// 4. 프로필 설정 모달 및 통합 저장
+// 4. 오버워치 2 데이터 (유저가 지정한 원래 역할군 배치 유지) 및 티어/영웅 선택기 제어
+// =============================================================
+
+const OW_HERO_DATA = {
+  "돌격": [
+    { name: "D.Va", img: "images/heroes/디바.png" },
+    { name: "디몬", img: "images/heroes/디몬.png" },
+    { name: "도미나", img: "images/heroes/도미나.png" },
+    { name: "해저드", img: "images/heroes/해저드.png" },
+    { name: "둠피스트", img: "images/heroes/둠피스트.png" },
+    { name: "마우가", img: "images/heroes/마우가.png" },
+    { name: "시그마", img: "images/heroes/시그마.png" },
+    { name: "윈스턴", img: "images/heroes/윈스턴.png" },
+    { name: "라인하르트", img: "images/heroes/라인하르트.png" },
+    { name: "로드호그", img: "images/heroes/로드호그.png" },
+    { name: "자리야", img: "images/heroes/자리야.png" },
+    { name: "오리사", img: "images/heroes/오리사.png" },
+    { name: "레킹볼", img: "images/heroes/레킹볼.png" },
+    { name: "정커퀸", img: "images/heroes/정커퀸.png" },
+    { name: "라마트라", img: "images/heroes/라마트라.png" }
+  ],
+  "공격": [
+    { name: "겐지", img: "images/heroes/겐지.png" },
+    { name: "캐서디", img: "images/heroes/캐서디.png" },
+    { name: "리퍼", img: "images/heroes/리퍼.png" },
+    { name: "솔저: 76", img: "images/heroes/솔저.png" },
+    { name: "트레이서", img: "images/heroes/트레이서.png" },
+    { name: "메이", img: "images/heroes/메이.png" },
+    { name: "바스티온", img: "images/heroes/바스티온.png" },
+    { name: "한조", img: "images/heroes/한조.png" },
+    { name: "토르비욘", img: "images/heroes/토르비욘.png" },
+    { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },
+    { name: "정크랫", img: "images/heroes/정크랫.png" },
+    { name: "파라", img: "images/heroes/파라.png" },
+    { name: "시메트라", img: "images/heroes/시메트라.png" },
+    { name: "애쉬", img: "images/heroes/애쉬.png" },
+    { name: "에코", img: "images/heroes/에코.png" },
+    { name: "소전", img: "images/heroes/소전.png" },
+    { name: "벤처", img: "images/heroes/벤처.png" },
+    { name: "시온", img: "images/heroes/시온.png" },
+    { name: "시에라", img: "images/heroes/시에라.png" },
+    { name: "엠레", img: "images/heroes/엠레.png" },
+    { name: "벤데타", img: "images/heroes/벤데타.png" },
+    { name: "안란", img: "images/heroes/안란.png" },
+    { name: "프레야", img: "images/heroes/프레야.png" }
+  ],
+  "지원": [
+    { name: "독트린", img: "images/heroes/독트린.png" },
+    { name: "우양", img: "images/heroes/우양.png" },
+    { name: "솜브라", img: "images/heroes/솜브라.png" },
+    { name: "메르시", img: "images/heroes/메르시.png" },
+    { name: "루시우", img: "images/heroes/루시우.png" },
+    { name: "아나", img: "images/heroes/아나.png" },
+    { name: "젠야타", img: "images/heroes/젠야타.png" },
+    { name: "바티스트", img: "images/heroes/바티스트.png" },
+    { name: "모이라", img: "images/heroes/모이라.png" },
+    { name: "브리기테", img: "images/heroes/브리기테.png" },
+    { name: "키리코", img: "images/heroes/키리코.png" },
+    { name: "일리아리", img: "images/heroes/일리아리.png" },
+    { name: "라이프위버", img: "images/heroes/라이프위버.png" },
+    { name: "주노", img: "images/heroes/주노.png" },
+    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" },
+    { name: "미즈키", img: "images/heroes/미즈키.png" }
+  ]
+};
+
+let owSelectedHeroes = {
+  main: [],
+  sub: []
+};
+
+// 오버워치 티어 선택기 렌더링 함수
+function renderOWTierPicker(selectedTierValue = 'Unranked') {
+  const container = document.getElementById('owTierContainer');
+  if (!container) return;
+
+  container.innerHTML = '';
+  document.getElementById('owTier').value = selectedTierValue;
+
+  OW_TIER_DATA.forEach(tier => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `tier-btn ${tier.value === selectedTierValue ? 'selected' : ''}`;
+    btn.onclick = () => selectOWTier(tier.value, btn);
+
+    btn.innerHTML = `
+      <span style="font-size: 22px; margin-bottom: 4px;">${tier.icon}</span>
+      <span class="tier-name">${tier.name}</span>
+    `;
+    container.appendChild(btn);
+  });
+}
+
+function selectOWTier(tierValue, btnEl) {
+  document.getElementById('owTier').value = tierValue;
+  const container = document.getElementById('owTierContainer');
+  container.querySelectorAll('.tier-btn').forEach(btn => btn.classList.remove('selected'));
+  btnEl.classList.add('selected');
+}
+
+function updateOWHeroSelection(type) {
+  const roleSelect = document.getElementById(type === 'main' ? 'owMainRole' : 'owSubRole');
+  const container = document.getElementById(type === 'main' ? 'owMainHeroContainer' : 'owSubHeroContainer');
+  
+  if (!roleSelect || !container) return;
+
+  const selectedRole = roleSelect.value;
+  const heroes = OW_HERO_DATA[selectedRole] || [];
+
+  container.innerHTML = '';
+  owSelectedHeroes[type] = [];
+
+  if (heroes.length === 0) {
+    container.innerHTML = '<p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>';
+    return;
+  }
+
+  heroes.forEach(hero => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'agent-btn';
+    btn.setAttribute('data-hero', hero.name);
+    btn.onclick = () => toggleOWHeroSelect(type, hero.name, btn);
+
+    btn.innerHTML = `
+      <div style="width: 100%; aspect-ratio: 1/1; background: var(--bg-element); border-radius: 6px; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color);">
+        <img src="${hero.img}" alt="${hero.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <div style="display:none; width:100%; height:100%; justify-content:center; align-items:center; font-weight:900; font-size:0.8rem; color:var(--accent-purple);">
+          ${hero.name.substring(0, 2)}
+        </div>
+      </div>
+      <span class="agent-name" style="margin-top: 6px; font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">${hero.name}</span>
+      <div class="select-badge"></div>
+    `;
+    container.appendChild(btn);
+  });
+}
+
+function toggleOWHeroSelect(type, heroName, btnEl) {
+  let list = owSelectedHeroes[type];
+  const index = list.indexOf(heroName);
+
+  if (index > -1) {
+    list.splice(index, 1);
+  } else {
+    if (list.length >= 3) {
+      alert('선호 영웅은 최대 3개까지만 선택할 수 있습니다.');
+      return;
+    }
+    list.push(heroName);
+  }
+
+  updateOWHeroBadges(type);
+}
+
+function updateOWHeroBadges(type) {
+  const container = document.getElementById(type === 'main' ? 'owMainHeroContainer' : 'owSubHeroContainer');
+  const selected = owSelectedHeroes[type];
+
+  container.querySelectorAll('.agent-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    btn.querySelector('.select-badge').textContent = '';
+  });
+
+  selected.forEach((heroName, index) => {
+    const btn = container.querySelector(`.agent-btn[data-hero="${heroName}"]`);
+    if (btn) {
+      btn.classList.add('selected');
+      btn.querySelector('.select-badge').textContent = index + 1;
+    }
+  });
+}
+
+// =============================================================
+// 5. 프로필 설정 모달 및 통합 저장
 // =============================================================
 
 function openProfileModal() {
@@ -305,9 +490,9 @@ function openProfileModal() {
   document.getElementById('editUsername').value = currentUser.email.split('@')[0];
   document.getElementById('editNickname').value = currentProfile.nickname || '';
 
+  // 발로란트 정보 설정
   const valo = currentProfile.valo_info || {};
   document.getElementById('valoId').value = valo.game_id || '';
-
   renderTierPicker(valo.tier || 'Unranked');
 
   if (valo.main_role) {
@@ -330,6 +515,33 @@ function openProfileModal() {
     updateAgentSelection('sub');
   }
 
+  // 오버워치 정보 설정
+  const ow = currentProfile.ow_info || {};
+  const owIdInput = document.getElementById('owId');
+  if (owIdInput) owIdInput.value = ow.game_id || '';
+  
+  renderOWTierPicker(ow.tier || 'Unranked');
+
+  if (ow.main_role) {
+    document.getElementById('owMainRole').value = ow.main_role;
+    updateOWHeroSelection('main');
+    owSelectedHeroes.main = ow.main_heroes || [];
+    updateOWHeroBadges('main');
+  } else {
+    document.getElementById('owMainRole').value = "";
+    document.getElementById('owMainHeroContainer').innerHTML = '<p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>';
+  }
+
+  if (ow.sub_role) {
+    document.getElementById('owSubRole').value = ow.sub_role;
+    updateOWHeroSelection('sub');
+    owSelectedHeroes.sub = ow.sub_heroes || [];
+    updateOWHeroBadges('sub');
+  } else {
+    document.getElementById('owSubRole').value = "";
+    document.getElementById('owSubHeroContainer').innerHTML = '<p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>';
+  }
+
   document.getElementById('profileModal')?.classList.add('active');
 }
 
@@ -343,17 +555,17 @@ async function saveFullProfile(e) {
   const nickname = document.getElementById('editNickname').value;
   const newPassword = document.getElementById('editPassword').value;
 
+  // 발로란트 데이터 검증
   const valoId = document.getElementById('valoId').value;
   if (valoId && !valoId.includes('#')) {
-    alert('발로란트 아이디는 아이디#태그 (예: HIDE#KR1) 형식으로 입력해 주세요.');
+    alert('발로란트 아이디는 아이디#태그 형식으로 입력해 주세요.');
     return;
   }
 
   const valoMainRole = document.getElementById('valoMainRole').value;
   const valoMainAgents = tempSelectedAgents.main;
-
   if (valoMainRole && valoMainAgents.length === 0) {
-    alert('주 역할군의 선호 요원을 최소 1명(1번) 선택해 주세요.');
+    alert('발로란트 주 역할군의 선호 요원을 최소 1명 선택해 주세요.');
     return;
   }
 
@@ -364,6 +576,29 @@ async function saveFullProfile(e) {
     sub_role: document.getElementById('valoSubRole').value,
     main_agents: valoMainAgents,
     sub_agents: tempSelectedAgents.sub
+  };
+
+  // 오버워치 데이터 검증
+  const owId = document.getElementById('owId') ? document.getElementById('owId').value : '';
+  if (owId && !owId.includes('#')) {
+    alert('오버워치 배틀태그는 아이디#태그 형식으로 입력해 주세요.');
+    return;
+  }
+
+  const owMainRole = document.getElementById('owMainRole').value;
+  const owMainHeroes = owSelectedHeroes.main;
+  if (owMainRole && owMainHeroes.length === 0) {
+    alert('오버워치 주 역할군의 선호 영웅을 최소 1명 선택해 주세요.');
+    return;
+  }
+
+  const owInfo = {
+    game_id: owId,
+    tier: document.getElementById('owTier').value,
+    main_role: owMainRole,
+    sub_role: document.getElementById('owSubRole').value,
+    main_heroes: owMainHeroes,
+    sub_heroes: owSelectedHeroes.sub
   };
 
   if (newPassword.trim().length >= 6) {
@@ -378,7 +613,8 @@ async function saveFullProfile(e) {
     .from('profiles')
     .update({ 
       nickname: nickname,
-      valo_info: valoInfo
+      valo_info: valoInfo,
+      ow_info: owInfo
     })
     .eq('id', currentUser.id);
 
@@ -391,8 +627,22 @@ async function saveFullProfile(e) {
   }
 }
 
+// 프로필 모달 내 게임 선택 탭 전환 함수
+function switchGameProfileTab(gameCode) {
+  document.querySelectorAll('.game-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
+
+  const targetPanel = document.getElementById(`${gameCode}ProfilePanel`);
+  const targetBtn = Array.from(document.querySelectorAll('.game-tab-btn')).find(btn => 
+    btn.getAttribute('onclick')?.includes(`'${gameCode}'`)
+  );
+
+  if (targetPanel) targetPanel.classList.add('active');
+  if (targetBtn) targetBtn.classList.add('active');
+}
+
 // =============================================================
-// 5. UI / 네비게이션 / 내전(Scrim) 관리
+// 6. UI / 네비게이션 / 내전(Scrim) 관리
 // =============================================================
 
 function toggleTheme() {
@@ -634,7 +884,7 @@ async function deleteScrim(scrimId) {
 }
 
 // =============================================================
-// 6. 팀 구성 (자동 서브탭) 로직
+// 7. 팀 구성 (자동 서브탭) 로직
 // =============================================================
 
 async function loadScrimOptionsForTeamTab() {
@@ -684,7 +934,7 @@ async function generateRandomTeamsFromTab() {
     .from('scrim_participants')
     .select(`
       user_id,
-      profiles ( nickname, valo_info )
+      profiles ( nickname, valo_info, ow_info )
     `)
     .eq('scrim_id', scrimId);
 
@@ -735,7 +985,7 @@ function renderTeamList(elementId, teamMembers) {
 }
 
 // =============================================================
-// 7. Supabase Realtime (실시간 구독 설정)
+// 8. Supabase Realtime (실시간 구독 설정)
 // =============================================================
 
 function subscribeToRealtimeChanges() {
@@ -767,159 +1017,3 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkAuthState();
   subscribeToRealtimeChanges();
 });
-// 프로필 모달 내 게임 선택 탭 전환 함수
-function switchGameProfileTab(gameCode) {
-  // 모든 탭 버튼 비활성화
-  document.querySelectorAll('.game-tab-btn').forEach(btn => btn.classList.remove('active'));
-  // 모든 게임 패널 숨김
-  document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('active'));
-
-  // 선택한 탭 버튼 및 패널 활성화
-  const targetPanel = document.getElementById(`${gameCode}ProfilePanel`);
-  const targetBtn = Array.from(document.querySelectorAll('.game-tab-btn')).find(btn => 
-    btn.getAttribute('onclick')?.includes(`'${gameCode}'`)
-  );
-
-  if (targetPanel) targetPanel.classList.add('active');
-  if (targetBtn) targetBtn.classList.add('active');
-}
-// 오버워치 2 영웅 데이터 (안정적인 이미지 CDN 적용)
-const OW_HERO_DATA = {
-  "돌격": [
-    { name: "D.Va", img: "images/heroes/디바.png" },
-    { name: "디몬", img: "images/heroes/디몬.png" },
-    { name: "도미나", img: "images/heroes/도미나.png" },
-    { name: "해저드", img: "images/heroes/해저드.png" },
-    { name: "둠피스트", img: "images/heroes/둠피스트.png" },
-    { name: "마우가", img: "images/heroes/마우가.png" },
-    { name: "시그마", img: "images/heroes/시그마.png" },
-    { name: "윈스턴", img: "images/heroes/윈스턴.png" },
-    { name: "라인하르트", img: "images/heroes/라인하르트.png" },
-    { name: "로드호그", img: "images/heroes/로드호그.png" },
-    { name: "자리야", img: "images/heroes/자리야.png" },
-    { name: "오리사", img: "images/heroes/오리사.png" },
-    { name: "레킹볼", img: "images/heroes/레킹볼.png" },
-    { name: "정커퀸", img: "images/heroes/정커퀸.png" },
-    { name: "라마트라", img: "images/heroes/라마트라.png" }
-  ],
-  "공격": [
-    { name: "겐지", img: "images/heroes/겐지.png" },
-    { name: "캐서디", img: "images/heroes/캐서디.png" },
-    { name: "리퍼", img: "images/heroes/리퍼.png" },
-    { name: "솔저: 76", img: "images/heroes/솔저.png" },
-    { name: "트레이서", img: "images/heroes/트레이서.png" },
-    { name: "메이", img: "images/heroes/메이.png" },
-    { name: "바스티온", img: "images/heroes/바스티온.png" },
-    { name: "한조", img: "images/heroes/한조.png" },
-    { name: "토르비욘", img: "images/heroes/토르비욘.png" },
-    { name: "위도우메이커", img: "images/heroes/위도우메이커.png" },
-    { name: "정크랫", img: "images/heroes/정크랫.png" },
-    { name: "파라", img: "images/heroes/파라.png" },
-    { name: "시메트라", img: "images/heroes/시메트라.png" },
-    { name: "애쉬", img: "images/heroes/애쉬.png" },
-    { name: "에코", img: "images/heroes/에코.png" },
-    { name: "소전", img: "images/heroes/소전.png" },
-    { name: "벤처", img: "images/heroes/벤처.png" },
-    { name: "시온", img: "images/heroes/시온.png" },
-    { name: "시에라", img: "images/heroes/시에라.png" },
-    { name: "엠레", img: "images/heroes/엠레.png" },
-    { name: "벤데타", img: "images/heroes/벤데타.png" },
-    { name: "안란", img: "images/heroes/안란.png" },
-    { name: "프레야", img: "images/heroes/프레야.png" },
-
-  ],
-  "지원": [
-    { name: "독트린", img: "images/heroes/독트린.png" },
-    { name: "우양", img: "images/heroes/우양.png" },
-    { name: "솜브라", img: "images/heroes/솜브라.png" },
-    { name: "메르시", img: "images/heroes/메르시.png" },
-    { name: "루시우", img: "images/heroes/루시우.png" },
-    { name: "아나", img: "images/heroes/아나.png" },
-    { name: "젠야타", img: "images/heroes/젠야타.png" },
-    { name: "바티스트", img: "images/heroes/바티스트.png" },
-    { name: "모이라", img: "images/heroes/모이라.png" },
-    { name: "브리기테", img: "images/heroes/브리기테.png" },
-    { name: "키리코", img: "images/heroes/키리코.png" },
-    { name: "일리아리", img: "images/heroes/일리아리.png" },
-    { name: "라이프위버", img: "images/heroes/라이프위버.png" },
-    { name: "주노", img: "images/heroes/주노.png" },
-    { name: "제트팩캣", img: "images/heroes/제트팩캣.png" },
-    { name: "미즈키", img: "images/heroes/미즈키.png" }
-  ]
-};
-
-let owSelectedHeroes = {
-  main: [],
-  sub: []
-};
-
-function updateOWHeroSelection(type) {
-  const roleSelect = document.getElementById(type === 'main' ? 'owMainRole' : 'owSubRole');
-  const container = document.getElementById(type === 'main' ? 'owMainHeroContainer' : 'owSubHeroContainer');
-  
-  if (!roleSelect || !container) return;
-
-  const selectedRole = roleSelect.value;
-  const heroes = OW_HERO_DATA[selectedRole] || [];
-
-  container.innerHTML = '';
-  owSelectedHeroes[type] = [];
-
-  if (heroes.length === 0) {
-    container.innerHTML = '<p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>';
-    return;
-  }
-
-  heroes.forEach(hero => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'agent-btn';
-    btn.onclick = () => toggleOWHeroSelect(type, hero.name, btn);
-
-    // 로컬 이미지 파일 렌더링 (이미지가 없을 경우 이니셜 대체)
-    btn.innerHTML = `
-      <div style="width: 100%; aspect-ratio: 1/1; background: var(--bg-element); border-radius: 6px; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color);">
-        <img src="${hero.img}" alt="${hero.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-        <div style="display:none; width:100%; height:100%; justify-content:center; align-items:center; font-weight:900; font-size:0.8rem; color:var(--accent-purple);">
-          ${hero.name.substring(0, 2)}
-        </div>
-      </div>
-      <span class="agent-name" style="margin-top: 6px; font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">${hero.name}</span>
-      <div class="select-badge"></div>
-    `;
-    container.appendChild(btn);
-  });
-}
-
-// 오버워치 영웅 토글 선택 (최대 3개)
-function toggleOWHeroSelect(type, heroName, btnElement) {
-  let list = owSelectedHeroes[type];
-  const index = list.indexOf(heroName);
-
-  if (index > -1) {
-    list.splice(index, 1);
-    btnElement.classList.remove('selected');
-  } else {
-    if (list.length >= 3) {
-      alert('선호 영웅은 최대 3개까지만 선택할 수 있습니다.');
-      return;
-    }
-    list.push(heroName);
-    btnElement.classList.add('selected');
-  }
-
-  // 선택 순서 번호 표시 갱신
-  const badges = btnElement.parentElement.querySelectorAll('.agent-btn');
-  badges.forEach(b => {
-    const name = b.querySelector('.agent-name').textContent;
-    const badge = b.querySelector('.select-badge');
-    const pos = list.indexOf(name);
-    if (pos > -1) {
-      badge.textContent = pos + 1;
-      b.classList.add('selected');
-    } else {
-      badge.textContent = '';
-      b.classList.remove('selected');
-    }
-  });
-}
