@@ -52,6 +52,7 @@
         <button onclick="showTab('scrim')">내전</button>
         <button onclick="showTab('team')">팀 구성</button>
         <button onclick="showTab('map'); renderMapVerificationView('overwatch');">맵 확인</button>
+        <button onclick="showTab('mapVetoTab'); loadVetoScrimOptions();">🗺️ 맵 투표</button>
         <button onclick="showTab('sns')">SNS</button>
       </nav>
       
@@ -223,6 +224,7 @@
           </div>
         </div>
       </section>
+
       <!-- 3. 맵 확인 탭 -->
       <section id="map" class="tab-content">
         <h2>게임별 맵 정보</h2>
@@ -251,37 +253,9 @@
           </div>
         </div>
 
-        
-
-      <nav class="nav-links">
-  <button onclick="showTab('scrim')">내전</button>
-  <button onclick="showTab('team')">팀 구성</button>
-  <button onclick="showTab('map'); renderMapVerificationView('overwatch');">맵 확인</button>
-  <button onclick="showTab('mapVeto'); loadVetoScrimOptions();">🗺️ 맵 투표</button> <!-- 👈 추가 -->
-  <button onclick="showTab('sns')">SNS</button>
-</nav>
-
-<!-- 실시간 맵 투표 현황판이 그려질 자리 -->
-        <section id="mapVetoBoardContainer">
-          <h2>실시간 맵 투표 현황판</h2>
+        <!-- 실시간 맵 투표 현황판이 그려질 자리 -->
+        <div id="mapVetoBoardContainer"></div>
       </section>
-
-      <!-- 3. 맵 확인 탭 -->
-      <section id="map" class="tab-content">
-        <h2>게임별 맵 정보</h2>
-        <p>각 게임의 주요 맵 가이드 및 전략 정보를 확인할 수 있습니다.</p>
-      </section>
-      
-      <!-- 1. 맵 확인 및 밴/픽 투표가 들어갈 컨테이너 -->
-<div class="section-box" style="margin-top: 24px;">
-  <h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 경기 전장(맵) 및 투표</h3>
-  
-  <!-- 실시간 맵 투표 현황판이 그려질 자리 -->
-  <div id="mapVetoBoardContainer"></div>
-
-  <!-- 오버워치/발로란트 전체 맵 확인용 컨테이너 (필요에 따라 배치) -->
-  <div id="mapVerificationContainer" style="margin-top: 20px;"></div>
-</div>
 
       <!-- 4. SNS 탭 -->
       <section id="sns" class="tab-content">
