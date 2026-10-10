@@ -783,3 +783,137 @@ function switchGameProfileTab(gameCode) {
   if (targetPanel) targetPanel.classList.add('active');
   if (targetBtn) targetBtn.classList.add('active');
 }
+// 오버워치 2 전체 영웅 데이터 (신규 영웅 포함)
+const OW_HERO_DATA = {
+  "돌격": [
+    { name: "D.Va", img: "https://images.blizzard.com/hero/dva/logo.png" },
+    { name: "디몬", img: "https://via.placeholder.com/60?text=D.Mon" },
+    { name: "도미나", img: "https://via.placeholder.com/60?text=Domina" },
+    { name: "해저드", img: "https://via.placeholder.com/60?text=Hazard" },
+    { name: "둠피스트", img: "https://images.blizzard.com/hero/doomfist/logo.png" },
+    { name: "마우가", img: "https://images.blizzard.com/hero/mauga/logo.png" },
+    { name: "시그마", img: "https://images.blizzard.com/hero/sigma/logo.png" },
+    { name: "윈스턴", img: "https://images.blizzard.com/hero/winston/logo.png" },
+    { name: "라인하르트", img: "https://images.blizzard.com/hero/reinhardt/logo.png" },
+    { name: "로드호그", img: "https://images.blizzard.com/hero/roadhog/logo.png" },
+    { name: "자리야", img: "https://images.blizzard.com/hero/zarya/logo.png" },
+    { name: "오리사", img: "https://images.blizzard.com/hero/orisa/logo.png" },
+    { name: "레킹볼", img: "https://images.blizzard.com/hero/wrecking-ball/logo.png" },
+    { name: "정커퀸", img: "https://images.blizzard.com/hero/junker-queen/logo.png" },
+    { name: "라마트라", img: "https://images.blizzard.com/hero/ramattra/logo.png" }
+  ],
+  "공격": [
+    { name: "겐지", img: "https://images.blizzard.com/hero/genji/logo.png" },
+    { name: "맥크리(캐서디)", img: "https://images.blizzard.com/hero/cassidy/logo.png" },
+    { name: "리퍼", img: "https://images.blizzard.com/hero/reaper/logo.png" },
+    { name: "솔저: 76", img: "https://images.blizzard.com/hero/soldier-76/logo.png" },
+    { name: "솜브라", img: "https://images.blizzard.com/hero/sombra/logo.png" },
+    { name: "트레이서", img: "https://images.blizzard.com/hero/tracer/logo.png" },
+    { name: "메이", img: "https://images.blizzard.com/hero/mei/logo.png" },
+    { name: "바스티온", img: "https://images.blizzard.com/hero/bastion/logo.png" },
+    { name: "한조", img: "https://images.blizzard.com/hero/hanzo/logo.png" },
+    { name: "토르비욘", img: "https://images.blizzard.com/hero/torbjorn/logo.png" },
+    { name: "위도우메이커", img: "https://images.blizzard.com/hero/widowmaker/logo.png" },
+    { name: "정크랫", img: "https://images.blizzard.com/hero/junkrat/logo.png" },
+    { name: "파라", img: "https://images.blizzard.com/hero/pharah/logo.png" },
+    { name: "시메트라", img: "https://images.blizzard.com/hero/symmetra/logo.png" },
+    { name: "애쉬", img: "https://images.blizzard.com/hero/ashe/logo.png" },
+    { name: "에코", img: "https://images.blizzard.com/hero/echo/logo.png" },
+    { name: "소준", img: "https://images.blizzard.com/hero/sojourn/logo.png" },
+    { name: "벤처", img: "https://images.blizzard.com/hero/venture/logo.png" },
+    { name: "시온", img: "https://via.placeholder.com/60?text=Shion" },
+    { name: "시에라", img: "https://via.placeholder.com/60?text=Sierra" },
+    { name: "엠레", img: "https://via.placeholder.com/60?text=Emre" },
+    { name: "벤데타", img: "https://via.placeholder.com/60?text=Vendetta" },
+    { name: "안란", img: "https://via.placeholder.com/60?text=Anran" },
+    { name: "프레야", img: "https://via.placeholder.com/60?text=Freya" },
+    { name: "독트린", img: "https://via.placeholder.com/60?text=Doctrine" },
+    { name: "우양", img: "https://via.placeholder.com/60?text=Wooyang" }
+  ],
+  "지원": [
+    { name: "메르시", img: "https://images.blizzard.com/hero/mercy/logo.png" },
+    { name: "루시우", img: "https://images.blizzard.com/hero/lucio/logo.png" },
+    { name: "아나", img: "https://images.blizzard.com/hero/ana/logo.png" },
+    { name: "젠야타", img: "https://images.blizzard.com/hero/zenyatta/logo.png" },
+    { name: "바티스트", img: "https://images.blizzard.com/hero/baptiste/logo.png" },
+    { name: "모이라", img: "https://images.blizzard.com/hero/moira/logo.png" },
+    { name: "브리기테", img: "https://images.blizzard.com/hero/brigitte/logo.png" },
+    { name: "키리코", img: "https://images.blizzard.com/hero/kiriko/logo.png" },
+    { name: "일리아리", img: "https://images.blizzard.com/hero/illari/logo.png" },
+    { name: "라이프위버", img: "https://images.blizzard.com/hero/lifeweaver/logo.png" },
+    { name: "주노", img: "https://images.blizzard.com/hero/juno/logo.png" },
+    { name: "제트팩캣", img: "https://via.placeholder.com/60?text=JetpackCat" },
+    { name: "미즈키", img: "https://via.placeholder.com/60?text=Mizuki" }
+  ]
+};
+
+let owSelectedHeroes = {
+  main: [],
+  sub: []
+};
+
+// 오버워치 역할군 선택 시 영웅 목록 렌더링
+function updateOWHeroSelection(type) {
+  const roleSelect = document.getElementById(type === 'main' ? 'owMainRole' : 'owSubRole');
+  const container = document.getElementById(type === 'main' ? 'owMainHeroContainer' : 'owSubHeroContainer');
+  
+  if (!roleSelect || !container) return;
+
+  const selectedRole = roleSelect.value;
+  const heroes = OW_HERO_DATA[selectedRole] || [];
+
+  container.innerHTML = '';
+  owSelectedHeroes[type] = [];
+
+  if (heroes.length === 0) {
+    container.innerHTML = '<p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>';
+    return;
+  }
+
+  heroes.forEach(hero => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'agent-btn';
+    btn.onclick = () => toggleOWHeroSelect(type, hero.name, btn);
+
+    btn.innerHTML = `
+      <img src="${hero.img}" alt="${hero.name}" title="${hero.name}" onerror="this.src='https://via.placeholder.com/60?text=OW';" />
+      <span class="agent-name">${hero.name}</span>
+      <div class="select-badge"></div>
+    `;
+    container.appendChild(btn);
+  });
+}
+
+// 오버워치 영웅 토글 선택 (최대 3개)
+function toggleOWHeroSelect(type, heroName, btnElement) {
+  let list = owSelectedHeroes[type];
+  const index = list.indexOf(heroName);
+
+  if (index > -1) {
+    list.splice(index, 1);
+    btnElement.classList.remove('selected');
+  } else {
+    if (list.length >= 3) {
+      alert('선호 영웅은 최대 3개까지만 선택할 수 있습니다.');
+      return;
+    }
+    list.push(heroName);
+    btnElement.classList.add('selected');
+  }
+
+  // 선택 순서 번호 표시 갱신
+  const badges = btnElement.parentElement.querySelectorAll('.agent-btn');
+  badges.forEach(b => {
+    const name = b.querySelector('.agent-name').textContent;
+    const badge = b.querySelector('.select-badge');
+    const pos = list.indexOf(name);
+    if (pos > -1) {
+      badge.textContent = pos + 1;
+      b.classList.add('selected');
+    } else {
+      badge.textContent = '';
+      b.classList.remove('selected');
+    }
+  });
+}

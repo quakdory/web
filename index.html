@@ -72,7 +72,7 @@
       <div class="user-info">
         <span id="userBadge" class="badge">일반유저</span>
         <span id="userNickname">로딩 중...</span>님
-        <button onclick="openProfileModal()" class="btn-sm">프로필 수정</button>
+        <button onclick="openProfileModal()" class="btn-sm">내 프로필</button>
         <button onclick="handleLogout()" class="btn-sm">로그아웃</button>
         <button id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
       </div>
@@ -284,9 +284,63 @@
 
             <!-- 2) 오버워치 2 패널 -->
             <div id="owProfilePanel" class="game-panel">
-              <div class="form-sub-card">
-                <h5>🟠 OVERWATCH 2 프로필</h5>
-                <p class="placeholder-text" style="padding: 20px 0; color: #94a3b8;">오버워치 프로필 및 주 포지션 설정 기능 준비 중입니다.</p>
+              <div class="form-grid-2col">
+                <!-- 게임 아이디 & 티어 -->
+                <div class="form-sub-card">
+                  <div class="form-group">
+                    <label>배틀태그 (아이디#태그)</label>
+                    <input type="text" id="owId" placeholder="예: Player#1234" pattern="^.+#.+$" title="'아이디#태그' 형식으로 입력해 주세요." />
+                  </div>
+
+                  <div class="form-group">
+                    <label>경쟁전 티어 선택</label>
+                    <input type="hidden" id="owTier" value="Unranked" />
+                    <div id="owTierContainer" class="tier-image-picker">
+                      <!-- JS로 티어 버튼 동적 생성 또는 기본 버튼 배치 -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 주/부 역할군 및 영웅 선택 -->
+                <div class="form-sub-card">
+                  <!-- 주 역할군 영역 -->
+                  <div class="role-group" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                      <label>주 역할군 <span class="required">*필수</span></label>
+                      <select id="owMainRole" onchange="updateOWHeroSelection('main')">
+                        <option value="">선택하세요</option>
+                        <option value="돌격">돌격 (Tank)</option>
+                        <option value="공격">공격 (Damage)</option>
+                        <option value="지원">지원 (Support)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>주 역할군 선호 영웅 (최대 3개, 1번 필수)</label>
+                      <div id="owMainHeroContainer" class="agent-image-picker">
+                        <p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 부 역할군 영역 -->
+                  <div class="role-group">
+                    <div class="form-group">
+                      <label>부 역할군 (선택)</label>
+                      <select id="owSubRole" onchange="updateOWHeroSelection('sub')">
+                        <option value="">선택 안 함</option>
+                        <option value="돌격">돌격 (Tank)</option>
+                        <option value="공격">공격 (Damage)</option>
+                        <option value="지원">지원 (Support)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>부 역할군 선호 영웅 (최대 3개)</label>
+                      <div id="owSubHeroContainer" class="agent-image-picker">
+                        <p class="placeholder-text" style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 4;">역할군을 먼저 선택해 주세요.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
