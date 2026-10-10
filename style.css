@@ -1,23 +1,22 @@
 /* ============================================================= */
-/* OPTION 1: Valorant Tactical Theme                             */
+/* OPTION 2: Tactical Modern Dark UI                             */
 /* ============================================================= */
 :root {
-  --bg-color: #0f1923;
-  --card-bg: #1f2326;
-  --text-color: #ece8e1;
-  --text-muted: #768079;
-  --primary-color: #ff4655;
-  --primary-hover: #e03e4c;
-  --accent-color: #0f1923;
-  --border-color: #36393e;
-  --radius: 2px; /* 발로란트 특유의 각진 모서리 */
+  --bg-color: #0b0f19;
+  --card-bg: #111827;
+  --card-hover: #1f293d;
+  --text-color: #f3f4f6;
+  --text-muted: #9ca3af;
+  --primary-color: #6366f1;
+  --primary-hover: #4f46e5;
+  --border-color: #1f2937;
+  --radius: 12px;
 }
 
 body.dark-mode {
-  --bg-color: #090e14;
-  --card-bg: #171a1d;
-  --text-color: #ffffff;
-  --border-color: #2b2e33;
+  --bg-color: #060911;
+  --card-bg: #0d1322;
+  --border-color: #1a2336;
 }
 
 * {
@@ -29,159 +28,97 @@ body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
-  transition: background-color 0.2s, color 0.2s;
 }
 
-/* Auth Section */
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: var(--bg-color);
-  background-image: radial-gradient(circle at 50% 50%, rgba(255, 70, 85, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle at top, #1e1b4b 0%, var(--bg-color) 70%);
 }
 
 .auth-box {
-  background: var(--card-bg);
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(12px);
   padding: 2.5rem;
   border-radius: var(--radius);
   width: 100%;
   max-width: 400px;
-  border: 1px solid var(--primary-color);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  position: relative;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .auth-box h2, .auth-box h3 {
   text-align: center;
   margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--primary-color);
+  color: #ffffff;
 }
 
-.full-width {
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-/* Buttons */
 .btn-primary {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
   border: none;
   padding: 10px 18px;
-  border-radius: var(--radius);
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  text-transform: uppercase;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
-  box-shadow: 0 0 12px rgba(255, 70, 85, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
 }
 
 .btn-secondary {
-  background-color: #2c3135;
-  color: #ece8e1;
-  border: 1px solid var(--border-color);
+  background-color: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
   padding: 10px 18px;
-  border-radius: var(--radius);
-  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.15s;
 }
 
 .btn-secondary:hover {
-  background-color: #3b4045;
+  background-color: #374151;
 }
 
-.btn-danger {
-  background-color: #d63031;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-}
-
-.divider {
-  margin: 2rem 0;
-  border: 0;
-  border-top: 1px solid var(--border-color);
-}
-
-/* Navbar */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: var(--card-bg);
-  border-bottom: 2px solid var(--primary-color);
+  background: rgba(17, 24, 39, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .logo {
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 1.5px;
-  color: var(--text-color);
-  text-transform: uppercase;
-}
-
-.nav-links {
-  display: flex;
-  gap: 10px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .nav-links button, .game-filter button, .team-subtabs button {
-  padding: 9px 18px;
+  padding: 8px 16px;
   border: 1px solid var(--border-color);
-  background: var(--card-bg);
+  background: #1f2937;
   color: var(--text-color);
-  border-radius: var(--radius);
-  font-weight: 600;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .nav-links button:hover, .game-filter button:hover {
   border-color: var(--primary-color);
-  color: var(--primary-color);
+  color: #a5b4fc;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.badge {
-  padding: 4px 10px;
-  border-radius: var(--radius);
-  font-size: 0.75rem;
-  font-weight: 800;
-  background-color: #2c3135;
-  color: #ece8e1;
-  border: 1px solid var(--border-color);
-}
-
-.badge.admin {
-  background-color: var(--primary-color);
-  color: #ffffff;
-  border: none;
-}
-
-/* Layout & Cards */
 .container {
   max-width: 1050px;
   margin: 2rem auto;
@@ -199,48 +136,25 @@ body {
 .scrim-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--primary-color);
   border-radius: var(--radius);
   padding: 1.25rem;
   margin-bottom: 1.2rem;
-  transition: transform 0.15s, border-color 0.15s;
+  transition: all 0.2s;
 }
 
 .scrim-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-/* Agent Picker Grid */
-.game-profile-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 12px;
-}
-
-@media (max-width: 900px) {
-  .game-profile-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.game-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: 16px;
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .agent-image-picker {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--radius);
-  border: 1px dashed var(--border-color);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
 }
 
 .agent-btn {
@@ -249,19 +163,13 @@ body {
   border: 2px solid transparent;
   padding: 0;
   cursor: pointer;
-  transition: transform 0.15s, border-color 0.15s;
-  border-radius: var(--radius);
+  border-radius: 8px;
   overflow: hidden;
-}
-
-.agent-btn:hover {
-  transform: scale(1.05);
-  border-color: rgba(255, 70, 85, 0.6);
 }
 
 .agent-btn.selected {
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 70, 85, 0.6);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
 }
 
 .select-badge {
@@ -277,10 +185,8 @@ body {
   justify-content: center;
   align-items: center;
   font-size: 11px;
-  font-weight: bold;
 }
 
-/* Modal */
 .modal {
   display: none;
   position: fixed;
@@ -288,12 +194,11 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 25, 35, 0.85);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
   z-index: 1000;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
 .modal.active {
@@ -307,6 +212,5 @@ body {
   border-radius: var(--radius);
   width: 100%;
   max-width: 520px;
-  border: 1px solid var(--primary-color);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-color);
 }
