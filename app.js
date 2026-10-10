@@ -62,12 +62,10 @@ function getKoreanTierLabel(tierKey) {
 // 요원/영웅 이미지 찾기 헬퍼 함수
 function getAgentOrHeroImg(name) {
   if (!name) return '';
-  // 발로란트 요원 검색
   for (const role in VALO_AGENT_DATA) {
     const found = VALO_AGENT_DATA[role].find(a => a.name === name);
     if (found) return found.img;
   }
-  // 오버워치 영웅 검색
   for (const role in OW_HERO_DATA) {
     const found = OW_HERO_DATA[role].find(h => h.name === name);
     if (found) return found.img;
@@ -728,7 +726,6 @@ function renderTeamList(elementId, teamMembers) {
     const mainRole = valo.main_role || ow.main_role || '미설정';
     const mainAgents = valo.main_agents || ow.main_heroes || [];
     
-    // 요원/영웅 이미지 태그 생성
     let agentsImgsHtml = '';
     if (mainAgents.length > 0) {
       agentsImgsHtml = mainAgents.map(name => {
@@ -944,7 +941,6 @@ function renderLiveDraftBoard(scrim) {
     }
   }
 
-  // 대기 풀 렌더링 (한글 티어 및 요원/영웅 아이콘 이미지 적용)
   poolList.innerHTML = '';
   if (pool.length === 0) {
     poolList.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">대기 참가자가 없습니다.</li>';
@@ -995,7 +991,6 @@ function renderLiveDraftBoard(scrim) {
     });
   }
 
-  // 내부 헬퍼 함수: 팀원 리스트 렌더링 (한글 티어, 요원/영웅 아이콘 이미지 적용)
   const renderTeamMemberList = (containerEl, members, captainId) => {
     containerEl.innerHTML = '';
     if (members.length === 0) {
@@ -1112,7 +1107,9 @@ function switchAuthView(viewType) {
   }
 }
 
-// 발로란트 맵 데이터
+// =============================================================
+// 6. 맵 데이터 및 맵 밴/픽 투표 시스템
+// =============================================================
 const VALO_MAP_DATA = [
   { name: '어센트', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt720076a084c68831/60ee111425dc2c4ff2c7f465/Ascent_LoadingScreen.png' },
   { name: '바인드', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt7c85854746f13bc4/5ee7333cf9704e0ffe63a350/Bind_LoadingScreen.png' },
@@ -1123,112 +1120,160 @@ const VALO_MAP_DATA = [
   { name: '펄', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt42b87e2213717df0/629c48873d6e5c544d6da3a7/Pearl_LoadingScreen.png' }
 ];
 
-// 오버워치 모드별 맵 데이터
 const OW_MAP_DATA_BY_MODE = {
-  "쟁탈 (Control)": [
+  "쟁탈": [
     { name: "일리오스", img: "images/maps/ilios.png" },
     { name: "네팔", img: "images/maps/nepal.png" },
     { name: "부산", img: "images/maps/busan.png" },
     { name: "남극 반도", img: "images/maps/antarctic_peninsula.png" }
   ],
-  "화물 (Escort)": [
+  "화물": [
     { name: "리알토", img: "images/maps/rialto.png" },
     { name: "서킷 로얄", img: "images/maps/circuit_royal.png" },
     { name: "지브롤터", img: "images/maps/gibraltar.png" },
     { name: "쓰레기촌", img: "images/maps/junkertown.png" }
   ],
-  "혼합 (Hybrid)": [
+  "혼합": [
     { name: "왕의 길", img: "images/maps/kings_row.png" },
     { name: "아이헨발데", img: "images/maps/eichenwalde.png" },
     { name: "블리자드 월드", img: "images/maps/blizzard_world.png" },
     { name: "미드타운", img: "images/maps/midtown.png" }
   ],
-  "밀어내기 (Push)": [
+  "밀기": [
+    { name: "콜로세오", img: "images/maps/colosseo.png" },
+    { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
+    { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
+  ],
+  "플래시포인트": [
     { name: "콜로세오", img: "images/maps/colosseo.png" },
     { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
     { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
   ]
 };
 
-function renderMapVerificationView(gameType) {
-  const container = document.getElementById('mapVerificationContainer');
-  if (!container) return;
-  container.innerHTML = '';
-
+async function initializeMapVeto(scrimId, gameType) {
+  let initialPool = [];
+  
   if (gameType === 'valorant') {
-    container.innerHTML = `
-      <h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 발로란트 전장 목록</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
-        ${VALO_MAP_DATA.map(map => `
-          <div style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; text-align: center;">
-            <div style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
-              <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 100%; object-fit: cover;" />
-            </div>
-            <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  } else if (gameType === 'overwatch') {
-    let html = `<h3 style="margin-bottom: 16px; font-size: 1.2rem; color: var(--text-main);">🗺️ 오버워치 모드별 전장 목록</h3>`;
-    
-    Object.keys(OW_MAP_DATA_BY_MODE).forEach(modeName => {
-      const maps = OW_MAP_DATA_BY_MODE[modeName];
-      html += `
-        <div style="margin-bottom: 20px;">
-          <h4 style="color: var(--accent-purple); margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">📌 ${modeName}</h4>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
-            ${maps.map(map => `
-              <div style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; text-align: center;">
-                <div style="width: 100%; aspect-ratio: 16/9; background: var(--bg-card); border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border-color);">
-                  <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                  <span style="display:none; font-size:0.8rem; font-weight:700; color:var(--accent-purple);">${map.name}</span>
-                </div>
-                <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
+    initialPool = [...VALO_MAP_DATA];
+  } else {
+    initialPool = Object.values(OW_MAP_DATA_BY_MODE).flat();
+  }
+
+  const { error } = await supabaseClient.from('scrims').update({
+    map_pool: initialPool,
+    map_veto_status: 'in_progress',
+    current_map_turn: 'A',
+    veto_history: [],
+    selected_maps: []
+  }).eq('id', scrimId);
+
+  if (error) {
+    alert('맵 투표 시작 실패: ' + error.message);
+  } else {
+    alert('맵 투표가 시작되었습니다!');
   }
 }
 
-// 발로란트 맵 데이터
-const VALO_MAP_DATA = [
-  { name: '어센트', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt720076a084c68831/60ee111425dc2c4ff2c7f465/Ascent_LoadingScreen.png' },
-  { name: '바인드', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt7c85854746f13bc4/5ee7333cf9704e0ffe63a350/Bind_LoadingScreen.png' },
-  { name: '헤이븐', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt56f5e3df16d566e5/5ee7333c16260e0ffe1f4215/Haven_LoadingScreen.png' },
-  { name: '로터스', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/bltecccd334e3a0937a/63b27b87c71fb26487e4ea6a/Lotus_Loading_Screen.png' },
-  { name: '선셋', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt181515b026613867/64de581c37c22cb87ee64188/Sunset_Loading_Screen.png' },
-  { name: '아이스박스', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt36d6c697816110f2/5f79563402777174e2a1b945/Icebox_LoadingScreen.png' },
-  { name: '펄', img: 'https://images.contentstack.io/v3/assets/bltb6530b271fca0b16/blt42b87e2213717df0/629c48873d6e5c544d6da3a7/Pearl_LoadingScreen.png' }
-];
+async function handleMapVetoClick(mapName) {
+  if (!activeDraftScrim) return;
+  const scrim = activeDraftScrim;
+  
+  if (scrim.map_veto_status !== 'in_progress') {
+    alert('진행 중인 맵 투표가 아닙니다.');
+    return;
+  }
 
-// 오버워치 모드별 맵 데이터
-const OW_MAP_DATA_BY_MODE = {
-  "쟁탈 (Control)": [
-    { name: "일리오스", img: "images/maps/ilios.png" },
-    { name: "네팔", img: "images/maps/nepal.png" },
-    { name: "부산", img: "images/maps/busan.png" },
-    { name: "남극 반도", img: "images/maps/antarctic_peninsula.png" }
-  ],
-  "화물 (Escort)": [
-    { name: "리알토", img: "images/maps/rialto.png" },
-    { name: "서킷 로얄", img: "images/maps/circuit_royal.png" },
-    { name: "지브롤터", img: "images/maps/gibraltar.png" },
-    { name: "쓰레기촌", img: "images/maps/junkertown.png" }
-  ],
-  "혼합 (Hybrid)": [
-    { name: "왕의 길", img: "images/maps/kings_row.png" },
-    { name: "아이헨발데", img: "images/maps/eichenwalde.png" },
-    { name: "블리자드 월드", img: "images/maps/blizzard_world.png" },
-    { name: "미드타운", img: "images/maps/midtown.png" }
-  ],
-  "밀어내기 (Push)": [
-    { name: "콜로세오", img: "images/maps/colosseo.png" },
-    { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
-    { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
-  ]
-};
+  const currentTurn = scrim.current_map_turn;
+  const currentCaptainId = currentTurn === 'A' ? scrim.captain_a : scrim.captain_b;
+  if (!currentUser || currentUser.id !== currentCaptainId) {
+    alert(`현재는 [${currentTurn}팀] 팀장 차례입니다.`);
+    return;
+  }
+
+  let pool = [...(scrim.map_pool || [])];
+  let history = [...(scrim.veto_history || [])];
+  let selected = [...(scrim.selected_maps || [])];
+
+  const isBanPhase = history.length < 2; 
+  const actionType = isBanPhase ? 'ban' : 'pick';
+
+  const targetIndex = pool.findIndex(m => m.name === mapName);
+  if (targetIndex === -1) return;
+  const clickedMap = pool.splice(targetIndex, 1)[0];
+
+  if (actionType === 'ban') {
+    history.push({ team: currentTurn, action: 'ban', map: clickedMap.name });
+  } else {
+    history.push({ team: currentTurn, action: 'pick', map: clickedMap.name });
+    selected.push(clickedMap);
+  }
+
+  const nextTurn = currentTurn === 'A' ? 'B' : 'A';
+  const isFinished = history.length >= 3; 
+
+  const { error } = await supabaseClient.from('scrims').update({
+    map_pool: pool,
+    veto_history: history,
+    selected_maps: selected,
+    current_map_turn: isFinished ? null : nextTurn,
+    map_veto_status: isFinished ? 'finished' : 'in_progress'
+  }).eq('id', scrim.id);
+
+  if (error) {
+    alert('투표 반영 실패: ' + error.message);
+  }
+}
+
+function renderMapVetoBoard(scrim) {
+  const container = document.getElementById('mapVetoBoardContainer');
+  if (!container) return;
+
+  const pool = scrim.map_pool || [];
+  const history = scrim.veto_history || [];
+  const selectedMaps = scrim.selected_maps || [];
+  const currentTurn = scrim.current_map_turn;
+  const status = scrim.map_veto_status;
+
+  const isFinished = status === 'finished';
+  const currentCaptainId = currentTurn === 'A' ? scrim.captain_a : scrim.captain_b;
+  const isMyTurn = currentUser && currentUser.id === currentCaptainId && !isFinished;
+
+  let html = `
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 10px; font-size: 1.1rem; color: var(--text-main);">🗺️ 실시간 맵 밴/픽 현황</h3>
+      
+      <div style="padding: 10px; background: var(--accent-glow); border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 700; color: var(--accent-purple);">
+        ${isFinished ? '🎉 최종 경기 맵이 확정되었습니다!' : `🔥 현재 [${currentTurn}팀] 턴입니다! (${isMyTurn ? '당신이 맵을 선택할 차례입니다!' : '상대 팀장이 고르는 중...'})`}
+      </div>
+
+      <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--text-muted);">선택 가능한 맵 목록</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+        ${pool.map(map => `
+          <div onclick="${isMyTurn ? `handleMapVetoClick('${map.name}')` : ''}" style="background: var(--bg-element); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; text-align: center; cursor: ${isMyTurn ? 'pointer' : 'default'}; transition: 0.2s;">
+            <div style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 6px;">
+              <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">${map.name}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="background: var(--bg-element); padding: 12px; border-radius: 8px;">
+          <strong style="font-size: 0.85rem; color: var(--text-muted);">❌ 밴/픽 기록</strong>
+          <ul style="margin-top: 6px; padding-left: 16px; font-size: 0.85rem;">
+            ${history.map(h => `<li>[${h.team}팀] ${h.map} (${h.action.toUpperCase()})</li>`).join('')}
+          </ul>
+        </div>
+        <div style="background: var(--bg-element); padding: 12px; border-radius: 8px;">
+          <strong style="font-size: 0.85rem; color: var(--accent-purple);">⭐ 최종 확정 맵</strong>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            ${selectedMaps.map(m => `<span style="padding: 4px 8px; background: var(--accent-purple); color: white; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">${m.name}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  container.innerHTML = html;
+}
