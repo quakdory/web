@@ -47,17 +47,18 @@ const VALO_TIER_DATA = [
   { name: 'Radiant', label: '레디언트', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/smallicon.png' }
 ];
 
-// 오버워치 2 경쟁전 티어 데이터
+// 오버워치 2 경쟁전 티어 데이터 (로컬 이미지 적용)
 const OW_TIER_DATA = [
-  { name: "언랭크", value: "Unranked", icon: "❓" },
-  { name: "브론즈", value: "Bronze", icon: "🥉" },
-  { name: "실버", value: "Silver", icon: "🥈" },
-  { name: "골드", value: "Gold", icon: "🥇" },
-  { name: "플래티넘", value: "Platinum", icon: "💎" },
-  { name: "다이아몬드", value: "Diamond", icon: "💠" },
-  { name: "마스터", value: "Master", icon: "👑" },
-  { name: "그랜드마스터", value: "Grandmaster", icon: "🔥" },
-  { name: "챔피언", value: "Champion", icon: "🌟" }
+  { name: "언랭크", value: "Unranked", icon: "images/tiers/언랭크.png" },
+  { name: "브론즈", value: "Bronze", icon: "images/tiers/브론즈.png" },
+  { name: "실버", value: "Silver", icon: "images/tiers/실버.png" },
+  { name: "골드", value: "Gold", icon: "images/tiers/골드.png" },
+  { name: "플래티넘", value: "Platinum", icon: "images/tiers/플래티넘.png" },
+  { name: "에메랄드", value: "Emerald", icon: "images/tiers/에메랄드.png" },
+  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/다이아몬드.png" },
+  { name: "마스터", value: "Master", icon: "images/tiers/마스터.png" },
+  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/그랜드마스터.png" },
+  { name: "챔피언", value: "Champion", icon: "images/tiers/챔피언.png" }
 ];
 
 // 아이디를 가짜 이메일 형식으로 변환하는 도우미 함수
@@ -378,7 +379,7 @@ let owSelectedHeroes = {
   sub: []
 };
 
-// 오버워치 티어 선택기 렌더링 함수
+// 오버워치 티어 선택기 렌더링 함수 (이미지 적용)
 function renderOWTierPicker(selectedTierValue = 'Unranked') {
   const container = document.getElementById('owTierContainer');
   if (!container) return;
@@ -393,7 +394,10 @@ function renderOWTierPicker(selectedTierValue = 'Unranked') {
     btn.onclick = () => selectOWTier(tier.value, btn);
 
     btn.innerHTML = `
-      <span style="font-size: 22px; margin-bottom: 4px;">${tier.icon}</span>
+      <div style="width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; margin-bottom: 4px;">
+        <img src="${tier.icon}" alt="${tier.name}" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+        <span style="display: none; font-size: 11px; font-weight: 800; color: var(--accent-purple);">${tier.name.substring(0, 2)}</span>
+      </div>
       <span class="tier-name">${tier.name}</span>
     `;
     container.appendChild(btn);
