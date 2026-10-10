@@ -621,3 +621,25 @@ body.dark-mode #teamBList li {
   min-height: 100vh;
   width: 100%;
 }
+
+.auth-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+}
+
+body.dark-mode .auth-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.auth-card h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--text-main);
+  margin-bottom: 24px;
+  text-align: center;
+}
