@@ -1122,33 +1122,45 @@ const VALO_MAP_DATA = [
 
 const OW_MAP_DATA_BY_MODE = {
   "쟁탈": [
-    { name: "일리오스", img: "images/maps/ilios.png" },
-    { name: "네팔", img: "images/maps/nepal.png" },
-    { name: "부산", img: "images/maps/busan.png" },
-    { name: "남극 반도", img: "images/maps/antarctic_peninsula.png" }
+    { name: "네팔", img: "images/maps/ove/네팔.png" },
+    { name: "부산", img: "images/maps/ove/부산.png" },
+    { name: "오아시스", img: "images/maps/ove/오아시스.png" },
+    { name: "남극반도", img: "images/maps/ove/남극반도.png" },
+    { name: "일리오스", img: "images/maps/ove/일리오스.png" },
+    { name: "사모아", img: "images/maps/ove/사모아.png" },
+    { name: "리장 타워", img: "images/maps/ove/리장타워.png" }
   ],
-  "화물": [
-    { name: "리알토", img: "images/maps/rialto.png" },
-    { name: "서킷 로얄", img: "images/maps/circuit_royal.png" },
-    { name: "지브롤터", img: "images/maps/gibraltar.png" },
-    { name: "쓰레기촌", img: "images/maps/junkertown.png" }
+  "호위": [
+    { name: "샴발리 수도원", img: "images/maps/ove/샴발리.png" },
+    { name: "서킷 로얄", img: "images/maps/ove/서킷로얄.png" },
+    { name: "감시기지: 지브롤터", img: "images/maps/ove/지브롤터.png" },
+    { name: "도라도", img: "images/maps/ove/도라도.png" },
+    { name: "쓰레기촌", img: "images/maps/ove/쓰레기촌.png" },
+    { name: "리알토", img: "images/maps/ove/리알토.png" },
+    { name: "하바나", img: "images/maps/ove/하바나.png" },
+    { name: "66번 국도", img: "images/maps/ove/66번국도.png" },
+    { name: "그림스뵈튼", img: "images/maps/ove/그림스뵈튼.png" }
   ],
   "혼합": [
-    { name: "왕의 길", img: "images/maps/kings_row.png" },
-    { name: "아이헨발데", img: "images/maps/eichenwalde.png" },
-    { name: "블리자드 월드", img: "images/maps/blizzard_world.png" },
-    { name: "미드타운", img: "images/maps/midtown.png" }
+    { name: "할리우드", img: "images/maps/ove/할리우드.png" },
+    { name: "왕의 길", img: "images/maps/ove/왕의길.png" },
+    { name: "미드타운", img: "images/maps/ove/미드타운.png" },
+    { name: "아이헨발데", img: "images/maps/ove/아이헨발데.png" },
+    { name: "네온교차로", img: "images/maps/ove/네온교차로.png" },
+    { name: "파라이수", img: "images/maps/ove/파라이수.png" },
+    { name: "블리자드 월드", img: "images/maps/ove/블리자드월드.png" },
+    { name: "눔바니", img: "images/maps/ove/눔바니.png" }
   ],
   "밀기": [
-    { name: "콜로세오", img: "images/maps/colosseo.png" },
-    { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
-    { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
+    { name: "뉴 퀸 스트리트", img: "images/maps/ove/뉴퀸스트리트.png" },
+    { name: "이스페란사", img: "images/maps/ove/이스페란사.png" },
+    { name: "콜로세오", img: "images/maps/ove/콜로세오.png" },
+    { name: "루나사피", img: "images/maps/ove/루나사피.png" }
   ],
-  "플래시포인트": [
-    { name: "콜로세오", img: "images/maps/colosseo.png" },
-    { name: "뉴 페데스라", img: "images/maps/new_queen_street.png" },
-    { name: "로스 파라다이스", img: "images/maps/esperanca.png" }
-  ]
+  "플래시포인트": 
+    { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.png" },
+    { name: "수라바사", img: "images/maps/ove/수라바사.png" },
+    { name: "아틀리스", img: "images/maps/ove/아틀리스.png" }
 };
 
 async function initializeMapVeto(scrimId, gameType) {
