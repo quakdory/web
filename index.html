@@ -251,10 +251,8 @@
           </div>
         </div>
 
-        <!-- 실시간 맵 투표 현황판이 그려질 자리 -->
-        <div id="mapVetoBoardContainer"></div>
-      </section>
-      
+        
+
       <nav class="nav-links">
   <button onclick="showTab('scrim')">내전</button>
   <button onclick="showTab('team')">팀 구성</button>
@@ -262,6 +260,11 @@
   <button onclick="showTab('mapVeto'); loadVetoScrimOptions();">🗺️ 맵 투표</button> <!-- 👈 추가 -->
   <button onclick="showTab('sns')">SNS</button>
 </nav>
+
+<!-- 실시간 맵 투표 현황판이 그려질 자리 -->
+        <section id="mapVetoBoardContainer">
+          <h2>실시간 맵 투표 현황판</h2>
+      </section>
 
       <!-- 3. 맵 확인 탭 -->
       <section id="map" class="tab-content">
