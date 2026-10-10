@@ -5,7 +5,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
 
 :root {
-  /* [라이트 모드] - 화사하고 가독성 높은 밝은 테마 */
   --bg-app: #f4f6f9;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
@@ -26,7 +25,6 @@
 }
 
 body.dark-mode {
-  /* [다크 모드] - 딥 보라빛 Violet Tactical 감성 */
   --bg-app: #030508;
   --bg-surface: #0a0e17;
   --bg-card: #111726;
@@ -56,7 +54,6 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* 모드별 배경 그라데이션 */
 body:not(.dark-mode) {
   background-image: 
     radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.06) 0%, transparent 45%),
@@ -71,15 +68,11 @@ body.dark-mode {
   background-attachment: fixed;
 }
 
-/* 스크롤바 디자인 */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-app); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
 
-/* ============================================================= */
-/* 1. 상단 네비게이션 바 */
-/* ============================================================= */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -109,7 +102,6 @@ body.dark-mode .navbar {
   gap: 10px;
 }
 
-/* 네비게이션 버튼 및 필터 버튼 */
 .nav-links button, .game-filter button, .team-subtabs button {
   padding: 10px 20px;
   border: 1px solid var(--border-color);
@@ -135,7 +127,6 @@ body.dark-mode .navbar {
   box-shadow: 0 4px 12px var(--accent-glow);
 }
 
-/* 유저 정보 배지 */
 .user-info {
   display: flex;
   align-items: center;
@@ -165,9 +156,6 @@ body.dark-mode .navbar {
   border-color: var(--accent-purple);
 }
 
-/* ============================================================= */
-/* 2. 카드, 모달 및 공통 컨테이너 스타일 */
-/* ============================================================= */
 .container {
   max-width: 1200px;
   margin: 3rem auto;
@@ -206,7 +194,6 @@ body.dark-mode .section-box {
   background: linear-gradient(to bottom, var(--accent-purple), var(--accent-cyan));
 }
 
-/* 모달 스타일 */
 .modal {
   display: none !important;
   position: fixed;
@@ -256,9 +243,6 @@ body.dark-mode .modal {
   padding-bottom: 16px;
 }
 
-/* ============================================================= */
-/* 3. 폼 및 게임별 프로필 설정 / 피커 스타일 */
-/* ============================================================= */
 .section-box {
   padding: 20px 24px;
   margin-bottom: 24px;
@@ -295,7 +279,6 @@ body.dark-mode .modal {
   background-color: var(--bg-element);
 }
 
-/* 입력창 및 셀렉트 박스 */
 input[type="text"],
 input[type="password"],
 input[type="email"],
@@ -326,7 +309,6 @@ select option {
   padding: 10px;
 }
 
-/* 버튼 스타일 */
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-purple) 0%, #7c3aed 100%);
   color: white;
@@ -364,7 +346,6 @@ select option {
 .full-width { width: 100%; }
 .divider { margin: 2rem 0; border: 0; border-top: 1px solid var(--border-color); }
 
-/* 게임별 프로필 서브탭 */
 .game-profile-tabs {
   display: flex;
   gap: 10px;
@@ -401,7 +382,6 @@ select option {
 .game-panel { display: none; }
 .game-panel.active { display: block; }
 
-/* 티어 및 요원 피커 */
 .tier-image-picker, .agent-image-picker {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -485,32 +465,22 @@ select option {
   padding-top: 20px;
   border-top: 1px solid var(--border-color);
 }
-/* ============================================================= */
-/* 탭(Tab) 및 팀 뷰(Team View) 기본 숨김 처리 (핵심)             */
-/* ============================================================= */
 
-/* 1. 탭 콘텐츠 기본 숨김 */
 .tab-content {
   display: none !important;
 }
 
-/* active 클래스가 있을 때만 활성화 */
 .tab-content.active {
   display: block !important;
 }
 
-/* 2. 팀 구성 서브뷰 기본 숨김 */
 .team-view {
   display: none !important;
 }
 
-/* active 클래스가 있을 때만 활성화 */
 .team-view.active {
   display: block !important;
 }
-/* ============================================================= */
-/* 상단 우측 유저 액션 버튼 스타일링 (프로필 수정, 로그아웃, 테마 토글) */
-/* ============================================================= */
 
 .user-info {
   display: flex;
@@ -519,7 +489,6 @@ select option {
   font-size: 0.95rem;
 }
 
-/* 프로필 수정 버튼 (메인 포인트 그라데이션) */
 .user-info .btn-sm:nth-of-type(1) {
   background: linear-gradient(135deg, var(--accent-purple) 0%, #7c3aed 100%);
   color: #ffffff;
@@ -538,7 +507,6 @@ select option {
   box-shadow: 0 6px 20px var(--accent-glow);
 }
 
-/* 로그아웃 버튼 (서브/경고 톤의 세련된 다크 버튼) */
 .user-info .btn-sm:nth-of-type(2) {
   background-color: var(--bg-element);
   color: var(--text-muted);
@@ -556,7 +524,6 @@ select option {
   border-color: rgba(244, 63, 94, 0.4);
 }
 
-/* 다크모드/라이트모드 토글 버튼 */
 #themeToggleBtn {
   background-color: var(--bg-element);
   border: 1px solid var(--border-color);
@@ -575,53 +542,38 @@ select option {
 
 #themeToggleBtn:hover {
   border-color: var(--accent-purple);
-  transform: scale(1.1) rotate(15deg);/* ============================================================= */
-/* 다크모드 & 라이트모드 완벽 대비 테마 스타일                     */
-/* ============================================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
-
-:root {
-  --bg-app: #f4f6f9;
-  --bg-surface: #ffffff;
-  --bg-card: #ffffff;
-  --bg-element: #eef2f7;
-  
-  --accent-purple: #8b5cf6;
-  --accent-glow: rgba(139, 92, 246, 0.25);
-  --accent-cyan: #0891b2;
-  
-  --text-main: #1f2937;
-  --text-muted: #6b7280;
-  --border-color: rgba(0, 0, 0, 0.1);
-  --border-active: rgba(139, 92, 246, 0.6);
-  
-  --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  --radius-lg: 16px;
-  --radius-sm: 8px;
-}
-
-body.dark-mode {
-  --bg-app: #030508;
-  --bg-surface: #0a0e17;
-  --bg-card: #111726;
-  --bg-element: #182236;
-  
-  --accent-purple: #a855f7;
-  --accent-glow: rgba(168, 85, 247, 0.4);
-  --accent-cyan: #06b6d4;
-  
-  --text-main: #f3f4f6;
-  --text-muted: #9ca3af;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(168, 85, 247, 0.6);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-main);
-}
+  transform: scale(1.1) rotate(15deg);
   background-color: var(--accent-glow);
+}
+
+#autoView .form-grid-2col > div,
+#teamAList, 
+#teamBList {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+}
+
+body.dark-mode #autoView .form-grid-2col > div,
+body.dark-mode .team-view .form-grid-2col > div {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode #teamAList,
+body.dark-mode #teamBList {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+}
+
+body.dark-mode #teamAList li,
+body.dark-mode #teamBList li {
+  border-bottom-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+body.dark-mode #teamAList li span,
+body.dark-mode #teamBList li span {
+  color: var(--text-muted) !important;
 }
