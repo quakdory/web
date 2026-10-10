@@ -9,6 +9,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let currentUser = null;
 let currentProfile = null;
 let currentFilter = 'all';
+let currentActiveScrimId = null;
 
 // 발로란트 선택 요원 임시 저장 변수
 let tempSelectedAgents = {
@@ -71,7 +72,6 @@ async function fetchValorantAgents() {
         }
       });
 
-      // 가나다순 정렬
       Object.keys(VALO_AGENT_DATA).forEach(role => {
         VALO_AGENT_DATA[role].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
       });
@@ -122,7 +122,6 @@ async function handleLogin(e) {
   const password = document.getElementById('loginPassword').value;
 
   const email = makeEmailFromUsername(username);
-
   const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
@@ -140,12 +139,15 @@ async function handleLogout() {
 async function checkAuthState() {
   const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
 
+  const authContainer = document.getElementById('authContainer');
+  const appContainer = document.getElementById('appContainer');
+
   if (sessionError) {
     console.error("세션 가져오기 에러:", sessionError);
     return;
   }
 
-  if (session) {
+  if (session && session.user) {
     currentUser = session.user;
 
     const { data: profile, error: profileError } = await supabaseClient
@@ -160,13 +162,12 @@ async function checkAuthState() {
 
     currentProfile = profile;
 
-    const authContainer = document.getElementById('authContainer');
-    const appContainer = document.getElementById('appContainer');
-    const nicknameElem = document.getElementById('userNickname');
-    const badgeElem = document.getElementById('userBadge');
-
+    // 화면 전환 명확히 제어 (로그인 박스 숨김, 메인 노출)
     if (authContainer) authContainer.style.display = 'none';
     if (appContainer) appContainer.style.display = 'block';
+
+    const nicknameElem = document.getElementById('userNickname');
+    const badgeElem = document.getElementById('userBadge');
 
     const displayNickname = profile?.nickname || currentUser.email.split('@')[0];
     if (nicknameElem) nicknameElem.textContent = displayNickname;
@@ -185,9 +186,8 @@ async function checkAuthState() {
   } else {
     currentUser = null;
     currentProfile = null;
-    const authContainer = document.getElementById('authContainer');
-    const appContainer = document.getElementById('appContainer');
 
+    // 비로그인 시 로그인 박스 노출, 메인 숨김
     if (authContainer) authContainer.style.display = 'flex';
     if (appContainer) appContainer.style.display = 'none';
   }
@@ -225,7 +225,6 @@ function renderTierPicker(selectedTierName = 'Unranked') {
 
 function selectTier(tierName, btnEl) {
   document.getElementById('valoTier').value = tierName;
-
   const container = document.getElementById('valoTierContainer');
   container.querySelectorAll('.tier-btn').forEach(btn => btn.classList.remove('selected'));
   btnEl.classList.add('selected');
@@ -393,7 +392,7 @@ async function saveFullProfile(e) {
 }
 
 // =============================================================
-// 5. UI / 네비게이션 제어
+// 5. UI / 네비게이션 / 내전(Scrim) 관리
 // =============================================================
 
 function toggleTheme() {
@@ -402,34 +401,29 @@ function toggleTheme() {
   if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
 }
 
-// 상단 메인 탭 전환
 function showTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   
   const targetTab = document.getElementById(tabId) || document.getElementById(tabId + 'Tab');
   if (targetTab) targetTab.classList.add('active');
 
-  // '팀 구성' 탭이 열릴 경우 '자동' 서브탭 활성화 및 내전 목록 로딩
-  if (tabId === 'teamTab' || tabId === 'team') {
+  if (tabId === 'team' || tabId === 'teamTab') {
     showTeamSubtab('auto');
   }
 }
 
-// 팀 구성 탭 내부의 서브탭 전환 (자동 / 드래프트 / 경매 등)
 function showTeamSubtab(subtabId) {
   document.querySelectorAll('.team-view').forEach(view => view.classList.remove('active'));
-  
   const targetView = document.getElementById(subtabId + 'View');
   if (targetView) targetView.classList.add('active');
 
-  // '자동' 서브탭이 선택되면 내전 선택 드롭다운 목록 갱신
   if (subtabId === 'auto') {
     loadScrimOptionsForTeamTab();
   }
 }
 
 function goToMain() {
-  showTab('scrimTab');
+  showTab('scrim');
   filterGame('all');
 }
 
@@ -441,10 +435,6 @@ function closeModal() {
   document.getElementById('scrimModal')?.classList.remove('active');
   document.getElementById('scrimForm')?.reset();
 }
-
-// =============================================================
-// 6. 내전(Scrim) 관리
-// =============================================================
 
 async function fetchScrims() {
   const list = document.getElementById('scrimList');
@@ -560,7 +550,7 @@ async function applyScrim(scrimId, currentCount, maxPlayers) {
   const { data: { session } } = await supabaseClient.auth.getSession();
   
   if (!session || !session.user) {
-    alert('로그인이 필요한 서비스입니다. 로그인 후 다시 시도해 주세요.');
+    alert('로그인이 필요한 서비스입니다.');
     return;
   }
 
@@ -644,7 +634,7 @@ async function deleteScrim(scrimId) {
 }
 
 // =============================================================
-// 7. 메인 상단 탭 "팀 구성 (자동 서브탭)" 로직
+// 6. 팀 구성 (자동 서브탭) 로직
 // =============================================================
 
 async function loadScrimOptionsForTeamTab() {
@@ -660,7 +650,6 @@ async function loadScrimOptionsForTeamTab() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('내전 목록 불러오기 오류:', error);
       selectEl.innerHTML = '<option value="">내전 목록을 불러오지 못했습니다.</option>';
       return;
     }
@@ -678,7 +667,6 @@ async function loadScrimOptionsForTeamTab() {
       selectEl.appendChild(opt);
     });
   } catch (err) {
-    console.error('내전 옵션 로딩 예외 발생:', err);
     selectEl.innerHTML = '<option value="">불러오기 중 오류가 발생했습니다.</option>';
   }
 }
@@ -746,8 +734,36 @@ function renderTeamList(elementId, teamMembers) {
   });
 }
 
-// 문서 로드 완료 시 API 로딩 및 초기 세션 검사
+// =============================================================
+// 7. Supabase Realtime (실시간 구독 설정)
+// =============================================================
+
+function subscribeToRealtimeChanges() {
+  supabaseClient
+    .channel('public-scrims-channel')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'scrims' },
+      () => {
+        fetchScrims();
+        if (typeof loadScrimOptionsForTeamTab === 'function') {
+          loadScrimOptionsForTeamTab();
+        }
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'scrim_participants' },
+      () => {
+        fetchScrims();
+      }
+    )
+    .subscribe();
+}
+
+// 초기화 및 실시간 구독 시작
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchValorantAgents();
   checkAuthState();
+  subscribeToRealtimeChanges();
 });
