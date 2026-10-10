@@ -485,3 +485,26 @@ select option {
   padding-top: 20px;
   border-top: 1px solid var(--border-color);
 }
+/* ============================================================= */
+/* 탭(Tab) 및 팀 뷰(Team View) 기본 숨김 처리 (핵심)             */
+/* ============================================================= */
+
+/* 1. 탭 콘텐츠 기본 숨김 */
+.tab-content {
+  display: none !important;
+}
+
+/* active 클래스가 있을 때만 활성화 */
+.tab-content.active {
+  display: block !important;
+}
+
+/* 2. 팀 구성 서브뷰 기본 숨김 */
+.team-view {
+  display: none !important;
+}
+
+/* active 클래스가 있을 때만 활성화 */
+.team-view.active {
+  display: block !important;
+}
