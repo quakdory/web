@@ -1,10 +1,32 @@
 /* ============================================================= */
-/* ULTIMATE ESPORTS TOURNAMENT PLATFORM - UNIFIED STYLE.CSS      */
+/* 다크모드 & 라이트모드 완벽 대비 테마 스타일                     */
 /* ============================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
 
 :root {
+  /* [라이트 모드] - 화사하고 가독성 높은 밝은 테마 */
+  --bg-app: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-element: #eef2f7;
+  
+  --accent-purple: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --accent-cyan: #0891b2;
+  
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-active: rgba(139, 92, 246, 0.6);
+  
+  --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+}
+
+body.dark-mode {
+  /* [다크 모드] - 딥 보라빛 Violet Tactical 감성 */
   --bg-app: #030508;
   --bg-surface: #0a0e17;
   --bg-card: #111726;
@@ -18,17 +40,6 @@
   --text-muted: #9ca3af;
   --border-color: rgba(255, 255, 255, 0.08);
   --border-active: rgba(168, 85, 247, 0.6);
-  
-  --font-main: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  --radius-lg: 16px;
-  --radius-sm: 8px;
-}
-
-body.dark-mode {
-  --bg-app: #020305;
-  --bg-surface: #06090f;
-  --bg-card: #0c101a;
-  --bg-element: #131a29;
 }
 
 * {
@@ -42,6 +53,18 @@ body {
   background-color: var(--bg-app);
   color: var(--text-main);
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 모드별 배경 그라데이션 */
+body:not(.dark-mode) {
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(8, 145, 178, 0.04) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+body.dark-mode {
   background-image: 
     radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
     radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 45%);
@@ -51,73 +74,261 @@ body {
 /* 스크롤바 디자인 */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-app); }
-::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
 
 /* ============================================================= */
-/* 1. 로그인 / 회원가입 화면 */
+/* 1. 상단 네비게이션 바 */
 /* ============================================================= */
-.auth-container {
+.navbar {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 3.5rem;
+  background-color: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+body.dark-mode .navbar {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 네비게이션 버튼 및 필터 버튼 */
+.nav-links button, .game-filter button, .team-subtabs button {
+  padding: 10px 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-element);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-links button:hover, .game-filter button:hover, .team-subtabs button:hover {
+  color: var(--text-main);
+  background: var(--bg-card);
+  border-color: var(--accent-purple);
+}
+
+.nav-links button.active, .game-filter button.active, .team-subtabs button.active {
+  background: var(--accent-purple);
+  color: #ffffff;
+  border-color: var(--accent-purple);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* 유저 정보 배지 */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.95rem;
+}
+
+#userNickname {
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.badge {
+  padding: 5px 12px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background-color: var(--bg-element);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  text-transform: uppercase;
+}
+
+.badge.admin {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+}
+
+/* ============================================================= */
+/* 2. 카드, 모달 및 공통 컨테이너 스타일 */
+/* ============================================================= */
+.container {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+}
+
+.scrim-card, .game-card, .auth-box, .modal-content, .form-sub-card, .section-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  transition: all 0.25s ease;
+}
+
+body.dark-mode .scrim-card, 
+body.dark-mode .game-card, 
+body.dark-mode .auth-box, 
+body.dark-mode .modal-content, 
+body.dark-mode .form-sub-card,
+body.dark-mode .section-box {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.scrim-card {
+  padding: 2rem;
+  margin-bottom: 1.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.scrim-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(to bottom, var(--accent-purple), var(--accent-cyan));
+}
+
+/* 모달 스타일 */
+.modal {
+  display: none !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-  background: radial-gradient(circle at center, rgba(168, 85, 247, 0.15) 0%, var(--bg-app) 70%);
+  padding: 24px;
 }
 
-.auth-box {
-  background: rgba(11, 23, 38, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 3.5rem 2.5rem;
-  border-radius: var(--radius-lg);
+body.dark-mode .modal {
+  background-color: rgba(2, 3, 5, 0.85);
+}
+
+.modal.active {
+  display: flex !important;
+}
+
+.modal-content {
+  padding: 36px;
   width: 100%;
-  max-width: 440px;
-  border: 1px solid var(--border-active);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.2);
-  position: relative;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
-.auth-box h2, .auth-box h3 {
-  text-align: center;
-  margin-bottom: 2rem;
+.modal-content.modal-lg {
+  max-width: 1280px;
+  width: 95%;
+  padding: 36px 40px;
+  border-radius: 16px;
+  max-height: 92vh;
+}
+
+.modal-content h3 {
+  font-size: 1.5rem;
   font-weight: 900;
-  letter-spacing: -0.5px;
-  color: #ffffff;
-  font-size: 1.75rem;
-  text-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
+  color: var(--text-main);
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
 }
 
-/* 폼 입력창 */
+/* ============================================================= */
+/* 3. 폼 및 게임별 프로필 설정 / 피커 스타일 */
+/* ============================================================= */
+.section-box {
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  background-color: var(--bg-surface);
+}
+
+.section-box h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-purple);
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .form-grid, .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-sub-card {
+  padding: 20px;
+  background-color: var(--bg-element);
+}
+
+/* 입력창 및 셀렉트 박스 */
 input[type="text"],
 input[type="password"],
 input[type="email"],
+input[type="number"],
 select,
 textarea {
   width: 100%;
   padding: 14px 18px;
   margin-bottom: 1.2rem;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--bg-element);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   border-radius: var(--radius-sm);
   font-size: 1rem;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--accent-purple);
-  background-color: rgba(168, 85, 247, 0.05);
   box-shadow: 0 0 0 4px var(--accent-glow);
+  background-color: var(--bg-card);
+}
+
+select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  padding: 10px;
 }
 
 /* 버튼 스타일 */
-.full-width { width: 100%; }
-
 .btn-primary {
-  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #7c3aed 100%);
   color: white;
   border: none;
   padding: 14px 24px;
@@ -126,13 +337,11 @@ input:focus, select:focus, textarea:focus {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
-  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px var(--accent-glow);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(168, 85, 247, 0.6);
   filter: brightness(1.1);
 }
 
@@ -148,258 +357,26 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-secondary:hover {
-  background-color: #202e47;
-  border-color: var(--text-muted);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+  background-color: var(--border-color);
 }
 
 .btn-sm { padding: 6px 14px; font-size: 0.85rem; }
+.full-width { width: 100%; }
 .divider { margin: 2rem 0; border: 0; border-top: 1px solid var(--border-color); }
 
-/* ============================================================= */
-/* 2. 상단 네비게이션 바 */
-/* ============================================================= */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.2rem 3.5rem;
-  background-color: rgba(10, 14, 23, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: -1px;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
-}
-
-.nav-links {
-  display: flex;
-  gap: 12px;
-}
-
-.nav-links button, .game-filter button, .team-subtabs button {
-  padding: 10px 20px;
-  border: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-muted);
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-links button:hover, .game-filter button:hover, .team-subtabs button:hover {
-  color: #ffffff;
-  background: rgba(168, 85, 247, 0.1);
-  border-color: rgba(168, 85, 247, 0.3);
-}
-
-.nav-links button.active, .game-filter button.active, .team-subtabs button.active {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(124, 58, 237, 0.3) 100%);
-  color: #e9d5ff;
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 0.95rem;
-}
-
-#userNickname {
-  font-weight: 800;
-  color: #ffffff;
-}
-
-.badge {
-  padding: 5px 12px;
-  border-radius: 30px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  background-color: var(--bg-element);
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-  text-transform: uppercase;
-}
-
-.badge.admin {
-  background-color: rgba(168, 85, 247, 0.2);
-  color: #e9d5ff;
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
-}
-
-/* ============================================================= */
-/* 3. 메인 콘텐츠 및 내전 카드 */
-/* ============================================================= */
-.container {
-  max-width: 1200px;
-  margin: 3rem auto;
-  padding: 0 2rem;
-}
-
-.tab-content, .team-view {
-  display: none;
-}
-
-.tab-content.active, .team-view.active {
-  display: block;
-}
-
-.scrim-card {
-  background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-surface) 100%);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  margin-bottom: 1.8rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  position: relative;
-  overflow: hidden;
-}
-
-.scrim-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; bottom: 0;
-  width: 5px;
-  background: linear-gradient(to bottom, var(--accent-purple), var(--accent-cyan));
-}
-
-.scrim-card:hover {
-  border-color: var(--accent-purple);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.15);
-}
-
-/* ============================================================= */
-/* 4. 모달 (Modal) 기본 숨김 및 와이드 레이아웃 (핵심 수정) */
-/* ============================================================= */
-.modal {
-  display: none !important; /* 평소에는 화면에서 완전히 숨김 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(2, 3, 5, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-}
-
-/* active 클래스가 붙을 때만 화면에 Flex로 표시 */
-.modal.active {
-  display: flex !important;
-}
-
-.modal-content {
-  background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-surface) 100%);
-  color: var(--text-main);
-  padding: 36px;
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 580px;
-  border: 1px solid var(--border-active);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.2);
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-/* 넓은 프로필 와이드 모달 (최대 1280px) */
-.modal-content.modal-lg {
-  max-width: 1280px;
-  width: 95%;
-  padding: 36px 40px;
-  background: linear-gradient(145deg, #0f1524 0%, #0a0e17 100%);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(168, 85, 247, 0.15);
-  border-radius: 16px;
-  max-height: 92vh;
-  overflow-y: auto;
-}
-
-.modal-content h3 {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #ffffff;
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 16px;
-}
-
-/* 섹션 박스 및 폼 그리드 */
-.section-box {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 20px 24px;
-  margin-bottom: 24px;
-}
-
-.section-box h4 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #c084fc;
-  margin-bottom: 16px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-@media (max-width: 800px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ============================================================= */
-/* 5. 게임별 프로필 서브탭 & 패널 스타일 */
-/* ============================================================= */
+/* 게임별 프로필 서브탭 */
 .game-profile-tabs {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 12px;
 }
 
 .game-tab-btn {
   padding: 10px 20px;
   border: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-element);
   color: var(--text-muted);
   border-radius: var(--radius-sm);
   font-weight: 700;
@@ -409,65 +386,40 @@ input:focus, select:focus, textarea:focus {
 }
 
 .game-tab-btn:hover {
-  background: rgba(168, 85, 247, 0.1);
-  color: #ffffff;
-  border-color: rgba(168, 85, 247, 0.3);
+  color: var(--text-main);
+  background: var(--bg-card);
+  border-color: var(--accent-purple);
 }
 
 .game-tab-btn.active {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(124, 58, 237, 0.35) 100%);
-  color: #e9d5ff;
+  background: var(--accent-purple);
+  color: #ffffff;
   border-color: var(--accent-purple);
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 15px var(--accent-glow);
 }
 
-.game-panel {
-  display: none;
-}
-
-.game-panel.active {
-  display: block;
-  animation: fadeIn 0.25s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.form-grid-2col {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 20px;
-}
-
-@media (max-width: 900px) {
-  .form-grid-2col {
-    grid-template-columns: 1fr;
-  }
-}
-
-.form-sub-card {
-  background: rgba(17, 23, 38, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-sm);
-  padding: 20px;
-}
+.game-panel { display: none; }
+.game-panel.active { display: block; }
 
 /* 티어 및 요원 피커 */
-.tier-image-picker {
+.tier-image-picker, .agent-image-picker {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-app);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
 }
 
-.tier-btn {
+.agent-image-picker {
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  min-height: 90px;
+}
+
+.tier-btn, .agent-btn {
   background: transparent;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 6px 4px;
   cursor: pointer;
@@ -477,90 +429,40 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.2s ease;
 }
 
-.tier-btn:hover {
-  background: rgba(168, 85, 247, 0.15);
+.tier-btn:hover, .agent-btn:hover {
+  border-color: var(--accent-purple);
+  background: var(--bg-element);
 }
 
-.tier-btn.selected {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.25);
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+.tier-btn.selected, .agent-btn.selected {
+  border-color: var(--accent-purple);
+  background: var(--accent-glow);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
-.tier-btn img {
+.tier-btn img, .agent-btn img {
   width: 32px;
   height: 32px;
   object-fit: contain;
 }
 
-.tier-name {
-  font-size: 11px;
-  color: #9ca3af;
-  margin-top: 4px;
-}
-
-.agent-image-picker {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  min-height: 90px;
-}
-
-.agent-btn {
-  position: relative;
-  background: none;
-  border: 2px solid var(--border-color);
-  padding: 0;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: all 0.2s ease;
-  background-color: var(--bg-card);
-}
-
-.agent-btn:hover {
-  transform: scale(1.06);
-  border-color: var(--accent-purple);
-}
-
 .agent-btn img {
   width: 100%;
-  height: auto;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  display: block;
 }
 
-.agent-name {
-  font-size: 10px;
+.tier-name, .agent-name {
+  font-size: 11px;
   color: var(--text-muted);
-  margin-top: 2px;
-  text-align: center;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.agent-btn.selected {
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 15px var(--accent-glow);
-  background-color: rgba(168, 85, 247, 0.2);
+  margin-top: 4px;
 }
 
 .select-badge {
   position: absolute;
   top: 4px;
   right: 4px;
-  background: #a855f7;
+  background: var(--accent-purple);
   color: white;
   width: 18px;
   height: 18px;
@@ -573,41 +475,13 @@ input:focus, select:focus, textarea:focus {
   opacity: 0;
 }
 
-.agent-btn.selected .select-badge {
-  opacity: 1;
-}
-
-.required {
-  color: #f43f5e;
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
+.agent-btn.selected .select-badge { opacity: 1; }
+.required { color: #f43f5e; font-size: 0.75rem; font-weight: 800; }
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 28px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-/* 셀렉트 박스 및 드롭다운 옵션 색상 강제 고정 */
-select {
-  background-color: #0c101a !important;
-  color: #f3f4f6 !important;
-  border: 1px solid var(--border-color);
-}
-
-select option {
-  background-color: #111726 !important;
-  color: #ffffff !important;
-  padding: 10px;
-}
-
-/* 마우스를 올렸을 때(hover)의 스타일 */
-select option:hover,
-select option:focus,
-select option:checked {
-  background-color: #a855f7 !important;
-  color: #ffffff !important;
+  border-top: 1px solid var(--border-color);
 }
