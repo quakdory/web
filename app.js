@@ -22,32 +22,58 @@ const ROLE_MAPPING = {
 };
 
 const VALO_TIER_DATA = [
-  { name: 'Unranked', label: '언랭크', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/0/smallicon.png' },
-  { name: 'Iron', label: '아이언', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/3/smallicon.png' },
-  { name: 'Bronze', label: '브론즈', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/6/smallicon.png' },
-  { name: 'Silver', label: '실버', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/9/smallicon.png' },
-  { name: 'Gold', label: '골드', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/12/smallicon.png' },
-  { name: 'Platinum', label: '플래티넘', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/15/smallicon.png' },
-  { name: 'Diamond', label: '다이아', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/18/smallicon.png' },
-  { name: 'Ascendant', label: '초월자', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/21/smallicon.png' },
-  { name: 'Immortal', label: '불멸', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/24/smallicon.png' },
+  { name: '언랭크', label: '언랭크', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/0/smallicon.png' },
+  { name: '아이언', label: '아이언', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/3/smallicon.png' },
+  { name: '브론즈', label: '브론즈', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/6/smallicon.png' },
+  { name: '실버', label: '실버', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/9/smallicon.png' },
+  { name: '골드', label: '골드', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/12/smallicon.png' },
+  { name: '플래티넘', label: '플래티넘', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/15/smallicon.png' },
+  { name: '다이아몬드', label: '다이아', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/18/smallicon.png' },
+  { name: '초월자', label: '초월자', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/21/smallicon.png' },
+  { name: '불멸', label: '불멸', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/24/smallicon.png' },
   { name: 'Radiant', label: '레디언트', img: 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/smallicon.png' }
 ];
 
 const OW_TIER_DATA = [
-  { name: "언랭크", value: "Unranked", icon: "images/tiers/unranked.png" },
-  { name: "브론즈", value: "Bronze", icon: "images/tiers/bronze.png" },
-  { name: "실버", value: "Silver", icon: "images/tiers/silver.png" },
-  { name: "골드", value: "Gold", icon: "images/tiers/gold.png" },
-  { name: "플래티넘", value: "Platinum", icon: "images/tiers/platinum.png" },
-  { name: "에메랄드", value: "Emerald", icon: "images/tiers/emerald.png" },
-  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/diamond.png" },
-  { name: "마스터", value: "Master", icon: "images/tiers/master.png" },
-  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/grandmaster.png" },
-  { name: "챔피언", value: "Champion", icon: "images/tiers/champion.png" }
+  { name: "언랭크", value: "Unranked", icon: "images/tiers/언랭크.png" },
+  { name: "브론즈", value: "Bronze", icon: "images/tiers/브론즈.png" },
+  { name: "실버", value: "Silver", icon: "images/tiers/실버.png" },
+  { name: "골드", value: "Gold", icon: "images/tiers/골드.png" },
+  { name: "플래티넘", value: "Platinum", icon: "images/tiers/플래티넘.png" },
+  { name: "에메랄드", value: "Emerald", icon: "images/tiers/에메랄드.png" },
+  { name: "다이아몬드", value: "Diamond", icon: "images/tiers/다이아몬드.png" },
+  { name: "마스터", value: "Master", icon: "images/tiers/마스터.png" },
+  { name: "그랜드마스터", value: "Grandmaster", icon: "images/tiers/그랜드마스터.png" },
+  { name: "챔피언", value: "Champion", icon: "images/tiers/챔피언.png" }
 ];
 
 let owSelectedHeroes = { main: [], sub: [] };
+
+// 발로란트/오버워치 한글 티어 매핑 헬퍼 함수
+function getKoreanTierLabel(tierKey) {
+  if (!tierKey) return '언랭크';
+  const valoFound = VALO_TIER_DATA.find(t => t.name.toLowerCase() === tierKey.toLowerCase() || t.label === tierKey);
+  if (valoFound) return valoFound.label;
+  const owFound = OW_TIER_DATA.find(t => t.value.toLowerCase() === tierKey.toLowerCase() || t.name === tierKey);
+  if (owFound) return owFound.name;
+  return tierKey;
+}
+
+// 요원/영웅 이미지 찾기 헬퍼 함수
+function getAgentOrHeroImg(name) {
+  if (!name) return '';
+  // 발로란트 요원 검색
+  for (const role in VALO_AGENT_DATA) {
+    const found = VALO_AGENT_DATA[role].find(a => a.name === name);
+    if (found) return found.img;
+  }
+  // 오버워치 영웅 검색
+  for (const role in OW_HERO_DATA) {
+    const found = OW_HERO_DATA[role].find(h => h.name === name);
+    if (found) return found.img;
+  }
+  return '';
+}
 
 function makeEmailFromUsername(username) {
   return `${username.trim().toLowerCase()}@myapp.local`;
@@ -697,11 +723,22 @@ function renderTeamList(elementId, teamMembers) {
     const valo = profile.valo_info || {};
     const ow = profile.ow_info || {};
     
-    const tier = valo.tier || ow.tier || 'Unranked';
+    const rawTier = valo.tier || ow.tier || 'Unranked';
+    const tier = getKoreanTierLabel(rawTier);
     const mainRole = valo.main_role || ow.main_role || '미설정';
     const mainAgents = valo.main_agents || ow.main_heroes || [];
     
-    const agentsText = mainAgents.length > 0 ? `(${mainAgents.join(', ')})` : '';
+    // 요원/영웅 이미지 태그 생성
+    let agentsImgsHtml = '';
+    if (mainAgents.length > 0) {
+      agentsImgsHtml = mainAgents.map(name => {
+        const imgUrl = getAgentOrHeroImg(name);
+        if (imgUrl) {
+          return `<img src="${imgUrl}" alt="${name}" title="${name}" style="width: 20px; height: 20px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);" />`;
+        }
+        return `<span style="font-size: 0.75rem;">${name}</span>`;
+      }).join('');
+    }
 
     const li = document.createElement('li');
     li.style.display = 'flex';
@@ -719,9 +756,9 @@ function renderTeamList(elementId, teamMembers) {
         <strong style="color: var(--text-main);">${profile.nickname || '알 수 없음'}</strong>
         <span style="font-size: 0.75rem; padding: 2px 6px; background: var(--accent-glow); color: var(--accent-purple); border-radius: 4px; font-weight: 700;">${mainRole}</span>
       </div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">
-        <span style="margin-right: 6px;">[${tier}]</span>
-        <span style="color: var(--text-main); font-weight: 500;">${agentsText}</span>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+        <span style="font-weight: 600;">[${tier}]</span>
+        <div style="display: flex; align-items: center; gap: 3px;">${agentsImgsHtml}</div>
       </div>
     `;
     listEl.appendChild(li);
@@ -907,7 +944,7 @@ function renderLiveDraftBoard(scrim) {
     }
   }
 
-  // 대기 풀 렌더링 (닉네임, 주역할군 배지, 티어, 주력 영웅 표시 적용)
+  // 대기 풀 렌더링 (한글 티어 및 요원/영웅 아이콘 이미지 적용)
   poolList.innerHTML = '';
   if (pool.length === 0) {
     poolList.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem; padding: 10px;">대기 참가자가 없습니다.</li>';
@@ -916,10 +953,21 @@ function renderLiveDraftBoard(scrim) {
       const p = member.profiles || {};
       const valo = p.valo_info || {};
       const ow = p.ow_info || {};
-      const tier = valo.tier || ow.tier || 'Unranked';
+      const rawTier = valo.tier || ow.tier || 'Unranked';
+      const tier = getKoreanTierLabel(rawTier);
       const mainRole = valo.main_role || ow.main_role || '미설정';
       const mainItems = valo.main_agents || ow.main_heroes || [];
-      const agentsText = mainItems.length > 0 ? `(${mainItems.slice(0, 2).join(', ')})` : '';
+      
+      let agentsImgsHtml = '';
+      if (mainItems.length > 0) {
+        agentsImgsHtml = mainItems.slice(0, 2).map(name => {
+          const imgUrl = getAgentOrHeroImg(name);
+          if (imgUrl) {
+            return `<img src="${imgUrl}" alt="${name}" title="${name}" style="width: 20px; height: 20px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);" />`;
+          }
+          return `<span style="font-size: 0.75rem;">${name}</span>`;
+        }).join('');
+      }
 
       const li = document.createElement('li');
       li.style.display = 'flex';
@@ -936,9 +984,9 @@ function renderLiveDraftBoard(scrim) {
             <strong style="font-size: 0.95rem; color: var(--text-main);">${p.nickname || '알 수 없음'}</strong>
             <span style="font-size: 0.75rem; padding: 2px 6px; background: var(--accent-glow); color: var(--accent-purple); border-radius: 4px; font-weight: 700;">${mainRole}</span>
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">
-            <span style="margin-right: 6px;">[${tier}]</span>
-            <span style="color: var(--text-main); font-weight: 500;">${agentsText}</span>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+            <span style="font-weight: 600;">[${tier}]</span>
+            <div style="display: flex; align-items: center; gap: 3px;">${agentsImgsHtml}</div>
           </div>
         </div>
         ${isMyTurn ? `<button class="btn-primary btn-sm" onclick="executePick(${idx})">지명하기</button>` : ''}
@@ -947,7 +995,7 @@ function renderLiveDraftBoard(scrim) {
     });
   }
 
-  // 내부 헬퍼 함수: 팀원 리스트 렌더링 (주역할군 배지 및 캡틴 표시 적용)
+  // 내부 헬퍼 함수: 팀원 리스트 렌더링 (한글 티어, 요원/영웅 아이콘 이미지 적용)
   const renderTeamMemberList = (containerEl, members, captainId) => {
     containerEl.innerHTML = '';
     if (members.length === 0) {
@@ -959,7 +1007,21 @@ function renderLiveDraftBoard(scrim) {
       const valo = p.valo_info || {};
       const ow = p.ow_info || {};
       const mainRole = valo.main_role || ow.main_role || '미설정';
+      const rawTier = valo.tier || ow.tier || 'Unranked';
+      const tier = getKoreanTierLabel(rawTier);
+      const mainItems = valo.main_agents || ow.main_heroes || [];
       const isCaptain = m.user_id === captainId;
+
+      let agentsImgsHtml = '';
+      if (mainItems.length > 0) {
+        agentsImgsHtml = mainItems.slice(0, 2).map(name => {
+          const imgUrl = getAgentOrHeroImg(name);
+          if (imgUrl) {
+            return `<img src="${imgUrl}" alt="${name}" title="${name}" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);" />`;
+          }
+          return `<span style="font-size: 0.7rem;">${name}</span>`;
+        }).join('');
+      }
 
       const li = document.createElement('li');
       li.style.display = 'flex';
@@ -973,8 +1035,10 @@ function renderLiveDraftBoard(scrim) {
         <div style="display: flex; align-items: center; gap: 8px;">
           <strong style="color: var(--text-main);">${p.nickname || '알 수 없음'}</strong>
           <span style="font-size: 0.75rem; padding: 2px 6px; background: var(--accent-glow); color: var(--accent-purple); border-radius: 4px; font-weight: 700;">${mainRole}</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">[${tier}]</span>
         </div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 2px;">${agentsImgsHtml}</div>
           ${isCaptain ? '<span style="color: var(--accent-purple); font-weight: 800; font-size: 0.75rem; background: var(--accent-glow); padding: 2px 6px; border-radius: 4px;">👑 캡틴</span>' : ''}
         </div>
       `;
