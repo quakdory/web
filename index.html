@@ -62,15 +62,6 @@
         <button class="nav-btn" id="navMapVoteBtn" onclick="showTab('mapVote')">맵 투표</button>
         <button onclick="showTab('sns')" class="nav-btn" id="navSnsBtn">SNS</button>
       </nav>
-
-      <!-- 맵 투표 탭 뷰 화면 -->
-<div id="mapVoteView" class="tab-content">
-  <h2>맵 투표</h2>
-  <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 투표해 주세요.</p>
-  
-  <!-- 이 컨테이너 안에 맵 목록과 투표 버튼들이 동적으로 생성됩니다 -->
-  <div id="mapVoteContainer"></div>
-</div>
       
       <div class="user-info">
         <span id="userBadge" class="badge">일반유저</span>
@@ -150,23 +141,11 @@
         </div>
       </section>
 
-      <!-- 3. 맵 확인 탭 -->
-      <section id="map" class="tab-content">
-        <h2>게임별 맵 가이드 및 정보</h2>
-        <div class="map-grid">
-          <div class="guide-card">
-            <h4>🔴 발로란트 전장 브리핑</h4>
-            <p>어센트, 바인드, 헤이븐, 로터스 주요 공략법 및 연막/스킬 각도 가이드</p>
-          </div>
-          <div class="guide-card">
-            <h4>🟠 오버워치 2 전장</h4>
-            <p>화물 밀기 및 거점 점령 맵별 조합 추천</p>
-          </div>
-          <div class="guide-card">
-            <h4>🔵 리그 오브 레전드</h4>
-            <p>소환사의 협곡 바론/드래곤 타이밍 및 한타 포지셔닝 가이드</p>
-          </div>
-        </div>
+      <!-- 3. 맵 투표 탭 (정상적인 main 내부 위치로 이동 완료) -->
+      <section id="mapVoteView" class="tab-content">
+        <h2>🗺️ 맵 투표</h2>
+        <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 투표해 주세요.</p>
+        <div id="mapVoteContainer"></div>
       </section>
 
       <!-- 4. SNS 탭 -->
@@ -188,7 +167,7 @@
     </main>
   </div>
 
-<!-- 프로필 설정 모달 (게임별 서브 탭 전환형) -->
+  <!-- 프로필 설정 모달 (게임별 서브 탭 전환형) -->
   <div id="profileModal" class="modal">
     <div class="modal-content modal-lg">
       <div class="modal-header">
@@ -388,7 +367,7 @@
               </div>
             </div>
           </div>
-          
+        </div>
 
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
@@ -398,7 +377,7 @@
     </div>
   </div>
 
-  <!-- 롤 챔피언 선택 모달 (profileModal 바깥으로 이동) -->
+  <!-- 롤 챔피언 선택 모달 -->
   <div id="lolChampModal" class="modal">
     <div class="modal-content modal-lg">
       <div class="modal-header">
@@ -406,7 +385,6 @@
         <button class="close-btn" onclick="closeLolChampModal()">&times;</button>
       </div>
       
-      <!-- 포지션 필터 및 검색바 -->
       <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
         <button class="filter-btn active" onclick="filterLolChampions('all', this)">전체</button>
         <button class="filter-btn" onclick="filterLolChampions('탑', this)">탑</button>
@@ -420,20 +398,12 @@
         <input type="text" id="lolChampSearchInput" placeholder="챔피언 이름을 검색하세요 (예: 야스오, 아리)..." oninput="onLolSearchInput()" />
       </div>
 
-      <!-- 챔피언 그리드 컨테이너 -->
-      <div id="lolModalChampContainer" class="agent-image-picker" style="max-height: 350px;">
-        <!-- 자바스크립트로 챔피언 동적 로드 -->
-      </div>
+      <div id="lolModalChampContainer" class="agent-image-picker" style="max-height: 350px;"></div>
 
       <div class="modal-actions">
         <button class="btn-primary" onclick="closeLolChampModal()">확인</button>
       </div>
     </div>
-  </div>
-
-  <!-- 새 내전 생성 모달 -->
-  <div id="scrimModal" class="modal">
-    ...
   </div>
 
   <!-- 새 내전 생성 모달 -->
