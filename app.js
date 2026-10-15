@@ -776,7 +776,7 @@ function showTab(tabId) {
 
   if (tabId === 'team') showTeamSubtab('auto');
   
-  // 💡 맵 투표 탭을 누를 때 맵 목록을 강제로 불러오도록 설정
+  // 💡 '맵 투표' 탭을 누르면 발로란트 맵 투표 화면을 즉시 렌더링
   if (tabId === 'mapVote') {
     loadMapVoteView('valo');
   }
@@ -1109,6 +1109,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchAllLolChampions(); 
   checkAuthState();
 
-  // 💡 앱이 켜질 때 맵 투표 컨테이너도 미리 채워두도록 추가
+  // 앱이 켜질 때 맵 투표 컨테이너도 미리 채워두기
   loadMapVoteView('valo');
 });
