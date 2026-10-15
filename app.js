@@ -86,37 +86,54 @@ async function fetchValorantAgents() {
     console.error('발로란트 요원 API 로딩 실패:', err);
   }
 }
+
+// =============================================================
+// 리그 오브 레전드 173명 전체 자동 로딩 및 픽업 로직
+// =============================================================
 let currentLolTargetType = 'main'; // 'main' 혹은 'sub'
 let tempLolSelectedChampions = { main: [], sub: [] };
-// 리그 오브 레전드 포지션별 챔피언 및 공식 영문 ID 데이터
-const LOL_CHAMPIONS = {
-  "탑": [
-    { ko: "가렌", en: "Garen" }, { ko: "다리우스", en: "Darius" }, { ko: "레넥톤", en: "Renekton" }, 
-    { ko: "리븐", en: "Riven" }, { ko: "말파이트", en: "Malphite" }, { ko: "모데카이저", en: "Mordekaiser" }, 
-    { ko: "아트록스", en: "Aatrox" }, { ko: "요네", en: "Yone" }, { ko: "이렐리아", en: "Irelia" }, 
-    { ko: "잭스", en: "Jax" }, { ko: "카밀", en: "Camille" }, { ko: "피오라", en: "Fiora" }
-  ],
-  "정글": [
-    { ko: "그레이브즈", en: "Graves" }, { ko: "리신", en: "LeeSin" }, { ko: "바이", en: "Vi" }, 
-    { ko: "샤코", en: "Shaco" }, { ko: "신짜오", en: "XinZhao" }, { ko: "아무무", en: "Amumu" }, 
-    { ko: "에코", en: "Ekko" }, { ko: "카직스", en: "Khazix" }, { ko: "킨드레드", en: "Kindred" }, { ko: "헤카림", en: "Hecarim" }
-  ],
-  "미드": [
-    { ko: "르블랑", en: "Leblanc" }, { ko: "사일러스", en: "Sylas" }, { ko: "아리", en: "Ahri" }, 
-    { ko: "야스오", en: "Yasuo" }, { ko: "제드", en: "Zed" }, { ko: "조이", en: "Zoe" }, 
-    { ko: "카타리나", en: "Katarina" }, { ko: "트위스티드 페이트", en: "TwistedFate" }
-  ],
-  "원딜": [
-    { ko: "드레이븐", en: "Draven" }, { ko: "바루스", en: "Varus" }, { ko: "베인", en: "Vayne" }, 
-    { ko: "사미라", en: "Samira" }, { ko: "시비르", en: "Sivir" }, { ko: "이즈리얼", en: "Ezreal" }, 
-    { ko: "진", en: "Jhin" }, { ko: "징크스", en: "Jinx" }, { ko: "카이사", en: "Kaisa" }, { ko: "케이틀린", en: "Caitlyn" }
-  ],
-  "서폿": [
-    { ko: "노틸러스", en: "Nautilus" }, { ko: "룰루", en: "Lulu" }, { ko: "바드", en: "Bard" }, 
-    { ko: "브라움", en: "Braum" }, { ko: "쓰레쉬", en: "Thresh" }, { ko: "알리스타", en: "Alistar" }, 
-    { ko: "유미", en: "Yuumi" }, { ko: "잔나", en: "Janna" }, { ko: "카르마", en: "Karma" }, { ko: "레오나", en: "Leona" }
-  ]
+let LOL_LATEST_VERSION = '14.24.1'; // 기본값 (API로 자동 갱신됨)
+
+let LOL_CHAMPIONS = {
+  "탑": [],
+  "정글": [],
+  "미드": [],
+  "원딜": [],
+  "서폿": []
 };
+
+// 라이엇 공식 API에서 173명 전체 챔피언 자동 로드
+async function fetchAllLolChampions() {
+  try {
+    const verRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+    const versions = await verRes.json();
+    if (versions && versions.length > 0) {
+      LOL_LATEST_VERSION = versions[0];
+    }
+
+    const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/data/ko_KR/champion.json`);
+    const champJson = await champRes.json();
+    
+    LOL_CHAMPIONS = { "탑": [], "정글": [], "미드": [], "원딜": [], "서폿": [] };
+    const championsArray = Object.values(champJson.data);
+
+    championsArray.forEach(champ => {
+      const champData = {
+        ko: champ.name,          // 한글 이름
+        en: champ.id             // 영문 ID
+      };
+
+      // 전체 포지션 검색 및 픽업이 원활하도록 모든 포지션 풀에 담아줍니다.
+      Object.keys(LOL_CHAMPIONS).forEach(pos => {
+        LOL_CHAMPIONS[pos].push(champData);
+      });
+    });
+
+    console.log(`[롤 API] 총 ${championsArray.length}명의 챔피언 데이터 로드 완료!`);
+  } catch (err) {
+    console.error('롤 전체 챔피언 로딩 실패:', err);
+  }
+}
 
 // 롤 챔피언 선택 모달 열기
 function openLolChampModal(type) {
@@ -124,7 +141,6 @@ function openLolChampModal(type) {
   const modal = document.getElementById('lolChampModal');
   if (modal) modal.classList.add('active');
   
-  // 열 때 전체 챔피언 목록 기본 로드
   filterLolChampions('all');
 }
 
@@ -133,13 +149,11 @@ function closeLolChampModal() {
   const modal = document.getElementById('lolChampModal');
   if (modal) modal.classList.remove('active');
   
-  // 프로필 화면의 챔피언 뷰 갱신
   renderSelectedLolChampionsView();
 }
 
-// 포지션 및 검색어에 따라 롤 챔피언 필터링 (객체 구조 대응)
+// 포지션 및 검색어에 따라 롤 챔피언 필터링
 function filterLolChampions(position, btnElement = null) {
-  // 버튼 활성화 스타일 처리
   if (btnElement) {
     document.querySelectorAll('#lolChampModal .filter-btn').forEach(b => b.classList.remove('active'));
     btnElement.classList.add('active');
@@ -152,10 +166,8 @@ function filterLolChampions(position, btnElement = null) {
 
   container.innerHTML = '';
 
-  // 대상 챔피언 선정 (객체 배열)
   let targetList = [];
   if (position === 'all' || !LOL_CHAMPIONS[position]) {
-    // 전체 포지션 챔피언 합치기 (중복 제거)
     const allChamps = Object.values(LOL_CHAMPIONS).flat();
     const uniqueMap = new Map();
     allChamps.forEach(c => uniqueMap.set(c.ko, c));
@@ -164,7 +176,6 @@ function filterLolChampions(position, btnElement = null) {
     targetList = LOL_CHAMPIONS[position];
   }
 
-  // 검색어 필터링 (champ.ko 한글 이름 기준)
   const filtered = targetList.filter(champ => {
     if (!champ || !champ.ko) return false;
     return champ.ko.toLowerCase().includes(query) || (champ.en && champ.en.toLowerCase().includes(query));
@@ -182,12 +193,10 @@ function filterLolChampions(position, btnElement = null) {
     const item = document.createElement('div');
     item.className = 'agent-picker-item';
     
-    // 선택 여부 검사 (한글 이름 저장 기준)
     const isSelected = tempLolSelectedChampions[currentLolTargetType].includes(koName);
     if (isSelected) item.classList.add('selected');
 
-    // 라이엇 DDragon 공식 아이콘 주소
-    const imagePath = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${enId}.png`;
+    const imagePath = `https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/img/champion/${enId}.png`;
 
     item.innerHTML = `
       <img src="${imagePath}" alt="${koName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(koName)}'" />
@@ -207,7 +216,6 @@ function filterLolChampions(position, btnElement = null) {
   });
 }
 
-// 검색창 입력 시 실행
 function onLolSearchInput() {
   const activeBtn = document.querySelector('#lolChampModal .filter-btn.active');
   let currentPos = 'all';
@@ -218,7 +226,6 @@ function onLolSearchInput() {
   filterLolChampions(currentPos);
 }
 
-// 챔피언 선택/해제 토글 (최대 3개 제한)
 function toggleLolSelection(type, champName, element) {
   const list = tempLolSelectedChampions[type];
   const idx = list.indexOf(champName);
@@ -241,6 +248,46 @@ function toggleLolSelection(type, champName, element) {
     badge.textContent = list.length;
     element.appendChild(badge);
   }
+}
+
+// 선택한 롤 챔피언들을 프로필 설정 화면에 렌더링하는 함수
+function renderSelectedLolChampionsView() {
+  ['main', 'sub'].forEach(type => {
+    const containerId = type === 'main' ? 'lolMainChampContainer' : 'lolSubChampContainer';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    const selectedList = tempLolSelectedChampions[type];
+
+    if (!selectedList || selectedList.length === 0) {
+      container.innerHTML = '<span class="placeholder-text" style="font-size:0.85rem; color:#888;">선택된 챔피언이 없습니다.</span>';
+      return;
+    }
+
+    selectedList.forEach((koName, index) => {
+      let enId = koName;
+      for (let pos in LOL_CHAMPIONS) {
+        const found = LOL_CHAMPIONS[pos].find(c => c.ko === koName);
+        if (found) {
+          enId = found.en;
+          break;
+        }
+      }
+
+      const item = document.createElement('div');
+      item.className = 'agent-picker-item selected';
+      item.style.pointerEvents = 'none';
+
+      const imagePath = `https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/img/champion/${enId}.png`;
+      item.innerHTML = `
+        <img src="${imagePath}" alt="${koName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(koName)}'" />
+        <span class="agent-name">${koName}</span>
+        <div class="agent-rank-badge">${index + 1}</div>
+      `;
+      container.appendChild(item);
+    });
+  });
 }
 
 // =============================================================
@@ -460,9 +507,8 @@ function updateAgentBadges(type) {
 }
 
 // =============================================================
-// 오버워치 2 영웅 선택 로직 (web/images/ove/[한글명].png 반영)
+// 오버워치 2 영웅 선택 로직
 // =============================================================
-// 오버워치 2 역할군 선택 시 경로 수정 버전
 function updateOwAgentSelection(type) {
   const roleSelectId = type === 'main' ? 'owMainRole' : 'owSubRole';
   const containerId = type === 'main' ? 'owMainAgentContainer' : 'owSubAgentContainer';
@@ -482,9 +528,6 @@ function updateOwAgentSelection(type) {
     const item = document.createElement('div');
     item.className = 'agent-picker-item';
     
-    // 절대 경로(/web/...) 대신 현재 문서 기준 상대 경로로 설정
-    // 만약 index.html과 web 폴더가 같은 위치라면 'web/images/ove/...', 
-    // index.html 자체가 이미 web 폴더 내부라면 'images/ove/...' 로 지정해야 합니다.
     const imagePath = `images/ove/${heroName}.png`; 
 
     item.innerHTML = `
@@ -613,6 +656,10 @@ function openProfileModal() {
   document.getElementById('lolTier').value = lol.tier || 'Unranked';
   document.getElementById('lolMainRole').value = lol.main_role || '';
   document.getElementById('lolSubRole').value = lol.sub_role || '';
+  
+  tempLolSelectedChampions.main = lol.main_champs || [];
+  tempLolSelectedChampions.sub = lol.sub_champs || [];
+  renderSelectedLolChampionsView();
 
   switchGameTab('valo');
   document.getElementById('profileModal')?.classList.add('active');
@@ -681,7 +728,9 @@ async function saveFullProfile(e) {
     game_id: document.getElementById('lolId').value,
     tier: document.getElementById('lolTier').value,
     main_role: document.getElementById('lolMainRole').value,
-    sub_role: document.getElementById('lolSubRole').value
+    sub_role: document.getElementById('lolSubRole').value,
+    main_champs: tempLolSelectedChampions.main,
+    sub_champs: tempLolSelectedChampions.sub
   };
 
   const { error } = await supabaseClient
@@ -710,7 +759,6 @@ function toggleTheme() {
   document.body.classList.toggle('dark-mode');
   const isDarkMode = document.body.classList.contains('dark-mode');
   
-  // 브라우저에 현재 다크모드 설정 저장
   localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 
   const btn = document.getElementById('themeToggleBtn');
@@ -888,33 +936,6 @@ async function createSnsPost() {
   input.value = '';
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // 저장된 테마 불러오기 적용
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode');
-    const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = '☀️';
-  }
-  let LOL_LATEST_VERSION = '14.24.1'; // 기본값 (필요시 자동 갱신)
-
-async function initLolVersion() {
-  try {
-    const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-    const versions = await res.json();
-    if (versions && versions.length > 0) {
-      LOL_LATEST_VERSION = versions[0];
-    }
-  } catch (e) {
-    console.error('롤 버전 로딩 실패, 기본 버전 사용');
-  }
-}
-const imagePath = `https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/img/champion/${enId}.png`;
-
-  await fetchValorantAgents();
-  checkAuthState();
-});
-// 프로필 모달 내 게임별 서브 탭 전환 함수
 function switchGameTab(gameType) {
   document.querySelectorAll('.game-profile-view').forEach(view => view.classList.remove('active'));
   document.querySelectorAll('.game-subtab-btn').forEach(btn => btn.classList.remove('active'));
@@ -925,43 +946,17 @@ function switchGameTab(gameType) {
   if (targetView) targetView.classList.add('active');
   if (targetBtn) targetBtn.classList.add('active');
 }
-// 선택한 롤 챔피언들을 프로필 설정 화면에 렌더링하는 함수
-function renderSelectedLolChampionsView() {
-  ['main', 'sub'].forEach(type => {
-    const containerId = type === 'main' ? 'lolMainChampContainer' : 'lolSubChampContainer';
-    const container = document.getElementById(containerId);
-    if (!container) return;
 
-    container.innerHTML = '';
-    const selectedList = tempLolSelectedChampions[type];
+// 앱 실행 시 초기화 이벤트 리스너
+document.addEventListener('DOMContentLoaded', async () => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = '☀️';
+  }
 
-    if (!selectedList || selectedList.length === 0) {
-      container.innerHTML = '<span class="placeholder-text" style="font-size:0.85rem; color:#888;">선택된 챔피언이 없습니다.</span>';
-      return;
-    }
-
-    selectedList.forEach((koName, index) => {
-      // 영문 ID 찾기
-      let enId = koName;
-      for (let pos in LOL_CHAMPIONS) {
-        const found = LOL_CHAMPIONS[pos].find(c => c.ko === koName);
-        if (found) {
-          enId = found.en;
-          break;
-        }
-      }
-
-      const item = document.createElement('div');
-      item.className = 'agent-picker-item selected';
-      item.style.pointerEvents = 'none'; // 프로필 화면에서는 클릭 방지 (보기용)
-
-      const imagePath = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${enId}.png`;
-      item.innerHTML = `
-        <img src="${imagePath}" alt="${koName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(koName)}'" />
-        <span class="agent-name">${koName}</span>
-        <div class="agent-rank-badge">${index + 1}</div>
-      `;
-      container.appendChild(item);
-    });
-  });
-}
+  await fetchValorantAgents();
+  await fetchAllLolChampions(); // 173명 전체 챔피언 자동 로드
+  checkAuthState();
+});
