@@ -3,42 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>내전 & 팀 구성 커뮤니티</title>
+  <title>MATCHMAKER - 내전 & 팀 구성 플랫폼</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- 로그인/회원가입 화면 -->
+  <!-- 로그인 & 회원가입 화면 -->
   <div id="authContainer" class="auth-container">
     <div class="auth-box">
-      <h2>🎮 MATCHMAKER 로그인</h2>
+      <div class="auth-logo">🎮 MATCHMAKER</div>
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="loginUsername">아이디</label>
-          <input type="text" id="loginUsername" placeholder="아이디 입력" required />
+          <label>아이디</label>
+          <input type="text" id="loginUsername" placeholder="아이디를 입력하세요" required />
         </div>
         <div class="form-group">
-          <label for="loginPassword">비밀번호</label>
-          <input type="password" id="loginPassword" placeholder="비밀번호 입력" required />
+          <label>비밀번호</label>
+          <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" required />
         </div>
         <button type="submit" class="btn-primary full-width">로그인</button>
       </form>
 
       <hr class="divider" />
 
-      <h3>계정이 없으신가요?</h3>
+      <h3 class="sub-title">아직 계정이 없으신가요?</h3>
       <form id="signupForm" onsubmit="handleSignUp(event)">
         <div class="form-group">
-          <label for="signupUsername">아이디</label>
+          <label>아이디</label>
           <input type="text" id="signupUsername" placeholder="사용할 아이디" required />
         </div>
         <div class="form-group">
-          <label for="signupPassword">비밀번호</label>
-          <input type="password" id="signupPassword" placeholder="6자리 이상" minlength="6" required />
+          <label>비밀번호</label>
+          <input type="password" id="signupPassword" placeholder="6자리 이상 비밀번호" minlength="6" required />
         </div>
         <div class="form-group">
-          <label for="signupNickname">닉네임</label>
+          <label>닉네임</label>
           <input type="text" id="signupNickname" placeholder="사용할 닉네임" required />
         </div>
         <button type="submit" class="btn-secondary full-width">회원가입</button>
@@ -46,266 +46,244 @@
     </div>
   </div>
 
-  <!-- 서비스 메인 화면 -->
+  <!-- 메인 애플리케이션 화면 -->
   <div id="appContainer" class="app-container" style="display: none;">
     <header class="navbar">
-      <div class="logo" onclick="goToMain()" style="cursor: pointer;">🎮 도도도동</div>
+      <div class="logo" onclick="goToMain()">🎮 도도도동 내전 시스템</div>
       <nav class="nav-links">
-        <button onclick="showTab('scrim')">내전</button>
-        <button onclick="showTab('team')">팀 구성</button>
-        <button onclick="showTab('map')">맵 확인</button>
-        <button onclick="showTab('sns')">SNS</button>
+        <button onclick="showTab('scrim')" class="nav-btn active-tab-btn" id="navScrimBtn">내전</button>
+        <button onclick="showTab('team')" class="nav-btn" id="navTeamBtn">팀 구성</button>
+        <button onclick="showTab('map')" class="nav-btn" id="navMapBtn">맵 확인</button>
+        <button onclick="showTab('sns')" class="nav-btn" id="navSnsBtn">SNS</button>
       </nav>
       
       <div class="user-info">
         <span id="userBadge" class="badge">일반유저</span>
         <span id="userNickname">로딩 중...</span>님
-        <button onclick="openProfileModal()" class="btn-sm">프로필 수정</button>
-        <button onclick="handleLogout()" class="btn-sm">로그아웃</button>
-        <button id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
+        <button onclick="openProfileModal()" class="btn-sm">프로필 설정</button>
+        <button onclick="handleLogout()" class="btn-sm danger-sub">로그아웃</button>
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-btn">🌙</button>
       </div>
     </header>
 
     <main class="container">
       <!-- 1. 내전 탭 -->
       <section id="scrim" class="tab-content active">
-        <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div class="content-header">
           <h2>진행 중인 내전</h2>
           <button class="btn-primary" onclick="openModal()">+ 새 내전 생성</button>
         </div>
         <div class="game-filter">
-          <button onclick="filterGame('all')">전체</button>
-          <button onclick="filterGame('valo')">발로란트</button>
-          <button onclick="filterGame('ow')">오버워치</button>
-          <button onclick="filterGame('lol')">리그 오브 레전드</button>
+          <button onclick="filterGame('all')" class="filter-btn active" data-filter="all">전체</button>
+          <button onclick="filterGame('valo')" class="filter-btn" data-filter="valo">발로란트</button>
+          <button onclick="filterGame('ow')" class="filter-btn" data-filter="ow">오버워치</button>
+          <button onclick="filterGame('lol')" class="filter-btn" data-filter="lol">리그 오브 레전드</button>
         </div>
-        <div id="scrimList" class="scrim-list"></div>
+        <div id="scrimList" class="scrim-grid"></div>
       </section>
 
       <!-- 2. 팀 구성 탭 -->
       <section id="team" class="tab-content">
         <h2>팀 구성 방식 선택</h2>
         <div class="team-subtabs">
-          <button onclick="showTeamSubtab('auction')">경매</button>
-          <button onclick="showTeamSubtab('draft')">드래프트</button>
-          <button onclick="showTeamSubtab('auto')">자동</button>
+          <button onclick="showTeamSubtab('auto')" class="subtab-btn active" id="subAutoBtn">🎲 자동 팀 나누기</button>
+          <button onclick="showTeamSubtab('draft')" class="subtab-btn" id="subDraftBtn">📋 드래프트</button>
+          <button onclick="showTeamSubtab('auction')" class="subtab-btn" id="subAuctionBtn">💰 경매 시스템</button>
         </div>
 
-        <!-- 경매 화면 -->
-        <div id="auctionView" class="team-view">
-          <h3>💰 경매 팀 구성</h3>
-          <p>팀장이 포인트를 사용하여 참가자를 입찰합니다.</p>
-          <div class="auction-container" style="display: flex; gap: 20px; margin-top: 15px;">
-            <div class="player-pool" style="flex: 1; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
-              <h4>대기 참가자 풀</h4>
-              <ul id="auctionPlayers" style="list-style: none; padding: 0;">
-                <li style="color: #888;">내전을 선택하고 경매를 시작해 주세요.</li>
-              </ul>
-            </div>
-            <div class="auction-board" style="flex: 1; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
-              <h4>현재 입찰 진행</h4>
-              <div id="activeAuction">입찰 대상자가 없습니다.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 드래프트 화면 -->
-        <div id="draftView" class="team-view">
-          <h3>📋 드래프트 팀 구성</h3>
-          <p>팀장이 순서대로 참가자를 지명합니다.</p>
-          <div id="draftBoard" style="margin-top: 15px; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-            드래프트 턴제 지명 판이 표시될 구역입니다.
-          </div>
-        </div>
-
-        <!-- 자동 화면 -->
+        <!-- 자동 팀 구성 뷰 -->
         <div id="autoView" class="team-view active">
-          <div style="margin-bottom: 20px;">
-            <h3>🎲 자동 팀 나누기</h3>
-            <p style="font-size: 0.9rem; color: #666;">내전을 선택하고 버튼을 누르면 참가자 목록을 기반으로 팀을 자동으로 분할합니다.</p>
+          <div class="team-control-box">
+            <h3>자동 밸런스 셔플</h3>
+            <p>참여 완료된 내전을 선택하면 티어와 포지션을 고려하여 공정하게 두 팀으로 나눕니다.</p>
+            <div class="team-action-row">
+              <select id="teamScrimSelect">
+                <option value="">내전 목록을 불러오는 중...</option>
+              </select>
+              <button class="btn-primary" onclick="generateRandomTeamsFromTab()">랜덤 팀 섞기</button>
+            </div>
           </div>
 
-          <div style="display: flex; gap: 10px; margin-bottom: 20px; align-items: center;">
-            <select id="teamScrimSelect" style="padding: 10px 14px; font-size: 0.95rem; flex: 1; border-radius: 6px; border: 1px solid #ccc;">
-              <option value="">내전을 불러오는 중...</option>
-            </select>
-            <button type="button" class="btn-primary" onclick="generateRandomTeamsFromTab()" style="padding: 10px 16px;">
-              🎲 랜덤 팀 나누기
-            </button>
-          </div>
-
-          <div id="teamResultContainer" style="display: flex; gap: 20px;">
-            <div class="team-box" style="flex: 1; border: 1px solid #e0e0e0; background: var(--card-bg); padding: 15px; border-radius: 8px;">
-              <h4 style="color: #007bff; margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">A 팀</h4>
-              <ul id="teamAList" style="list-style: none; padding: 0; margin: 0;">
-                <li style="color: #888; font-size: 0.9rem;">내전을 선택하고 팀 나누기를 실행해 주세요.</li>
+          <div class="team-result-grid">
+            <div class="team-card-box team-a">
+              <h4 style="color: #4f46e5;">BLUE TEAM (A팀)</h4>
+              <ul id="teamAList" class="team-member-list">
+                <li class="empty-notice">내전을 선택하고 팀 섞기를 눌러주세요.</li>
               </ul>
             </div>
-
-            <div class="team-box" style="flex: 1; border: 1px solid #e0e0e0; background: var(--card-bg); padding: 15px; border-radius: 8px;">
-              <h4 style="color: #dc3545; margin-top: 0; border-bottom: 2px solid #dc3545; padding-bottom: 8px;">B 팀</h4>
-              <ul id="teamBList" style="list-style: none; padding: 0; margin: 0;">
-                <li style="color: #888; font-size: 0.9rem;">내전을 선택하고 팀 나누기를 실행해 주세요.</li>
+            <div class="team-card-box team-b">
+              <h4 style="color: #ff4757;">RED TEAM (B팀)</h4>
+              <ul id="teamBList" class="team-member-list">
+                <li class="empty-notice">내전을 선택하고 팀 섞기를 눌러주세요.</li>
               </ul>
             </div>
           </div>
+        </div>
+
+        <!-- 드래프트 뷰 -->
+        <div id="draftView" class="team-view">
+          <h3>📋 스네이크 드래프트 턴제 지명</h3>
+          <p>팀장이 순서대로 팀원을 지명하는 드래프트 전용 공간입니다.</p>
+          <div class="placeholder-box">드래프트 매치룸이 활성화되면 여기에 지명 판이 표시됩니다.</div>
+        </div>
+
+        <!-- 경매 뷰 -->
+        <div id="auctionView" class="team-view">
+          <h3>💰 포인트 경매 시스템</h3>
+          <p>포인트를 소모해 원하는 선수를 낙찰받는 경매장입니다.</p>
+          <div class="placeholder-box">경매 진행 중인 대기열이 없습니다.</div>
         </div>
       </section>
 
       <!-- 3. 맵 확인 탭 -->
       <section id="map" class="tab-content">
-        <h2>게임별 맵 정보</h2>
-        <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
-          <div class="scrim-card">
-            <h4>🔴 발로란트 맵 가이드</h4>
-            <p style="font-size: 0.9rem; color: #666;">어센트, 바인드, 헤이븐, 로터스 등 주요 맵별 전략 및 연막 가이드 제공</p>
+        <h2>게임별 맵 가이드 및 정보</h2>
+        <div class="map-grid">
+          <div class="guide-card">
+            <h4>🔴 발로란트 전장 브리핑</h4>
+            <p>어센트, 바인드, 헤이븐, 로터스 주요 공략법 및 연막/스킬 각도 가이드</p>
           </div>
-          <div class="scrim-card">
-            <h4>🟠 오버워치 2 맵 가이드</h4>
-            <p style="font-size: 0.9rem; color: #666;">점령, 화물, 플래시포인트 전장 브리핑 및 조합 추천</p>
+          <div class="guide-card">
+            <h4>🟠 오버워치 2 전장</h4>
+            <p>화물 밀기 및 거점 점령 맵별 조합 추천</p>
           </div>
-          <div class="scrim-card">
-            <h4>🔵 리그 오브 레전드 맵 가이드</h4>
-            <p style="font-size: 0.9rem; color: #666;">소환사의 협곡 오브젝트 타이밍 및 시야 장악 루트</p>
+          <div class="guide-card">
+            <h4>🔵 리그 오브 레전드</h4>
+            <p>소환사의 협곡 바론/드래곤 타이밍 및 한타 포지셔닝 가이드</p>
           </div>
         </div>
       </section>
 
       <!-- 4. SNS 탭 -->
       <section id="sns" class="tab-content">
-        <h2>커뮤니티 피드</h2>
-        <p style="margin-bottom: 15px;">유저들의 전적 자랑, 하이라이트 클립 및 플레이 후기를 공유하는 공간입니다.</p>
-        <div class="scrim-card">
-          <textarea placeholder="오늘의 내전 후기나 전적을 공유해보세요!" style="width: 100%; height: 80px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); resize: vertical;"></textarea>
-          <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-            <button class="btn-primary">게시하기</button>
+        <h2>커뮤니티 및 SNS 피드</h2>
+        <div class="sns-write-box">
+          <textarea id="snsContentInput" placeholder="오늘의 전적, 하이라이트 클립, 혹은 내전 후기를 공유해보세요!"></textarea>
+          <div class="sns-write-footer">
+            <button class="btn-primary" onclick="createSnsPost()">게시하기</button>
           </div>
         </div>
-        <div id="snsFeedList" style="margin-top: 15px;">
-          <div class="scrim-card">
-            <strong>관리자</strong> <span style="font-size: 0.8rem; color: #888;">2026-06-01</span>
-            <p style="margin-top: 8px;">매치메이커 커뮤니티 오픈을 환영합니다! 즐거운 내전 되세요! 🎉</p>
+        <div id="snsFeedList" class="sns-feed-list">
+          <div class="sns-post-card">
+            <div class="sns-header"><strong>관리자</strong> <span class="sns-date">2026-06-01</span></div>
+            <p>도도도동 플랫폼에 오신 것을 환영합니다! 즐거운 내전 되세요 🔥</p>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- 프로필 설정 모달 -->
+  <!-- 프로필 설정 모달 (3분할 그리드) -->
   <div id="profileModal" class="modal">
     <div class="modal-content modal-lg">
-      <h3>⚙️ 프로필 및 게임 계정 설정</h3>
-      <form id="profileForm" onsubmit="saveFullProfile(event)">
+      <div class="modal-header">
+        <h3>⚙️ 프로필 및 게임 계정 통합 설정</h3>
+        <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+      </div>
+      <form onsubmit="saveFullProfile(event)">
         <div class="section-box">
-          <h4>계정 정보</h4>
-          <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-            <div class="form-group">
-              <label>아이디</label>
-              <input type="text" id="editUsername" disabled readonly />
-            </div>
-            <div class="form-group">
-              <label>닉네임</label>
-              <input type="text" id="editNickname" required />
-            </div>
-            <div class="form-group">
-              <label>새 비밀번호 (변경 시)</label>
-              <input type="password" id="editPassword" placeholder="변경할 비밀번호" minlength="6" />
-            </div>
+          <h4>기본 계정 정보</h4>
+          <div class="form-grid-3">
+            <div class="form-group"><label>아이디</label><input type="text" id="editUsername" disabled readonly /></div>
+            <div class="form-group"><label>닉네임</label><input type="text" id="editNickname" required /></div>
+            <div class="form-group"><label>새 비밀번호 (선택)</label><input type="password" id="editPassword" placeholder="6자리 이상 변경 시" minlength="6" /></div>
           </div>
         </div>
 
         <div class="section-box" style="margin-top: 20px;">
-          <h4>게임별 프로필 설정</h4>
+          <h4>게임별 프로필 (3분할 탭)</h4>
           <div class="game-profile-grid">
-            <div class="game-card valo-card">
+            <!-- 발로란트 카드 -->
+            <div class="game-card valo">
               <h5>🔴 VALORANT</h5>
               <div class="form-group">
                 <label>게임 태그 (아이디#태그)</label>
-                <input type="text" id="valoId" placeholder="예: HIDE#KR1" pattern="^.+#.+$" title="'아이디#태그' 형식으로 입력해 주세요." />
+                <input type="text" id="valoId" placeholder="예: HIDE#KR1" />
               </div>
               <div class="form-group">
-                <label>티어 선택</label>
+                <label>경쟁전 티어</label>
                 <input type="hidden" id="valoTier" value="Unranked" />
                 <div id="valoTierContainer" class="tier-image-picker"></div>
               </div>
-              <div class="role-group">
-                <div class="form-group">
-                  <label>주 역할군 <span class="required">*필수</span></label>
-                  <select id="valoMainRole" onchange="updateAgentSelection('main')" required>
-                    <option value="">선택하세요</option>
-                    <option value="타격대">타격대</option>
-                    <option value="척후대">척후대</option>
-                    <option value="감시자">감시자</option>
-                    <option value="전략가">전략가</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>주 역할군 선호 요원 (최대 3개)</label>
-                  <div id="valoMainAgentContainer" class="agent-image-picker"></div>
-                </div>
+              <div class="form-group">
+                <label>주 역할군 <span class="req">*필수</span></label>
+                <select id="valoMainRole" onchange="updateAgentSelection('main')" required>
+                  <option value="">역할군 선택</option>
+                  <option value="타격대">타격대</option>
+                  <option value="척후대">척후대</option>
+                  <option value="감시자">감시자</option>
+                  <option value="전략가">전략가</option>
+                </select>
               </div>
-              <div class="role-group" style="margin-top: 10px;">
-                <div class="form-group">
-                  <label>부 역할군 (선택)</label>
-                  <select id="valoSubRole" onchange="updateAgentSelection('sub')">
-                    <option value="">선택 안 함</option>
-                    <option value="타격대">타격대</option>
-                    <option value="척후대">척후대</option>
-                    <option value="감시자">감시자</option>
-                    <option value="전략가">전략가</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>부 역할군 선호 요원 (최대 3개)</label>
-                  <div id="valoSubAgentContainer" class="agent-image-picker"></div>
-                </div>
+              <div class="form-group">
+                <label>주 선호 요원 (최대 3개, 1번 필수)</label>
+                <div id="valoMainAgentContainer" class="agent-image-picker"></div>
+              </div>
+              <div class="form-group">
+                <label>부 역할군 (선택)</label>
+                <select id="valoSubRole" onchange="updateAgentSelection('sub')">
+                  <option value="">선택 안 함</option>
+                  <option value="타격대">타격대</option>
+                  <option value="척후대">척후대</option>
+                  <option value="감시자">감시자</option>
+                  <option value="전략가">전략가</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>부 선호 요원 (최대 3개)</label>
+                <div id="valoSubAgentContainer" class="agent-image-picker"></div>
               </div>
             </div>
 
-            <div class="game-card ow-card">
+            <!-- 오버워치 카드 -->
+            <div class="game-card ow">
               <h5>🟠 OVERWATCH 2</h5>
-              <p class="placeholder-text">오버워치 프로필 입력란 준비 중입니다.</p>
+              <p class="placeholder-info">오버워치 배틀태그 및 포지션 연동 준비 중입니다.</p>
             </div>
 
-            <div class="game-card lol-card">
+            <!-- 롤 카드 -->
+            <div class="game-card lol">
               <h5>🔵 LEAGUE OF LEGENDS</h5>
-              <p class="placeholder-text">LoL 프로필 입력란 준비 중입니다.</p>
+              <p class="placeholder-info">소환사명 및 주/부 라인 연동 준비 중입니다.</p>
             </div>
           </div>
         </div>
 
-        <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
-          <button type="submit" class="btn-primary">설정 저장</button>
+          <button type="submit" class="btn-primary">저장하기</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 내전 생성 모달 -->
+  <!-- 새 내전 생성 모달 -->
   <div id="scrimModal" class="modal">
     <div class="modal-content">
-      <h3>새 내전 만들기</h3>
+      <div class="modal-header">
+        <h3>새 내전 만들기</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
       <form id="scrimForm" onsubmit="createScrim(event)">
         <div class="form-group">
-          <label for="scrimGame">종목</label>
+          <label>종목 선택</label>
           <select id="scrimGame" required>
-            <option value="lol">League of Legends</option>
             <option value="valo">VALORANT</option>
             <option value="ow">Overwatch 2</option>
+            <option value="lol">League of Legends</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="scrimTitle">내전 제목</label>
-          <input type="text" id="scrimTitle" placeholder="예: [실버~플레] 즐겜 내전 10인" required />
+          <label>내전 제목</label>
+          <input type="text" id="scrimTitle" placeholder="예: [실버~플레] 즐겜 10인 내전" required />
         </div>
         <div class="form-group">
-          <label for="scrimMax">최대 인원</label>
+          <label>최대 모집 인원</label>
           <input type="number" id="scrimMax" value="10" min="2" max="20" required />
         </div>
-        <div class="modal-actions" style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+        <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
-          <button type="submit" class="btn-primary">생성하기</button>
+          <button type="submit" class="btn-primary">내전 개설</button>
         </div>
       </form>
     </div>

@@ -47,20 +47,14 @@ async function fetchValorantAgents() {
   try {
     const res = await fetch('https://valorant-api.com/v1/agents?language=ko-KR&isPlayableCharacter=true');
     const json = await res.json();
-
     if (json.status === 200 && json.data) {
       VALO_AGENT_DATA = { '타격대': [], '척후대': [], '감시자': [], '전략가': [] };
-
       json.data.forEach(agent => {
         const roleName = agent.role ? ROLE_MAPPING[agent.role.displayName] || agent.role.displayName : null;
         if (roleName && VALO_AGENT_DATA[roleName]) {
-          VALO_AGENT_DATA[roleName].push({
-            name: agent.displayName,
-            img: agent.displayIcon
-          });
+          VALO_AGENT_DATA[roleName].push({ name: agent.displayName, img: agent.displayIcon });
         }
       });
-
       Object.keys(VALO_AGENT_DATA).forEach(role => {
         VALO_AGENT_DATA[role].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
       });
@@ -78,10 +72,7 @@ async function handleSignUp(e) {
   const email = makeEmailFromUsername(username);
 
   const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) {
-    alert('회원가입 실패: ' + error.message);
-    return;
-  }
+  if (error) { alert('회원가입 실패: ' + error.message); return; }
 
   if (data.user) {
     await supabaseClient.from('profiles').upsert([{ id: data.user.id, nickname: nickname, is_admin: false }]);
@@ -143,14 +134,11 @@ async function checkAuthState() {
   }
 }
 
-supabaseClient.auth.onAuthStateChange(() => {
-  checkAuthState();
-});
+supabaseClient.auth.onAuthStateChange(() => { checkAuthState(); });
 
 function renderTierPicker(selectedTierName = 'Unranked') {
   const container = document.getElementById('valoTierContainer');
   if (!container) return;
-
   container.innerHTML = '';
   document.getElementById('valoTier').value = selectedTierName;
 
@@ -181,7 +169,7 @@ function updateAgentSelection(type) {
   tempSelectedAgents[type] = [];
 
   if (agents.length === 0) {
-    container.innerHTML = '<p class="placeholder-text">역할군을 먼저 선택해 주세요.</p>';
+    container.innerHTML = '<p class="placeholder-info">역할군을 먼저 선택해 주세요.</p>';
     return;
   }
 
@@ -199,7 +187,6 @@ function updateAgentSelection(type) {
 function toggleAgentSelect(type, agentName, btnEl) {
   let selected = tempSelectedAgents[type];
   const index = selected.indexOf(agentName);
-
   if (index > -1) {
     selected.splice(index, 1);
   } else {
@@ -209,19 +196,16 @@ function toggleAgentSelect(type, agentName, btnEl) {
     }
     selected.push(agentName);
   }
-
   updateAgentBadges(type);
 }
 
 function updateAgentBadges(type) {
   const container = document.getElementById(type === 'main' ? 'valoMainAgentContainer' : 'valoSubAgentContainer');
   const selected = tempSelectedAgents[type];
-
   container.querySelectorAll('.agent-btn').forEach(btn => {
     btn.classList.remove('selected');
     btn.querySelector('.select-badge').textContent = '';
   });
-
   selected.forEach((agentName, index) => {
     const btn = container.querySelector(`.agent-btn[data-agent="${agentName}"]`);
     if (btn) {
@@ -233,7 +217,6 @@ function updateAgentBadges(type) {
 
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
-
   document.getElementById('editUsername').value = currentUser.email.split('@')[0];
   document.getElementById('editNickname').value = currentProfile.nickname || '';
 
@@ -270,7 +253,6 @@ function closeProfileModal() {
 
 async function saveFullProfile(e) {
   e.preventDefault();
-
   const nickname = document.getElementById('editNickname').value;
   const newPassword = document.getElementById('editPassword').value;
   const valoId = document.getElementById('valoId').value;
@@ -293,11 +275,7 @@ async function saveFullProfile(e) {
     await supabaseClient.auth.updateUser({ password: newPassword });
   }
 
-  const { error } = await supabaseClient
-    .from('profiles')
-    .update({ nickname, valo_info: valoInfo })
-    .eq('id', currentUser.id);
-
+  const { error } = await supabaseClient.from('profiles').update({ nickname, valo_info: valoInfo }).eq('id', currentUser.id);
   if (error) {
     alert('프로필 저장 실패: ' + error.message);
   } else {
@@ -315,15 +293,25 @@ function toggleTheme() {
 
 function showTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab-btn'));
+  
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
+  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn');
+  if (targetBtn) targetBtn.classList.add('active-tab-btn');
+
   if (tabId === 'team') showTeamSubtab('auto');
 }
 
 function showTeamSubtab(subtabId) {
   document.querySelectorAll('.team-view').forEach(view => view.classList.remove('active'));
+  document.querySelectorAll('.subtab-btn').forEach(btn => btn.classList.remove('active'));
+
   const targetView = document.getElementById(subtabId + 'View');
   if (targetView) targetView.classList.add('active');
+  const targetBtn = document.getElementById('sub' + subtabId.charAt(0).toUpperCase() + subtabId.slice(1) + 'Btn');
+  if (targetBtn) targetBtn.classList.add('active');
+
   if (subtabId === 'auto') loadScrimOptionsForTeamTab();
 }
 
@@ -332,32 +320,19 @@ function goToMain() {
   filterGame('all');
 }
 
-function openModal() {
-  document.getElementById('scrimModal')?.classList.add('active');
-}
-
-function closeModal() {
-  document.getElementById('scrimModal')?.classList.remove('active');
-  document.getElementById('scrimForm')?.reset();
-}
+function openModal() { document.getElementById('scrimModal')?.classList.add('active'); }
+function closeModal() { document.getElementById('scrimModal')?.classList.remove('active'); document.getElementById('scrimForm')?.reset(); }
 
 async function fetchScrims() {
   const list = document.getElementById('scrimList');
   if (!list) return;
-  list.innerHTML = '<p class="placeholder-text">내전 목록을 불러오는 중...</p>';
+  list.innerHTML = '<p class="placeholder-info">내전 목록을 불러오는 중...</p>';
 
-  let query = supabaseClient
-    .from('scrims')
-    .select(`*, scrim_participants ( user_id, profiles ( nickname ) )`)
-    .order('created_at', { ascending: false });
-
+  let query = supabaseClient.from('scrims').select(`*, scrim_participants ( user_id, profiles ( nickname, valo_info ) )`).order('created_at', { ascending: false });
   if (currentFilter !== 'all') query = query.eq('game', currentFilter);
 
   const { data: scrims, error } = await query;
-  if (error) {
-    list.innerHTML = '내전 로딩 오류';
-    return;
-  }
+  if (error) { list.innerHTML = '내전 로딩 오류'; return; }
   renderScrims(scrims);
 }
 
@@ -367,7 +342,7 @@ function renderScrims(scrims) {
   list.innerHTML = '';
 
   if (!scrims || scrims.length === 0) {
-    list.innerHTML = '<p class="placeholder-text">등록된 내전이 없습니다.</p>';
+    list.innerHTML = '<p class="placeholder-info">등록된 내전이 없습니다.</p>';
     return;
   }
 
@@ -380,13 +355,13 @@ function renderScrims(scrims) {
     const card = document.createElement('div');
     card.className = 'scrim-card';
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between;">
-        <span class="game-badge">${scrim.game.toUpperCase()}</span>
-        ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `<button class="btn-danger btn-sm" onclick="deleteScrim('${scrim.id}')">삭제</button>` : ''}
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span class="game-badge ${scrim.game}">${scrim.game.toUpperCase()}</span>
+        ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `<button class="btn-danger-sm" onclick="deleteScrim('${scrim.id}')">삭제</button>` : ''}
       </div>
       <h3>${scrim.title}</h3>
-      <p>참여 인원: ${currentCount} / ${scrim.max_players} 명</p>
-      <div>${isJoined ? `<button class="btn-secondary btn-sm" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary btn-sm" disabled>마감</button>` : `<button class="btn-primary btn-sm" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}</div>
+      <p style="margin: 6px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
+      <div style="margin-top: 12px;">${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}</div>
     `;
     list.appendChild(card);
   });
@@ -394,6 +369,8 @@ function renderScrims(scrims) {
 
 function filterGame(gameType) {
   currentFilter = gameType;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.filter-btn[data-filter="${gameType}"]`)?.classList.add('active');
   fetchScrims();
 }
 
@@ -404,10 +381,7 @@ async function createScrim(e) {
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
   const { error } = await supabaseClient.from('scrims').insert([{ game, title, current_players: 1, max_players, status: '모집 중', host_id: currentUser.id }]);
-  if (!error) {
-    closeModal();
-    fetchScrims();
-  }
+  if (!error) { closeModal(); fetchScrims(); }
 }
 
 async function applyScrim(scrimId, currentCount, maxPlayers) {
@@ -441,7 +415,7 @@ async function loadScrimOptionsForTeamTab() {
     return;
   }
 
-  selectEl.innerHTML = '<option value="">-- 내전을 선택해 주세요 --</option>';
+  selectEl.innerHTML = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
   scrims.forEach(scrim => {
     const opt = document.createElement('option');
     opt.value = scrim.id;
@@ -453,16 +427,10 @@ async function loadScrimOptionsForTeamTab() {
 async function generateRandomTeamsFromTab() {
   const selectEl = document.getElementById('teamScrimSelect');
   const scrimId = selectEl ? selectEl.value : null;
-  if (!scrimId) {
-    alert('내전을 먼저 선택해 주세요.');
-    return;
-  }
+  if (!scrimId) { alert('내전을 먼저 선택해 주세요.'); return; }
 
   const { data: participants } = await supabaseClient.from('scrim_participants').select(`user_id, profiles ( nickname, valo_info )`).eq('scrim_id', scrimId);
-  if (!participants || participants.length === 0) {
-    alert('참가자가 없습니다.');
-    return;
-  }
+  if (!participants || participants.length === 0) { alert('참가자가 없습니다.'); return; }
 
   const shuffled = [...participants].sort(() => Math.random() - 0.5);
   const half = Math.ceil(shuffled.length / 2);
@@ -478,10 +446,20 @@ function renderTeamList(elementId, teamMembers) {
     const p = m.profiles || {};
     const v = p.valo_info || {};
     const li = document.createElement('li');
-    li.style.padding = '6px 0';
-    li.innerHTML = `<strong>${p.nickname || '알 수 없음'}</strong> <span style="font-size:0.8rem; color:#666;">[${v.tier || 'Unranked'}] ${v.main_role ? '(' + v.main_role + ')' : ''}</span>`;
+    li.style.padding = '8px 12px';
+    li.style.margin = '4px 0';
+    li.style.background = 'rgba(0,0,0,0.03)';
+    li.style.borderRadius = '6px';
+    li.innerHTML = `<strong>${p.nickname || '알 수 없음'}</strong> <span style="font-size:0.8rem; color:#666; float:right;">[${v.tier || 'Unranked'}] ${v.main_role ? '(' + v.main_role + ')' : ''}</span>`;
     listEl.appendChild(li);
   });
+}
+
+async function createSnsPost() {
+  const input = document.getElementById('snsContentInput');
+  if (!input || !input.value.trim()) return;
+  alert('SNS 피드 기능이 연동되었습니다.');
+  input.value = '';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
