@@ -770,10 +770,16 @@ function showTab(tabId) {
   
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
-  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn');
+  
+  // 버튼 활성화 클래스 맞춤 (navMapVoteBtn 또는 id 형식에 맞게 조절)
+  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn') || document.getElementById('navMapVoteBtn');
   if (targetBtn) targetBtn.classList.add('active-tab-btn');
 
+  // 팀 탭일 때
   if (tabId === 'team') showTeamSubtab('auto');
+  
+  // 맵 투표 탭을 눌렀을 때 발로란트 맵 목록을 기본으로 로드
+  if (tabId === 'mapVote') loadMapVoteView('valo');
 }
 
 function showTeamSubtab(subtabId) {

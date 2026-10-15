@@ -62,6 +62,15 @@
         <button class="nav-btn" id="navMapVoteBtn" onclick="showTab('mapVote')">맵 투표</button>
         <button onclick="showTab('sns')" class="nav-btn" id="navSnsBtn">SNS</button>
       </nav>
+
+      <!-- 맵 투표 탭 뷰 화면 -->
+<div id="mapVoteView" class="tab-content">
+  <h2>맵 투표</h2>
+  <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 투표해 주세요.</p>
+  
+  <!-- 이 컨테이너 안에 맵 목록과 투표 버튼들이 동적으로 생성됩니다 -->
+  <div id="mapVoteContainer"></div>
+</div>
       
       <div class="user-info">
         <span id="userBadge" class="badge">일반유저</span>
