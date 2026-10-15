@@ -329,7 +329,7 @@ function updateOwAgentSelection(type) {
     // 절대 경로(/web/...) 대신 현재 문서 기준 상대 경로로 설정
     // 만약 index.html과 web 폴더가 같은 위치라면 'web/images/ove/...', 
     // index.html 자체가 이미 web 폴더 내부라면 'images/ove/...' 로 지정해야 합니다.
-    const imagePath = `web/images/ove/${heroName}.png`; 
+    const imagePath = `images/ove/${heroName}.png`; 
 
     item.innerHTML = `
       <img src="${imagePath}" alt="${heroName}" title="${heroName}" onerror="this.onerror=null; this.src='images/ove/${heroName}.png';" />
