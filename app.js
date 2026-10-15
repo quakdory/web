@@ -295,6 +295,14 @@ function updateAgentBadges(type) {
   });
 }
 
+// 프로필 모달 닫기 함수
+function closeProfileModal() {
+  const modal = document.getElementById('profileModal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
 // 프로필 모달 열기
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
