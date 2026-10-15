@@ -64,77 +64,137 @@ async function fetchValorantAgents() {
   }
 }
 
+// =============================================================
+// 로그인 / 회원가입 유틸리티 및 Supabase Auth 로직
+// =============================================================
+
+// 사용자 아이디를 Supabase 인증용 가짜 이메일 포맷으로 변환
+function makeEmailFromUsername(username) {
+  return `${username.trim().toLowerCase()}@myapp.local`;
+}
+
+// 1. 회원가입 처리
 async function handleSignUp(e) {
   e.preventDefault();
   const username = document.getElementById('signupUsername').value;
   const password = document.getElementById('signupPassword').value;
   const nickname = document.getElementById('signupNickname').value;
+  
   const email = makeEmailFromUsername(username);
 
   const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) { alert('회원가입 실패: ' + error.message); return; }
-
-  if (data.user) {
-    await supabaseClient.from('profiles').upsert([{ id: data.user.id, nickname: nickname, is_admin: false }]);
+  
+  if (error) {
+    alert('회원가입 실패: ' + error.message);
+    return;
   }
 
+  // 회원가입 성공 시 profiles 테이블에 닉네임 기본 저장
+  if (data.user) {
+    const { error: profileError } = await supabaseClient
+      .from('profiles')
+      .upsert([{ id: data.user.id, nickname: nickname, is_admin: false }]);
+
+    if (profileError) {
+      console.error('프로필 생성 에러:', profileError);
+    }
+  }
+
+  // 가입 완료 후 자동 로그인 방지 및 세션 정리
   await supabaseClient.auth.signOut();
-  alert('회원가입이 완료되었습니다! 로그인해 주세요.');
+
+  alert('회원가입이 완료되었습니다! 가입하신 아이디와 비밀번호로 로그인해 주세요.');
   document.getElementById('signupForm').reset();
 }
 
+// 2. 로그인 처리
 async function handleLogin(e) {
   e.preventDefault();
   const username = document.getElementById('loginUsername').value;
   const password = document.getElementById('loginPassword').value;
+  
   const email = makeEmailFromUsername(username);
 
   const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
   if (error) {
     alert('로그인 실패: 아이디 또는 비밀번호를 확인해 주세요.');
+    console.error('로그인 에러:', error);
   } else {
     await checkAuthState();
   }
 }
 
+// 3. 로그아웃 처리
 async function handleLogout() {
   await supabaseClient.auth.signOut();
 }
 
+// 4. 세션 및 권한(관리자/일반유저) 상태 검사
 async function checkAuthState() {
   const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-  if (sessionError) return;
+
+  if (sessionError) {
+    console.error("세션 가져오기 에러:", sessionError);
+    return;
+  }
 
   if (session) {
     currentUser = session.user;
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+
+    // 프로필 정보 가져오기
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("프로필 조회 에러:", profileError);
+    }
+
     currentProfile = profile;
 
-    document.getElementById('authContainer').style.display = 'none';
-    document.getElementById('appContainer').style.display = 'block';
+    // 화면 전환 (로그인 창 숨기고 메인 화면 표시)
+    const authContainer = document.getElementById('authContainer');
+    const appContainer = document.getElementById('appContainer');
+    const nicknameElem = document.getElementById('userNickname');
+    const badgeElem = document.getElementById('userBadge');
+
+    if (authContainer) authContainer.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'block';
 
     const displayNickname = profile?.nickname || currentUser.email.split('@')[0];
-    document.getElementById('userNickname').textContent = displayNickname;
+    if (nicknameElem) nicknameElem.textContent = displayNickname;
 
-    const badgeElem = document.getElementById('userBadge');
-    if (profile?.is_admin) {
-      badgeElem.textContent = '👑 관리자';
-      badgeElem.classList.add('admin');
-    } else {
-      badgeElem.textContent = '일반유저';
-      badgeElem.classList.remove('admin');
+    // 관리자 배지 설정
+    if (badgeElem) {
+      if (profile?.is_admin) {
+        badgeElem.textContent = '👑 관리자';
+        badgeElem.classList.add('admin');
+      } else {
+        badgeElem.textContent = '일반유저';
+        badgeElem.classList.remove('admin');
+      }
     }
 
     fetchScrims();
   } else {
     currentUser = null;
     currentProfile = null;
-    document.getElementById('authContainer').style.display = 'flex';
-    document.getElementById('appContainer').style.display = 'none';
+    
+    const authContainer = document.getElementById('authContainer');
+    const appContainer = document.getElementById('appContainer');
+
+    if (authContainer) authContainer.style.display = 'flex';
+    if (appContainer) appContainer.style.display = 'none';
   }
 }
 
-supabaseClient.auth.onAuthStateChange(() => { checkAuthState(); });
+// 인증 상태 변화 감지 리스너
+supabaseClient.auth.onAuthStateChange(() => {
+  checkAuthState();
+});
 
 function renderTierPicker(selectedTierName = 'Unranked') {
   const container = document.getElementById('valoTierContainer');
