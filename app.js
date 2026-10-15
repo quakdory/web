@@ -854,6 +854,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = document.getElementById('themeToggleBtn');
     if (btn) btn.textContent = '☀️';
   }
+  let LOL_LATEST_VERSION = '14.24.1'; // 기본값 (필요시 자동 갱신)
+
+async function initLolVersion() {
+  try {
+    const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+    const versions = await res.json();
+    if (versions && versions.length > 0) {
+      LOL_LATEST_VERSION = versions[0];
+    }
+  } catch (e) {
+    console.error('롤 버전 로딩 실패, 기본 버전 사용');
+  }
+}
+const imagePath = `https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/img/champion/${enId}.png`;
 
   await fetchValorantAgents();
   checkAuthState();
