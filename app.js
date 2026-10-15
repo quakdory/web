@@ -590,3 +590,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchValorantAgents();
   checkAuthState();
 });
+
+// 프로필 모달 내 게임별 서브 탭 전환 함수
+function switchGameTab(gameType) {
+  document.querySelectorAll('.game-profile-view').forEach(view => view.classList.remove('active'));
+  document.querySelectorAll('.game-subtab-btn').forEach(btn => btn.classList.remove('active'));
+
+  const targetView = document.getElementById('gameView' + gameType.charAt(0).toUpperCase() + gameType.slice(1));
+  const targetBtn = document.getElementById('gameTab' + gameType.charAt(0).toUpperCase() + gameType.slice(1) + 'Btn');
+
+  if (targetView) targetView.classList.add('active');
+  if (targetBtn) targetBtn.classList.add('active');
+}

@@ -179,7 +179,7 @@
     </main>
   </div>
 
-<!-- 프로필 설정 모달 (보안 검증 + 3분할 비주얼 Picker) -->
+<!-- 프로필 설정 모달 (게임별 서브 탭 전환형) -->
   <div id="profileModal" class="modal">
     <div class="modal-content modal-lg">
       <div class="modal-header">
@@ -187,7 +187,7 @@
         <button class="close-btn" onclick="closeProfileModal()">&times;</button>
       </div>
       <form id="profileForm" onsubmit="saveFullProfile(event)">
-        <!-- 계정 및 보안 정보 -->
+        <!-- 기본 계정 및 보안 정보 -->
         <div class="section-box">
           <h4>기본 계정 및 보안 정보</h4>
           <div class="form-grid-2">
@@ -213,13 +213,20 @@
           </div>
         </div>
 
-        <!-- 3분할 게임 카드 -->
+        <!-- 게임별 프로필 서브 탭 영역 -->
         <div class="section-box" style="margin-top: 20px;">
-          <h4>게임별 프로필 설정</h4>
-          <div class="game-profile-grid">
-            <!-- 발로란트 카드 -->
-            <div class="game-card valo">
-              <h5>🔴 VALORANT</h5>
+          <h4>게임별 상세 프로필 설정</h4>
+          
+          <!-- 게임 선택 서브 탭 버튼 -->
+          <div class="game-sub-tabs">
+            <button type="button" id="gameTabValoBtn" class="game-subtab-btn active" onclick="switchGameTab('valo')">🔴 발로란트</button>
+            <button type="button" id="gameTabOwBtn" class="game-subtab-btn" onclick="switchGameTab('ow')">🟠 오버워치 2</button>
+            <button type="button" id="gameTabLolBtn" class="game-subtab-btn" onclick="switchGameTab('lol')">🔵 롤</button>
+          </div>
+
+          <!-- 1. 발로란트 설정 뷰 -->
+          <div id="gameViewValo" class="game-profile-view active">
+            <div class="game-card valo full-width-card">
               <div class="form-group">
                 <label>게임 태그 (아이디#태그)</label>
                 <input type="text" id="valoId" placeholder="예: HIDE#KR1" />
@@ -231,7 +238,7 @@
               </div>
               <div class="form-group">
                 <label>주 역할군 <span class="req">*필수</span></label>
-                <select id="valoMainRole" onchange="updateAgentSelection('main')" required>
+                <select id="valoMainRole" onchange="updateAgentSelection('main')">
                   <option value="">역할군 선택</option>
                   <option value="타격대">타격대</option>
                   <option value="척후대">척후대</option>
@@ -258,16 +265,18 @@
                 <div id="valoSubAgentContainer" class="agent-image-picker"></div>
               </div>
             </div>
+          </div>
 
-            <!-- 오버워치 2 카드 -->
-            <div class="game-card ow">
-              <h5>🟠 OVERWATCH 2</h5>
+          <!-- 2. 오버워치 2 설정 뷰 -->
+          <div id="gameViewOw" class="game-profile-view">
+            <div class="game-card ow full-width-card">
               <p class="placeholder-info">오버워치 배틀태그 및 포지션 연동 준비 중입니다.</p>
             </div>
+          </div>
 
-            <!-- 리그 오브 레전드 카드 -->
-            <div class="game-card lol">
-              <h5>🔵 LEAGUE OF LEGENDS</h5>
+          <!-- 3. 롤 설정 뷰 -->
+          <div id="gameViewLol" class="game-profile-view">
+            <div class="game-card lol full-width-card">
               <p class="placeholder-info">소환사명 및 주/부 라인 연동 준비 중입니다.</p>
             </div>
           </div>

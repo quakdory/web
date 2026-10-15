@@ -298,3 +298,41 @@ body.dark-mode .auth-tabs {
     grid-template-columns: 1fr;
   }
 }
+
+/* 게임별 프로필 서브 탭 스타일 */
+.game-sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.game-subtab-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.game-subtab-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.game-profile-view {
+  display: none;
+}
+
+.game-profile-view.active {
+  display: block;
+}
+
+.full-width-card {
+  width: 100%;
+  border-left-width: 4px;
+}
