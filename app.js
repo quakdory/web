@@ -552,8 +552,13 @@ async function saveFullProfile(e) {
 // =============================================================
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  
+  // 브라우저에 현재 다크모드 설정 저장
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+
   const btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  if (btn) btn.textContent = isDarkMode ? '☀️' : '🌙';
 }
 
 function showTab(tabId) {
@@ -728,10 +733,17 @@ async function createSnsPost() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // 저장된 테마 불러오기 적용
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+
   await fetchValorantAgents();
   checkAuthState();
 });
-
 // 프로필 모달 내 게임별 서브 탭 전환 함수
 function switchGameTab(gameType) {
   document.querySelectorAll('.game-profile-view').forEach(view => view.classList.remove('active'));
