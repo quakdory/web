@@ -351,6 +351,14 @@
                   <option value="서폿">🛡️ 서포터</option>
                 </select>
               </div>
+              
+              <!-- 롤 주 선호 챔피언 선택 버튼 및 영역 -->
+              <div class="form-group">
+                <label>주 선호 챔피언 (최대 3개)</label>
+                <button type="button" class="btn-sm full-width" onclick="openLolChampModal('main')">챔피언 선택하기</button>
+                <div id="lolMainChampContainer" class="agent-image-picker" style="margin-top: 8px;"></div>
+              </div>
+
               <div class="form-group">
                 <label>부 포지션 (선택)</label>
                 <select id="lolSubRole">
@@ -362,40 +370,16 @@
                   <option value="서폿">🛡️ 서포터</option>
                 </select>
               </div>
+
+              <!-- 롤 부 선호 챔피언 선택 버튼 및 영역 -->
+              <div class="form-group">
+                <label>부 선호 챔피언 (최대 3개)</label>
+                <button type="button" class="btn-sm full-width" onclick="openLolChampModal('sub')">챔피언 선택하기</button>
+                <div id="lolSubChampContainer" class="agent-image-picker" style="margin-top: 8px;"></div>
+              </div>
             </div>
           </div>
-          <!-- 롤 챔피언 선택 모달 -->
-<div id="lolChampModal" class="modal">
-  <div class="modal-content modal-lg">
-    <div class="modal-header">
-      <h3>리그 오브 레전드 챔피언 선택</h3>
-      <button class="close-btn" onclick="closeLolChampModal()">&times;</button>
-    </div>
-    
-    <!-- 포지션 필터 및 검색바 -->
-    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-      <button class="filter-btn active" onclick="filterLolChampions('all', this)">전체</button>
-      <button class="filter-btn" onclick="filterLolChampions('탑', this)">탑</button>
-      <button class="filter-btn" onclick="filterLolChampions('정글', this)">정글</button>
-      <button class="filter-btn" onclick="filterLolChampions('미드', this)">미드</button>
-      <button class="filter-btn" onclick="filterLolChampions('원딜', this)">원딜</button>
-      <button class="filter-btn" onclick="filterLolChampions('서폿', this)">서폿</button>
-    </div>
-    
-    <div class="form-group" style="margin-bottom: 15px;">
-      <input type="text" id="lolChampSearchInput" placeholder="챔피언 이름을 검색하세요 (예: 야스오, 아리)..." oninput="onLolSearchInput()" />
-    </div>
-
-    <!-- 챔피언 그리드 컨테이너 -->
-    <div id="lolModalChampContainer" class="agent-image-picker" style="max-height: 350px;">
-      <!-- 자바스크립트로 챔피언 동적 로드 -->
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="closeLolChampModal()">확인</button>
-    </div>
-  </div>
-</div>
+          
 
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
@@ -403,6 +387,44 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- 롤 챔피언 선택 모달 (profileModal 바깥으로 이동) -->
+  <div id="lolChampModal" class="modal">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3>리그 오브 레전드 챔피언 선택</h3>
+        <button class="close-btn" onclick="closeLolChampModal()">&times;</button>
+      </div>
+      
+      <!-- 포지션 필터 및 검색바 -->
+      <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <button class="filter-btn active" onclick="filterLolChampions('all', this)">전체</button>
+        <button class="filter-btn" onclick="filterLolChampions('탑', this)">탑</button>
+        <button class="filter-btn" onclick="filterLolChampions('정글', this)">정글</button>
+        <button class="filter-btn" onclick="filterLolChampions('미드', this)">미드</button>
+        <button class="filter-btn" onclick="filterLolChampions('원딜', this)">원딜</button>
+        <button class="filter-btn" onclick="filterLolChampions('서폿', this)">서폿</button>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <input type="text" id="lolChampSearchInput" placeholder="챔피언 이름을 검색하세요 (예: 야스오, 아리)..." oninput="onLolSearchInput()" />
+      </div>
+
+      <!-- 챔피언 그리드 컨테이너 -->
+      <div id="lolModalChampContainer" class="agent-image-picker" style="max-height: 350px;">
+        <!-- 자바스크립트로 챔피언 동적 로드 -->
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeLolChampModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 새 내전 생성 모달 -->
+  <div id="scrimModal" class="modal">
+    ...
   </div>
 
   <!-- 새 내전 생성 모달 -->
