@@ -123,7 +123,6 @@ async function fetchAllLolChampions() {
         en: champ.id             // 영문 ID
       };
 
-      // 전체 포지션 검색 및 픽업이 원활하도록 모든 포지션 풀에 담아줍니다.
       Object.keys(LOL_CHAMPIONS).forEach(pos => {
         LOL_CHAMPIONS[pos].push(champData);
       });
@@ -843,7 +842,7 @@ function renderScrims(scrims) {
     const isFull = currentCount >= scrim.max_players;
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
 
-    // 참여자 목록 HTML 생성
+    // 참여자 목록 HTML 생성 (아이콘 이미지 포함)
     let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
     participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
     
@@ -851,13 +850,15 @@ function renderScrims(scrims) {
       participantsHtml += '<p style="font-size: 0.8rem; color: #888;">아직 참여한 인원이 없습니다.</p>';
     } else {
       participantsHtml += '<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">';
+      
       participants.forEach(p => {
         const profile = p.profiles || {};
         const nickname = profile.nickname || '알 수 없음';
         
-        // 해당 내전 종목(valo, ow, lol)에 따른 유저의 선호 챔피언 추출
         let champList = [];
         let tierText = '';
+        
+        // 종목별 선호 캐릭터 및 티어 추출
         if (scrim.game === 'valo') {
           const valo = profile.valo_info || {};
           champList = valo.main_agents || [];
@@ -872,12 +873,48 @@ function renderScrims(scrims) {
           tierText = lol.tier || 'Unranked';
         }
 
-        const champsStr = champList.length > 0 ? champList.join(', ') : '선호 캐릭터 없음';
+        // 캐릭터 아이콘 이미지 태그들을 조합할 HTML 생성
+        let champIconsHtml = '';
+        if (champList.length === 0) {
+          champIconsHtml = '<span style="font-size: 0.75rem; color: #888;">픽 없음</span>';
+        } else {
+          champIconsHtml = '<div style="display: flex; gap: 4px; align-items: center;">';
+          champList.forEach((cName, idx) => {
+            let imgUrl = '';
+            
+            if (scrim.game === 'valo') {
+              for (let role in VALO_AGENT_DATA) {
+                const found = VALO_AGENT_DATA[role].find(a => a.name === cName);
+                if (found) { imgUrl = found.img; break; }
+              }
+            } else if (scrim.game === 'ow') {
+              imgUrl = `images/ove/${cName}.png`;
+            } else if (scrim.game === 'lol') {
+              let enId = cName;
+              for (let pos in LOL_CHAMPIONS) {
+                const found = LOL_CHAMPIONS[pos].find(champ => champ.ko === cName);
+                if (found) { enId = found.en; break; }
+              }
+              imgUrl = `https://ddragon.leagueoflegends.com/cdn/${typeof LOL_LATEST_VERSION !== 'undefined' ? LOL_LATEST_VERSION : '14.24.1'}/img/champion/${enId}.png`;
+            }
+
+            champIconsHtml += `
+              <div style="position: relative; width: 24px; height: 24px;" title="${cName} (${idx + 1}순위)">
+                <img src="${imgUrl}" alt="${cName}" style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover; border: 1px solid rgba(0,0,0,0.1);" onerror="this.src='https://via.placeholder.com/24?text=?'" />
+                <span style="position: absolute; bottom: -3px; right: -3px; background: var(--accent-color, #4f46e5); color: #fff; font-size: 9px; width: 10px; height: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">${idx + 1}</span>
+              </div>
+            `;
+          });
+          champIconsHtml += '</div>';
+        }
 
         participantsHtml += `
-          <li style="font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 4px 8px; border-radius: 4px;">
-            <span><strong>${nickname}</strong> <span style="font-size: 0.75rem; color: #666;">[${tierText}]</span></span>
-            <span style="font-size: 0.75rem; color: var(--accent-color); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${champsStr}">픽: ${champsStr}</span>
+          <li style="font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 5px 8px; border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <strong>${nickname}</strong> 
+              <span style="font-size: 0.75rem; color: #666;">[${tierText}]</span>
+            </div>
+            <div>${champIconsHtml}</div>
           </li>
         `;
       });
