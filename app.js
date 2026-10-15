@@ -137,7 +137,7 @@ function closeLolChampModal() {
   renderSelectedLolChampionsView();
 }
 
-// 포지션 및 검색어에 따라 챔피언 필터링
+// 포지션 및 검색어에 따라 롤 챔피언 필터링 (객체 구조 대응)
 function filterLolChampions(position, btnElement = null) {
   // 버튼 활성화 스타일 처리
   if (btnElement) {
@@ -152,44 +152,57 @@ function filterLolChampions(position, btnElement = null) {
 
   container.innerHTML = '';
 
-  // 대상 챔피언 선정
+  // 대상 챔피언 선정 (객체 배열)
   let targetList = [];
   if (position === 'all' || !LOL_CHAMPIONS[position]) {
-    targetList = [...new Set(Object.values(LOL_CHAMPIONS).flat())];
+    // 전체 포지션 챔피언 합치기 (중복 제거)
+    const allChamps = Object.values(LOL_CHAMPIONS).flat();
+    const uniqueMap = new Map();
+    allChamps.forEach(c => uniqueMap.set(c.ko, c));
+    targetList = Array.from(uniqueMap.values());
   } else {
     targetList = LOL_CHAMPIONS[position];
   }
 
-  // 검색어 필터링
-  const filtered = targetList.filter(champ => champ.toLowerCase().includes(query));
+  // 검색어 필터링 (champ.ko 한글 이름 기준)
+  const filtered = targetList.filter(champ => {
+    if (!champ || !champ.ko) return false;
+    return champ.ko.toLowerCase().includes(query) || (champ.en && champ.en.toLowerCase().includes(query));
+  });
 
   if (filtered.length === 0) {
     container.innerHTML = '<div class="placeholder-info" style="grid-column: 1/-1;">검색된 챔피언이 없습니다.</div>';
     return;
   }
 
-  filtered.forEach(champName => {
+  filtered.forEach(champ => {
+    const koName = champ.ko;
+    const enId = champ.en;
+
     const item = document.createElement('div');
     item.className = 'agent-picker-item';
     
-    const isSelected = tempLolSelectedChampions[currentLolTargetType].includes(champName);
+    // 선택 여부 검사 (한글 이름 저장 기준)
+    const isSelected = tempLolSelectedChampions[currentLolTargetType].includes(koName);
     if (isSelected) item.classList.add('selected');
 
-    const imagePath = `images/lol/${champName}.png`;
+    // 라이엇 DDragon 공식 아이콘 주소
+    const imagePath = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${enId}.png`;
+
     item.innerHTML = `
-      <img src="${imagePath}" alt="${champName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(champName)}'" />
-      <span class="agent-name">${champName}</span>
+      <img src="${imagePath}" alt="${koName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(koName)}'" />
+      <span class="agent-name">${koName}</span>
     `;
 
     if (isSelected) {
-      const rankIdx = tempLolSelectedChampions[currentLolTargetType].indexOf(champName);
+      const rankIdx = tempLolSelectedChampions[currentLolTargetType].indexOf(koName);
       const badge = document.createElement('div');
       badge.className = 'agent-rank-badge';
       badge.textContent = rankIdx + 1;
       item.appendChild(badge);
     }
 
-    item.onclick = () => toggleLolSelection(currentLolTargetType, champName, item);
+    item.onclick = () => toggleLolSelection(currentLolTargetType, koName, item);
     container.appendChild(item);
   });
 }
