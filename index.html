@@ -59,7 +59,8 @@
       <nav class="nav-links">
         <button onclick="showTab('scrim')" class="nav-btn active-tab-btn" id="navScrimBtn">내전</button>
         <button onclick="showTab('team')" class="nav-btn" id="navTeamBtn">팀 구성</button>
-        <button class="nav-btn" id="navMapVoteBtn" onclick="showTab('mapVoteview')">맵 투표</button>
+        <!-- 💡 수정 완료: mapVote로 정확히 연결 -->
+        <button class="nav-btn" id="navMapVoteBtn" onclick="showTab('mapVote')">맵 투표</button>
         <button onclick="showTab('sns')" class="nav-btn" id="navSnsBtn">SNS</button>
       </nav>
       
@@ -141,8 +142,8 @@
         </div>
       </section>
 
-      <!-- 3. 맵 투표 탭 (정상적인 main 내부 위치로 이동 완료) -->
-      <section id="mapVoteView" class="tab-content">
+      <!-- 3. 맵 투표 탭 (ID를 mapVote로 정확히 맞춤) -->
+      <section id="mapVote" class="tab-content">
         <h2>🗺️ 맵 투표</h2>
         <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 투표해 주세요.</p>
         <div id="mapVoteContainer"></div>
