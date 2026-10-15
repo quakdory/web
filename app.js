@@ -88,6 +88,35 @@ async function fetchValorantAgents() {
 }
 let currentLolTargetType = 'main'; // 'main' 혹은 'sub'
 let tempLolSelectedChampions = { main: [], sub: [] };
+// 리그 오브 레전드 포지션별 챔피언 및 공식 영문 ID 데이터
+const LOL_CHAMPIONS = {
+  "탑": [
+    { ko: "가렌", en: "Garen" }, { ko: "다리우스", en: "Darius" }, { ko: "레넥톤", en: "Renekton" }, 
+    { ko: "리븐", en: "Riven" }, { ko: "말파이트", en: "Malphite" }, { ko: "모데카이저", en: "Mordekaiser" }, 
+    { ko: "아트록스", en: "Aatrox" }, { ko: "요네", en: "Yone" }, { ko: "이렐리아", en: "Irelia" }, 
+    { ko: "잭스", en: "Jax" }, { ko: "카밀", en: "Camille" }, { ko: "피오라", en: "Fiora" }
+  ],
+  "정글": [
+    { ko: "그레이브즈", en: "Graves" }, { ko: "리신", en: "LeeSin" }, { ko: "바이", en: "Vi" }, 
+    { ko: "샤코", en: "Shaco" }, { ko: "신짜오", en: "XinZhao" }, { ko: "아무무", en: "Amumu" }, 
+    { ko: "에코", en: "Ekko" }, { ko: "카직스", en: "Khazix" }, { ko: "킨드레드", en: "Kindred" }, { ko: "헤카림", en: "Hecarim" }
+  ],
+  "미드": [
+    { ko: "르블랑", en: "Leblanc" }, { ko: "사일러스", en: "Sylas" }, { ko: "아리", en: "Ahri" }, 
+    { ko: "야스오", en: "Yasuo" }, { ko: "제드", en: "Zed" }, { ko: "조이", en: "Zoe" }, 
+    { ko: "카타리나", en: "Katarina" }, { ko: "트위스티드 페이트", en: "TwistedFate" }
+  ],
+  "원딜": [
+    { ko: "드레이븐", en: "Draven" }, { ko: "바루스", en: "Varus" }, { ko: "베인", en: "Vayne" }, 
+    { ko: "사미라", en: "Samira" }, { ko: "시비르", en: "Sivir" }, { ko: "이즈리얼", en: "Ezreal" }, 
+    { ko: "진", en: "Jhin" }, { ko: "징크스", en: "Jinx" }, { ko: "카이사", en: "Kaisa" }, { ko: "케이틀린", en: "Caitlyn" }
+  ],
+  "서폿": [
+    { ko: "노틸러스", en: "Nautilus" }, { ko: "룰루", en: "Lulu" }, { ko: "바드", en: "Bard" }, 
+    { ko: "브라움", en: "Braum" }, { ko: "쓰레쉬", en: "Thresh" }, { ko: "알리스타", en: "Alistar" }, 
+    { ko: "유미", en: "Yuumi" }, { ko: "잔나", en: "Janna" }, { ko: "카르마", en: "Karma" }, { ko: "레오나", en: "Leona" }
+  ]
+};
 
 // 롤 챔피언 선택 모달 열기
 function openLolChampModal(type) {
@@ -882,4 +911,44 @@ function switchGameTab(gameType) {
 
   if (targetView) targetView.classList.add('active');
   if (targetBtn) targetBtn.classList.add('active');
+}
+// 선택한 롤 챔피언들을 프로필 설정 화면에 렌더링하는 함수
+function renderSelectedLolChampionsView() {
+  ['main', 'sub'].forEach(type => {
+    const containerId = type === 'main' ? 'lolMainChampContainer' : 'lolSubChampContainer';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    const selectedList = tempLolSelectedChampions[type];
+
+    if (!selectedList || selectedList.length === 0) {
+      container.innerHTML = '<span class="placeholder-text" style="font-size:0.85rem; color:#888;">선택된 챔피언이 없습니다.</span>';
+      return;
+    }
+
+    selectedList.forEach((koName, index) => {
+      // 영문 ID 찾기
+      let enId = koName;
+      for (let pos in LOL_CHAMPIONS) {
+        const found = LOL_CHAMPIONS[pos].find(c => c.ko === koName);
+        if (found) {
+          enId = found.en;
+          break;
+        }
+      }
+
+      const item = document.createElement('div');
+      item.className = 'agent-picker-item selected';
+      item.style.pointerEvents = 'none'; // 프로필 화면에서는 클릭 방지 (보기용)
+
+      const imagePath = `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/${enId}.png`;
+      item.innerHTML = `
+        <img src="${imagePath}" alt="${koName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(koName)}'" />
+        <span class="agent-name">${koName}</span>
+        <div class="agent-rank-badge">${index + 1}</div>
+      `;
+      container.appendChild(item);
+    });
+  });
 }
