@@ -402,34 +402,30 @@ function toggleTheme() {
   if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
 }
 
-// 상단 메인 탭 전환
 function showTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   
   const targetTab = document.getElementById(tabId) || document.getElementById(tabId + 'Tab');
   if (targetTab) targetTab.classList.add('active');
 
-  // '팀 구성' 탭이 열릴 경우 '자동' 서브탭 활성화 및 내전 목록 로딩
   if (tabId === 'teamTab' || tabId === 'team') {
     showTeamSubtab('auto');
   }
 }
 
-// 팀 구성 탭 내부의 서브탭 전환 (자동 / 드래프트 / 경매 등)
 function showTeamSubtab(subtabId) {
   document.querySelectorAll('.team-view').forEach(view => view.classList.remove('active'));
   
   const targetView = document.getElementById(subtabId + 'View');
   if (targetView) targetView.classList.add('active');
 
-  // '자동' 서브탭이 선택되면 내전 선택 드롭다운 목록 갱신
   if (subtabId === 'auto') {
     loadScrimOptionsForTeamTab();
   }
 }
 
 function goToMain() {
-  showTab('scrimTab');
+  showTab('scrim');
   filterGame('all');
 }
 
