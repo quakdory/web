@@ -86,6 +86,120 @@ async function fetchValorantAgents() {
     console.error('발로란트 요원 API 로딩 실패:', err);
   }
 }
+let currentLolTargetType = 'main'; // 'main' 혹은 'sub'
+let tempLolSelectedChampions = { main: [], sub: [] };
+
+// 롤 챔피언 선택 모달 열기
+function openLolChampModal(type) {
+  currentLolTargetType = type;
+  const modal = document.getElementById('lolChampModal');
+  if (modal) modal.classList.add('active');
+  
+  // 열 때 전체 챔피언 목록 기본 로드
+  filterLolChampions('all');
+}
+
+// 롤 챔피언 선택 모달 닫기
+function closeLolChampModal() {
+  const modal = document.getElementById('lolChampModal');
+  if (modal) modal.classList.remove('active');
+  
+  // 프로필 화면의 챔피언 뷰 갱신
+  renderSelectedLolChampionsView();
+}
+
+// 포지션 및 검색어에 따라 챔피언 필터링
+function filterLolChampions(position, btnElement = null) {
+  // 버튼 활성화 스타일 처리
+  if (btnElement) {
+    document.querySelectorAll('#lolChampModal .filter-btn').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+  }
+
+  const searchInput = document.getElementById('lolChampSearchInput');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const container = document.getElementById('lolModalChampContainer');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  // 대상 챔피언 선정
+  let targetList = [];
+  if (position === 'all' || !LOL_CHAMPIONS[position]) {
+    targetList = [...new Set(Object.values(LOL_CHAMPIONS).flat())];
+  } else {
+    targetList = LOL_CHAMPIONS[position];
+  }
+
+  // 검색어 필터링
+  const filtered = targetList.filter(champ => champ.toLowerCase().includes(query));
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="placeholder-info" style="grid-column: 1/-1;">검색된 챔피언이 없습니다.</div>';
+    return;
+  }
+
+  filtered.forEach(champName => {
+    const item = document.createElement('div');
+    item.className = 'agent-picker-item';
+    
+    const isSelected = tempLolSelectedChampions[currentLolTargetType].includes(champName);
+    if (isSelected) item.classList.add('selected');
+
+    const imagePath = `images/lol/${champName}.png`;
+    item.innerHTML = `
+      <img src="${imagePath}" alt="${champName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(champName)}'" />
+      <span class="agent-name">${champName}</span>
+    `;
+
+    if (isSelected) {
+      const rankIdx = tempLolSelectedChampions[currentLolTargetType].indexOf(champName);
+      const badge = document.createElement('div');
+      badge.className = 'agent-rank-badge';
+      badge.textContent = rankIdx + 1;
+      item.appendChild(badge);
+    }
+
+    item.onclick = () => toggleLolSelection(currentLolTargetType, champName, item);
+    container.appendChild(item);
+  });
+}
+
+// 검색창 입력 시 실행
+function onLolSearchInput() {
+  const activeBtn = document.querySelector('#lolChampModal .filter-btn.active');
+  let currentPos = 'all';
+  if (activeBtn) {
+    const text = activeBtn.textContent;
+    if (text !== '전체') currentPos = text;
+  }
+  filterLolChampions(currentPos);
+}
+
+// 챔피언 선택/해제 토글 (최대 3개 제한)
+function toggleLolSelection(type, champName, element) {
+  const list = tempLolSelectedChampions[type];
+  const idx = list.indexOf(champName);
+
+  if (idx > -1) {
+    list.splice(idx, 1);
+    element.classList.remove('selected');
+    const badge = element.querySelector('.agent-rank-badge');
+    if (badge) badge.remove();
+  } else {
+    if (list.length >= 3) {
+      alert('선호 챔피언은 최대 3개까지만 선택할 수 있습니다!');
+      return;
+    }
+    list.push(champName);
+    element.classList.add('selected');
+    
+    const badge = document.createElement('div');
+    badge.className = 'agent-rank-badge';
+    badge.textContent = list.length;
+    element.appendChild(badge);
+  }
+}
 
 // =============================================================
 // 로그인 / 회원가입 유틸리티 및 Supabase Auth 로직
