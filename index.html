@@ -179,25 +179,47 @@
     </main>
   </div>
 
-  <!-- 프로필 설정 모달 (3분할 그리드) -->
+  <!-- 프로필 설정 모달 (보안 검증 + 한 줄 소개 + 3분할 비주얼 Picker) -->
   <div id="profileModal" class="modal">
     <div class="modal-content modal-lg">
       <div class="modal-header">
         <h3>⚙️ 프로필 및 게임 계정 통합 설정</h3>
         <button class="close-btn" onclick="closeProfileModal()">&times;</button>
       </div>
-      <form onsubmit="saveFullProfile(event)">
+      <form id="profileForm" onsubmit="saveFullProfile(event)">
+        <!-- 계정 및 보안 정보 -->
         <div class="section-box">
-          <h4>기본 계정 정보</h4>
+          <h4>기본 계정 및 보안 정보</h4>
           <div class="form-grid-3">
-            <div class="form-group"><label>아이디</label><input type="text" id="editUsername" disabled readonly /></div>
-            <div class="form-group"><label>닉네임</label><input type="text" id="editNickname" required /></div>
-            <div class="form-group"><label>새 비밀번호 (선택)</label><input type="password" id="editPassword" placeholder="6자리 이상 변경 시" minlength="6" /></div>
+            <div class="form-group">
+              <label>아이디</label>
+              <input type="text" id="editUsername" disabled readonly />
+            </div>
+            <div class="form-group">
+              <label>닉네임 <span class="req">*필수</span></label>
+              <input type="text" id="editNickname" required />
+            </div>
+            <div class="form-group">
+              <label>한 줄 소개</label>
+              <input type="text" id="editBio" placeholder="자신을 소개하는 한 줄 메시지" maxLength="50" />
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 10px;">
+            <div class="form-group">
+              <label>현재 비밀번호 <span class="req">(비밀번호 변경 시 필수)</span></label>
+              <input type="password" id="currentPassword" placeholder="현재 비밀번호 입력" />
+            </div>
+            <div class="form-group">
+              <label>새 비밀번호</label>
+              <input type="password" id="editPassword" placeholder="변경할 6자리 이상 비밀번호" minlength="6" />
+            </div>
           </div>
         </div>
 
+        <!-- 3분할 게임 카드 -->
         <div class="section-box" style="margin-top: 20px;">
-          <h4>게임별 프로필 (3분할 탭)</h4>
+          <h4>게임별 프로필 설정</h4>
           <div class="game-profile-grid">
             <!-- 발로란트 카드 -->
             <div class="game-card valo">
@@ -222,7 +244,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>주 선호 요원 (최대 3개, 1번 필수)</label>
+                <label>주 선호 요원 (최대 3개)</label>
                 <div id="valoMainAgentContainer" class="agent-image-picker"></div>
               </div>
               <div class="form-group">
@@ -241,13 +263,13 @@
               </div>
             </div>
 
-            <!-- 오버워치 카드 -->
+            <!-- 오버워치 2 카드 -->
             <div class="game-card ow">
               <h5>🟠 OVERWATCH 2</h5>
               <p class="placeholder-info">오버워치 배틀태그 및 포지션 연동 준비 중입니다.</p>
             </div>
 
-            <!-- 롤 카드 -->
+            <!-- 리그 오브 레전드 카드 -->
             <div class="game-card lol">
               <h5>🔵 LEAGUE OF LEGENDS</h5>
               <p class="placeholder-info">소환사명 및 주/부 라인 연동 준비 중입니다.</p>
@@ -257,7 +279,7 @@
 
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
-          <button type="submit" class="btn-primary">저장하기</button>
+          <button type="submit" class="btn-primary">설정 저장</button>
         </div>
       </form>
     </div>

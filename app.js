@@ -295,10 +295,15 @@ function updateAgentBadges(type) {
   });
 }
 
+// 프로필 모달 열기 (한 줄 소개 & 계정 정보 불러오기)
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
+
   document.getElementById('editUsername').value = currentUser.email.split('@')[0];
   document.getElementById('editNickname').value = currentProfile.nickname || '';
+  document.getElementById('editBio').value = currentProfile.bio || ''; // 한 줄 소개
+  document.getElementById('currentPassword').value = '';
+  document.getElementById('editPassword').value = '';
 
   const valo = currentProfile.valo_info || {};
   document.getElementById('valoId').value = valo.game_id || '';
@@ -327,13 +332,13 @@ function openProfileModal() {
   document.getElementById('profileModal')?.classList.add('active');
 }
 
-function closeProfileModal() {
-  document.getElementById('profileModal')?.classList.remove('active');
-}
-
+// 프로필 저장 (현재 비밀번호 재인증 검증 + bio 및 발로란트 정보 업데이트)
 async function saveFullProfile(e) {
   e.preventDefault();
+
   const nickname = document.getElementById('editNickname').value;
+  const bio = document.getElementById('editBio').value;
+  const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('editPassword').value;
   const valoId = document.getElementById('valoId').value;
 
@@ -342,6 +347,38 @@ async function saveFullProfile(e) {
     return;
   }
 
+  // 1. 새 비밀번호 변경 시 현재 비밀번호 검증
+  if (newPassword.trim().length > 0) {
+    if (!currentPassword) {
+      alert('비밀번호를 변경하려면 현재 비밀번호를 입력해야 합니다.');
+      return;
+    }
+    if (newPassword.trim().length < 6) {
+      alert('새 비밀번호는 6자리 이상이어야 합니다.');
+      return;
+    }
+
+    // 현재 비밀번호 확인을 위한 재인증 시도
+    const email = currentUser.email;
+    const { error: authErr } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: currentPassword
+    });
+
+    if (authErr) {
+      alert('현재 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    // 재인증 성공 시 비밀번호 변경
+    const { error: updateAuthErr } = await supabaseClient.auth.updateUser({ password: newPassword });
+    if (updateAuthErr) {
+      alert('비밀번호 변경 실패: ' + updateAuthErr.message);
+      return;
+    }
+  }
+
+  // 2. 프로필 DB (nickname, bio, valo_info) 업데이트
   const valoInfo = {
     game_id: valoId,
     tier: document.getElementById('valoTier').value,
@@ -351,15 +388,19 @@ async function saveFullProfile(e) {
     sub_agents: tempSelectedAgents.sub
   };
 
-  if (newPassword.trim().length >= 6) {
-    await supabaseClient.auth.updateUser({ password: newPassword });
-  }
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update({ 
+      nickname: nickname,
+      bio: bio,
+      valo_info: valoInfo 
+    })
+    .eq('id', currentUser.id);
 
-  const { error } = await supabaseClient.from('profiles').update({ nickname, valo_info: valoInfo }).eq('id', currentUser.id);
   if (error) {
     alert('프로필 저장 실패: ' + error.message);
   } else {
-    alert('프로필이 성공적으로 저장되었습니다!');
+    alert('프로필 설정이 성공적으로 저장되었습니다!');
     closeProfileModal();
     checkAuthState();
   }

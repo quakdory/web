@@ -286,3 +286,15 @@ body.dark-mode .auth-tabs {
 .auth-form.active {
   display: block;
 }
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
