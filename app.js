@@ -306,7 +306,7 @@ function updateAgentBadges(type) {
 // =============================================================
 // 오버워치 2 영웅 선택 로직 (web/images/ove/[한글명].png 반영)
 // =============================================================
-// 오버워치 2 역할군 선택 시 한글 이미지 경로 안전 로딩 적용
+// 오버워치 2 역할군 선택 시 경로 수정 버전
 function updateOwAgentSelection(type) {
   const roleSelectId = type === 'main' ? 'owMainRole' : 'owSubRole';
   const containerId = type === 'main' ? 'owMainAgentContainer' : 'owSubAgentContainer';
@@ -326,11 +326,13 @@ function updateOwAgentSelection(type) {
     const item = document.createElement('div');
     item.className = 'agent-picker-item';
     
-    // 상대 경로로 먼저 시도하고, 실패 시 절대 경로(/web/...)나 다른 형태로 fallback 가능하도록 구성
-    const imagePath = `web/images/ove/${heroName}.png`;
+    // 절대 경로(/web/...) 대신 현재 문서 기준 상대 경로로 설정
+    // 만약 index.html과 web 폴더가 같은 위치라면 'web/images/ove/...', 
+    // index.html 자체가 이미 web 폴더 내부라면 'images/ove/...' 로 지정해야 합니다.
+    const imagePath = `web/images/ove/${heroName}.png`; 
 
     item.innerHTML = `
-      <img src="${imagePath}" alt="${heroName}" title="${heroName}" onerror="this.onerror=null; this.src='/web/images/ove/${heroName}.png';" />
+      <img src="${imagePath}" alt="${heroName}" title="${heroName}" onerror="this.onerror=null; this.src='images/ove/${heroName}.png';" />
       <span class="agent-name">${heroName}</span>
     `;
     item.onclick = () => toggleOwAgent(type, heroName, item);
