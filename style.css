@@ -245,3 +245,44 @@ body.dark-mode .agent-image-picker { background: rgba(255,255,255,0.03); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 @media (max-width: 768px) { .form-grid-3 { grid-template-columns: 1fr; } .team-result-grid { flex-direction: column; } }
+
+/* 탭 전환 스타일 */
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+body.dark-mode .auth-tabs {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.auth-tab-btn.active {
+  background-color: var(--card-bg);
+  color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.auth-form {
+  display: none;
+}
+
+.auth-form.active {
+  display: block;
+}

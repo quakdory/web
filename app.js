@@ -73,6 +73,26 @@ function makeEmailFromUsername(username) {
   return `${username.trim().toLowerCase()}@myapp.local`;
 }
 
+// 로그인 / 회원가입 탭 전환 함수
+function switchAuthTab(type) {
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const loginTabBtn = document.getElementById('authTabLoginBtn');
+  const signupTabBtn = document.getElementById('authTabSignupBtn');
+
+  if (type === 'login') {
+    loginForm.classList.add('active');
+    signupForm.classList.remove('active');
+    loginTabBtn.classList.add('active');
+    signupTabBtn.classList.remove('active');
+  } else {
+    signupForm.classList.add('active');
+    loginForm.classList.remove('active');
+    signupTabBtn.classList.add('active');
+    loginTabBtn.classList.remove('active');
+  }
+}
+
 // 1. 회원가입 처리
 async function handleSignUp(e) {
   e.preventDefault();
