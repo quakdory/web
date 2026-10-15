@@ -802,11 +802,28 @@ async function fetchScrims() {
   if (!list) return;
   list.innerHTML = '<p class="placeholder-info">내전 목록을 불러오는 중...</p>';
 
-  let query = supabaseClient.from('scrims').select(`*, scrim_participants ( user_id, profiles ( nickname, valo_info ) )`).order('created_at', { ascending: false });
+  // 참여자들의 롤, 발로란트, 오버워치 정보까지 모두 함께 조인(Join)하여 가져옴
+  let query = supabaseClient.from('scrims').select(`
+    *, 
+    scrim_participants ( 
+      user_id, 
+      profiles ( 
+        nickname, 
+        valo_info, 
+        ow_info, 
+        lol_info 
+      ) 
+    )
+  `).order('created_at', { ascending: false });
+
   if (currentFilter !== 'all') query = query.eq('game', currentFilter);
 
   const { data: scrims, error } = await query;
-  if (error) { list.innerHTML = '내전 로딩 오류'; return; }
+  if (error) { 
+    console.error('내전 로딩 에러:', error);
+    list.innerHTML = '내전 로딩 오류'; 
+    return; 
+  }
   renderScrims(scrims);
 }
 
@@ -826,6 +843,48 @@ function renderScrims(scrims) {
     const isFull = currentCount >= scrim.max_players;
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
 
+    // 참여자 목록 HTML 생성
+    let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
+    participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
+    
+    if (participants.length === 0) {
+      participantsHtml += '<p style="font-size: 0.8rem; color: #888;">아직 참여한 인원이 없습니다.</p>';
+    } else {
+      participantsHtml += '<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">';
+      participants.forEach(p => {
+        const profile = p.profiles || {};
+        const nickname = profile.nickname || '알 수 없음';
+        
+        // 해당 내전 종목(valo, ow, lol)에 따른 유저의 선호 챔피언 추출
+        let champList = [];
+        let tierText = '';
+        if (scrim.game === 'valo') {
+          const valo = profile.valo_info || {};
+          champList = valo.main_agents || [];
+          tierText = valo.tier || 'Unranked';
+        } else if (scrim.game === 'ow') {
+          const ow = profile.ow_info || {};
+          champList = ow.main_agents || [];
+          tierText = ow.tier || 'Unranked';
+        } else if (scrim.game === 'lol') {
+          const lol = profile.lol_info || {};
+          champList = lol.main_champs || [];
+          tierText = lol.tier || 'Unranked';
+        }
+
+        const champsStr = champList.length > 0 ? champList.join(', ') : '선호 캐릭터 없음';
+
+        participantsHtml += `
+          <li style="font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 4px 8px; border-radius: 4px;">
+            <span><strong>${nickname}</strong> <span style="font-size: 0.75rem; color: #666;">[${tierText}]</span></span>
+            <span style="font-size: 0.75rem; color: var(--accent-color); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${champsStr}">픽: ${champsStr}</span>
+          </li>
+        `;
+      });
+      participantsHtml += '</ul>';
+    }
+    participantsHtml += '</div>';
+
     const card = document.createElement('div');
     card.className = 'scrim-card';
     card.innerHTML = `
@@ -835,7 +894,12 @@ function renderScrims(scrims) {
       </div>
       <h3>${scrim.title}</h3>
       <p style="margin: 6px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
-      <div style="margin-top: 12px;">${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}</div>
+      
+      ${participantsHtml}
+
+      <div style="margin-top: 12px;">
+        ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}
+      </div>
     `;
     list.appendChild(card);
   });
