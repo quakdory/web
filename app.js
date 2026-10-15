@@ -315,7 +315,7 @@ function toggleTheme() {
 
 function showTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-  const targetTab = document.getElementById(tabId) || document.getElementById(tabId + 'Tab');
+  const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
   if (tabId === 'team') showTeamSubtab('auto');
 }
