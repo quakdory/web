@@ -771,14 +771,14 @@ function showTab(tabId) {
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
   
-  // 버튼 활성화 클래스 맞춤 (navMapVoteBtn 또는 id 형식에 맞게 조절)
-  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn') || document.getElementById('navMapVoteBtn');
+  // 버튼 활성화 클래스 매칭 (navMapVoteBtn 포함)
+  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn');
   if (targetBtn) targetBtn.classList.add('active-tab-btn');
 
   // 팀 탭일 때
   if (tabId === 'team') showTeamSubtab('auto');
   
-  // 맵 투표 탭을 눌렀을 때 발로란트 맵 목록을 기본으로 로드
+  // 맵 투표 탭을 눌렀을 때 발로란트 맵 목록 기본 로드
   if (tabId === 'mapVote') loadMapVoteView('valo');
 }
 
@@ -1054,31 +1054,15 @@ function switchGameTab(gameType) {
   if (targetBtn) targetBtn.classList.add('active');
 }
 
-// 앱 실행 시 초기화 이벤트 리스너
-document.addEventListener('DOMContentLoaded', async () => {
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode');
-    const btn = document.getElementById('themeToggleBtn');
-    if (btn) btn.textContent = '☀️';
-  }
-
-  await fetchValorantAgents();
-  await fetchAllLolChampions(); // 173명 전체 챔피언 자동 로드
-  checkAuthState();
-});
 // =============================================================
 // 맵 투표 기능 로직
 // =============================================================
-
-// 게임별 대표 맵 데이터 (필요에 따라 추가/수정 가능)
 const GAME_MAPS = {
   valo: ["어센트", "헤이븐", "바인드", "스플릿", "로터스", "선셋", "아이스박스", "브리즈"],
   ow: ["일리오스", "리알토", "왕의 길", "네팔", "아이헨발데", "콜로세오", "서킷 로얄"],
   lol: ["소환사의 협곡", "칼바람 나락"]
 };
 
-// 맵 투표 뷰 초기화 및 렌더링
 function loadMapVoteView(gameType = 'valo') {
   const container = document.getElementById('mapVoteContainer');
   if (!container) return;
@@ -1108,8 +1092,20 @@ function loadMapVoteView(gameType = 'valo') {
   container.innerHTML = html;
 }
 
-// 투표 실행 함수 (임시 저장 또는 Supabase 연동 확장 가능)
 function castMapVote(mapName) {
   alert(`[${mapName}]에 투표가 완료되었습니다!`);
-  // 추후 Supabase DB와 연동하여 실시간 투표 집계 저장을 구현할 수 있습니다.
 }
+
+// 앱 실행 시 초기화 이벤트 리스너
+document.addEventListener('DOMContentLoaded', async () => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+
+  await fetchValorantAgents();
+  await fetchAllLolChampions(); // 173명 전체 챔피언 자동 로드
+  checkAuthState();
+});
