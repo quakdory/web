@@ -12,6 +12,29 @@ let tempSelectedAgents = {
   sub: []
 };
 
+// 오버워치 2 선호 영웅 임시 저장 객체
+let tempOwSelectedAgents = {
+  main: [],
+  sub: []
+};
+
+// 오버워치 2 한글 영웅명 기반 에셋 데이터
+const OW_HEROES = {
+  "돌격": [
+    "디바", "둠피스트", "마우가", "오리사", "윈ส턴", 
+    "레킹볼", "시그마", "라마트라", "라인하르트", "로드호그", "자리아"
+  ],
+  "공격": [
+    "겐지", "캐시디", "리퍼", "솔저: 76", "솜브라", "트레이서", 
+    "바스티온", "한조", "정크랫", "메이", "토르비욘", "위도우메이커", 
+    "시메트라", "파라", "에코", "소전", "벤처", "애쉬", "주노"
+  ],
+  "지원": [
+    "아나", "바티스트", "브리기테", "일리아리", "키리코", 
+    "라이프위버", "루시우", "메르시", "모이라", "젠야타"
+  ]
+};
+
 let VALO_AGENT_DATA = {
   '타격대': [],
   '척후대': [],
@@ -68,12 +91,6 @@ async function fetchValorantAgents() {
 // 로그인 / 회원가입 유틸리티 및 Supabase Auth 로직
 // =============================================================
 
-// 사용자 아이디를 Supabase 인증용 가짜 이메일 포맷으로 변환
-function makeEmailFromUsername(username) {
-  return `${username.trim().toLowerCase()}@myapp.local`;
-}
-
-// 로그인 / 회원가입 탭 전환 함수
 function switchAuthTab(type) {
   const loginForm = document.getElementById('loginForm');
   const signupForm = document.getElementById('signupForm');
@@ -93,7 +110,6 @@ function switchAuthTab(type) {
   }
 }
 
-// 1. 회원가입 처리
 async function handleSignUp(e) {
   e.preventDefault();
   const username = document.getElementById('signupUsername').value;
@@ -109,7 +125,6 @@ async function handleSignUp(e) {
     return;
   }
 
-  // 회원가입 성공 시 profiles 테이블에 닉네임 기본 저장
   if (data.user) {
     const { error: profileError } = await supabaseClient
       .from('profiles')
@@ -120,21 +135,17 @@ async function handleSignUp(e) {
     }
   }
 
-  // 가입 완료 후 자동 로그인 방지 및 세션 정리
   await supabaseClient.auth.signOut();
-
   alert('회원가입이 완료되었습니다! 가입하신 아이디와 비밀번호로 로그인해 주세요.');
   document.getElementById('signupForm').reset();
 }
 
-// 2. 로그인 처리
 async function handleLogin(e) {
   e.preventDefault();
   const username = document.getElementById('loginUsername').value;
   const password = document.getElementById('loginPassword').value;
   
   const email = makeEmailFromUsername(username);
-
   const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
@@ -145,12 +156,10 @@ async function handleLogin(e) {
   }
 }
 
-// 3. 로그아웃 처리
 async function handleLogout() {
   await supabaseClient.auth.signOut();
 }
 
-// 4. 세션 및 권한(관리자/일반유저) 상태 검사
 async function checkAuthState() {
   const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
 
@@ -162,7 +171,6 @@ async function checkAuthState() {
   if (session) {
     currentUser = session.user;
 
-    // 프로필 정보 가져오기
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
@@ -175,7 +183,6 @@ async function checkAuthState() {
 
     currentProfile = profile;
 
-    // 화면 전환 (로그인 창 숨기고 메인 화면 표시)
     const authContainer = document.getElementById('authContainer');
     const appContainer = document.getElementById('appContainer');
     const nicknameElem = document.getElementById('userNickname');
@@ -187,7 +194,6 @@ async function checkAuthState() {
     const displayNickname = profile?.nickname || currentUser.email.split('@')[0];
     if (nicknameElem) nicknameElem.textContent = displayNickname;
 
-    // 관리자 배지 설정
     if (badgeElem) {
       if (profile?.is_admin) {
         badgeElem.textContent = '👑 관리자';
@@ -211,11 +217,13 @@ async function checkAuthState() {
   }
 }
 
-// 인증 상태 변화 감지 리스너
 supabaseClient.auth.onAuthStateChange(() => {
   checkAuthState();
 });
 
+// =============================================================
+// 발로란트 선택 로직
+// =============================================================
 function renderTierPicker(selectedTierName = 'Unranked') {
   const container = document.getElementById('valoTierContainer');
   if (!container) return;
@@ -295,7 +303,84 @@ function updateAgentBadges(type) {
   });
 }
 
-// 프로필 모달 닫기 함수
+// =============================================================
+// 오버워치 2 영웅 선택 로직 (web/images/ove/[한글명].png 반영)
+// =============================================================
+function updateOwAgentSelection(type) {
+  const roleSelectId = type === 'main' ? 'owMainRole' : 'owSubRole';
+  const containerId = type === 'main' ? 'owMainAgentContainer' : 'owSubAgentContainer';
+  const selectedRole = document.getElementById(roleSelectId).value;
+  const container = document.getElementById(containerId);
+
+  if (!container) return;
+  container.innerHTML = '';
+  tempOwSelectedAgents[type] = [];
+
+  if (!selectedRole || !OW_HEROES[selectedRole]) {
+    container.innerHTML = '<span class="placeholder-text">역할군을 먼저 선택해 주세요.</span>';
+    return;
+  }
+
+  OW_HEROES[selectedRole].forEach(heroName => {
+    const item = document.createElement('div');
+    item.className = 'agent-picker-item';
+    const imagePath = `web/images/ove/${heroName}.png`;
+
+    item.innerHTML = `
+      <img src="${imagePath}" alt="${heroName}" title="${heroName}" onerror="this.src='https://via.placeholder.com/60?text=${encodeURIComponent(heroName)}'" />
+      <span class="agent-name">${heroName}</span>
+    `;
+    item.onclick = () => toggleOwAgent(type, heroName, item);
+    container.appendChild(item);
+  });
+}
+
+function toggleOwAgent(type, heroName, element) {
+  const list = tempOwSelectedAgents[type];
+  const index = list.indexOf(heroName);
+
+  if (index > -1) {
+    list.splice(index, 1);
+  } else {
+    if (list.length >= 3) {
+      alert('선호 영웅은 최대 3개까지만 선택할 수 있습니다.');
+      return;
+    }
+    list.push(heroName);
+  }
+  updateOwAgentBadges(type);
+}
+
+function updateOwAgentBadges(type) {
+  const containerId = type === 'main' ? 'owMainAgentContainer' : 'owSubAgentContainer';
+  const container = document.getElementById(containerId);
+  const list = tempOwSelectedAgents[type];
+
+  if (!container) return;
+
+  const items = container.querySelectorAll('.agent-picker-item');
+  items.forEach(item => {
+    const name = item.querySelector('.agent-name').textContent;
+    const badgeIdx = list.indexOf(name);
+    
+    const existingBadge = item.querySelector('.agent-rank-badge');
+    if (existingBadge) existingBadge.remove();
+
+    if (badgeIdx > -1) {
+      item.classList.add('selected');
+      const badge = document.createElement('div');
+      badge.className = 'agent-rank-badge';
+      badge.textContent = badgeIdx + 1;
+      item.appendChild(badge);
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+// =============================================================
+// 프로필 모달 열기 및 저장 로직
+// =============================================================
 function closeProfileModal() {
   const modal = document.getElementById('profileModal');
   if (modal) {
@@ -303,7 +388,6 @@ function closeProfileModal() {
   }
 }
 
-// 프로필 모달 열기 (발로란트, 오버워치, 롤 정보 로드)
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
 
@@ -341,8 +425,26 @@ function openProfileModal() {
   const ow = currentProfile.ow_info || {};
   document.getElementById('owId').value = ow.game_id || '';
   document.getElementById('owTier').value = ow.tier || 'Unranked';
-  document.getElementById('owMainRole').value = ow.main_role || '';
-  document.getElementById('owSubRole').value = ow.sub_role || '';
+
+  if (ow.main_role) {
+    document.getElementById('owMainRole').value = ow.main_role;
+    updateOwAgentSelection('main');
+    tempOwSelectedAgents.main = ow.main_agents || [];
+    updateOwAgentBadges('main');
+  } else {
+    document.getElementById('owMainRole').value = "";
+    updateOwAgentSelection('main');
+  }
+
+  if (ow.sub_role) {
+    document.getElementById('owSubRole').value = ow.sub_role;
+    updateOwAgentSelection('sub');
+    tempOwSelectedAgents.sub = ow.sub_agents || [];
+    updateOwAgentBadges('sub');
+  } else {
+    document.getElementById('owSubRole').value = "";
+    updateOwAgentSelection('sub');
+  }
 
   // 3. 롤 정보 로드
   const lol = currentProfile.lol_info || {};
@@ -351,13 +453,10 @@ function openProfileModal() {
   document.getElementById('lolMainRole').value = lol.main_role || '';
   document.getElementById('lolSubRole').value = lol.sub_role || '';
 
-  // 기본적으로 발로란트 탭으로 설정
   switchGameTab('valo');
-
   document.getElementById('profileModal')?.classList.add('active');
 }
 
-// 프로필 저장 (3개 게임 객체 저장)
 async function saveFullProfile(e) {
   e.preventDefault();
 
@@ -371,7 +470,6 @@ async function saveFullProfile(e) {
     return;
   }
 
-  // 비밀번호 변경 재인증 검증
   if (newPassword.trim().length > 0) {
     if (!currentPassword) {
       alert('비밀번호를 변경하려면 현재 비밀번호를 입력해야 합니다.');
@@ -400,7 +498,6 @@ async function saveFullProfile(e) {
     }
   }
 
-  // 게임별 JSON 객체 패킹
   const valoInfo = {
     game_id: valoId,
     tier: document.getElementById('valoTier').value,
@@ -414,7 +511,9 @@ async function saveFullProfile(e) {
     game_id: document.getElementById('owId').value,
     tier: document.getElementById('owTier').value,
     main_role: document.getElementById('owMainRole').value,
-    sub_role: document.getElementById('owSubRole').value
+    sub_role: document.getElementById('owSubRole').value,
+    main_agents: tempOwSelectedAgents.main,
+    sub_agents: tempOwSelectedAgents.sub
   };
 
   const lolInfo = {
@@ -443,6 +542,9 @@ async function saveFullProfile(e) {
   }
 }
 
+// =============================================================
+// 기타 유틸리티 및 탭 제어 함수
+// =============================================================
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
   const btn = document.getElementById('themeToggleBtn');
