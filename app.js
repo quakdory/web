@@ -303,7 +303,7 @@ function closeProfileModal() {
   }
 }
 
-// 프로필 모달 열기
+// 프로필 모달 열기 (발로란트, 오버워치, 롤 정보 로드)
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
 
@@ -312,6 +312,7 @@ function openProfileModal() {
   document.getElementById('currentPassword').value = '';
   document.getElementById('editPassword').value = '';
 
+  // 1. 발로란트 정보 로드
   const valo = currentProfile.valo_info || {};
   document.getElementById('valoId').value = valo.game_id || '';
   renderTierPicker(valo.tier || 'Unranked');
@@ -336,24 +337,41 @@ function openProfileModal() {
     updateAgentSelection('sub');
   }
 
+  // 2. 오버워치 2 정보 로드
+  const ow = currentProfile.ow_info || {};
+  document.getElementById('owId').value = ow.game_id || '';
+  document.getElementById('owTier').value = ow.tier || 'Unranked';
+  document.getElementById('owMainRole').value = ow.main_role || '';
+  document.getElementById('owSubRole').value = ow.sub_role || '';
+
+  // 3. 롤 정보 로드
+  const lol = currentProfile.lol_info || {};
+  document.getElementById('lolId').value = lol.game_id || '';
+  document.getElementById('lolTier').value = lol.tier || 'Unranked';
+  document.getElementById('lolMainRole').value = lol.main_role || '';
+  document.getElementById('lolSubRole').value = lol.sub_role || '';
+
+  // 기본적으로 발로란트 탭으로 설정
+  switchGameTab('valo');
+
   document.getElementById('profileModal')?.classList.add('active');
 }
 
-// 프로필 저장 (현재 비밀번호 재인증 검증 + 발로란트 정보 업데이트)
+// 프로필 저장 (3개 게임 객체 저장)
 async function saveFullProfile(e) {
   e.preventDefault();
 
   const nickname = document.getElementById('editNickname').value;
   const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('editPassword').value;
-  const valoId = document.getElementById('valoId').value;
 
+  const valoId = document.getElementById('valoId').value;
   if (valoId && !valoId.includes('#')) {
     alert('발로란트 아이디는 아이디#태그 형식으로 입력해 주세요.');
     return;
   }
 
-  // 1. 새 비밀번호 변경 시 현재 비밀번호 검증
+  // 비밀번호 변경 재인증 검증
   if (newPassword.trim().length > 0) {
     if (!currentPassword) {
       alert('비밀번호를 변경하려면 현재 비밀번호를 입력해야 합니다.');
@@ -382,7 +400,7 @@ async function saveFullProfile(e) {
     }
   }
 
-  // 2. 프로필 DB (nickname, valo_info) 업데이트
+  // 게임별 JSON 객체 패킹
   const valoInfo = {
     game_id: valoId,
     tier: document.getElementById('valoTier').value,
@@ -392,11 +410,27 @@ async function saveFullProfile(e) {
     sub_agents: tempSelectedAgents.sub
   };
 
+  const owInfo = {
+    game_id: document.getElementById('owId').value,
+    tier: document.getElementById('owTier').value,
+    main_role: document.getElementById('owMainRole').value,
+    sub_role: document.getElementById('owSubRole').value
+  };
+
+  const lolInfo = {
+    game_id: document.getElementById('lolId').value,
+    tier: document.getElementById('lolTier').value,
+    main_role: document.getElementById('lolMainRole').value,
+    sub_role: document.getElementById('lolSubRole').value
+  };
+
   const { error } = await supabaseClient
     .from('profiles')
     .update({ 
       nickname: nickname,
-      valo_info: valoInfo 
+      valo_info: valoInfo,
+      ow_info: owInfo,
+      lol_info: lolInfo
     })
     .eq('id', currentUser.id);
 
