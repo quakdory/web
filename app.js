@@ -295,13 +295,12 @@ function updateAgentBadges(type) {
   });
 }
 
-// 프로필 모달 열기 (한 줄 소개 & 계정 정보 불러오기)
+// 프로필 모달 열기
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
 
   document.getElementById('editUsername').value = currentUser.email.split('@')[0];
   document.getElementById('editNickname').value = currentProfile.nickname || '';
-  document.getElementById('editBio').value = currentProfile.bio || ''; // 한 줄 소개
   document.getElementById('currentPassword').value = '';
   document.getElementById('editPassword').value = '';
 
@@ -332,12 +331,11 @@ function openProfileModal() {
   document.getElementById('profileModal')?.classList.add('active');
 }
 
-// 프로필 저장 (현재 비밀번호 재인증 검증 + bio 및 발로란트 정보 업데이트)
+// 프로필 저장 (현재 비밀번호 재인증 검증 + 발로란트 정보 업데이트)
 async function saveFullProfile(e) {
   e.preventDefault();
 
   const nickname = document.getElementById('editNickname').value;
-  const bio = document.getElementById('editBio').value;
   const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('editPassword').value;
   const valoId = document.getElementById('valoId').value;
@@ -358,7 +356,6 @@ async function saveFullProfile(e) {
       return;
     }
 
-    // 현재 비밀번호 확인을 위한 재인증 시도
     const email = currentUser.email;
     const { error: authErr } = await supabaseClient.auth.signInWithPassword({
       email: email,
@@ -370,7 +367,6 @@ async function saveFullProfile(e) {
       return;
     }
 
-    // 재인증 성공 시 비밀번호 변경
     const { error: updateAuthErr } = await supabaseClient.auth.updateUser({ password: newPassword });
     if (updateAuthErr) {
       alert('비밀번호 변경 실패: ' + updateAuthErr.message);
@@ -378,7 +374,7 @@ async function saveFullProfile(e) {
     }
   }
 
-  // 2. 프로필 DB (nickname, bio, valo_info) 업데이트
+  // 2. 프로필 DB (nickname, valo_info) 업데이트
   const valoInfo = {
     game_id: valoId,
     tier: document.getElementById('valoTier').value,
@@ -392,7 +388,6 @@ async function saveFullProfile(e) {
     .from('profiles')
     .update({ 
       nickname: nickname,
-      bio: bio,
       valo_info: valoInfo 
     })
     .eq('id', currentUser.id);

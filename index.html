@@ -179,7 +179,7 @@
     </main>
   </div>
 
-  <!-- 프로필 설정 모달 (보안 검증 + 한 줄 소개 + 3분할 비주얼 Picker) -->
+<!-- 프로필 설정 모달 (보안 검증 + 3분할 비주얼 Picker) -->
   <div id="profileModal" class="modal">
     <div class="modal-content modal-lg">
       <div class="modal-header">
@@ -190,7 +190,7 @@
         <!-- 계정 및 보안 정보 -->
         <div class="section-box">
           <h4>기본 계정 및 보안 정보</h4>
-          <div class="form-grid-3">
+          <div class="form-grid-2">
             <div class="form-group">
               <label>아이디</label>
               <input type="text" id="editUsername" disabled readonly />
@@ -198,10 +198,6 @@
             <div class="form-group">
               <label>닉네임 <span class="req">*필수</span></label>
               <input type="text" id="editNickname" required />
-            </div>
-            <div class="form-group">
-              <label>한 줄 소개</label>
-              <input type="text" id="editBio" placeholder="자신을 소개하는 한 줄 메시지" maxLength="50" />
             </div>
           </div>
 
