@@ -482,7 +482,6 @@ function updateAgentSelection(type) {
     btn.className = 'agent-btn';
     btn.setAttribute('data-agent', agent.name);
     btn.onclick = () => toggleAgentSelect(type, agent.name, btn);
-    // 평상시에는 우상단 박스(select-badge)를 아예 만들지 않고 깔끔하게 유지합니다.
     btn.innerHTML = `<img src="${agent.img}" alt="${agent.name}" /><span class="agent-name">${agent.name}</span>`;
     container.appendChild(btn);
   });
@@ -490,19 +489,21 @@ function updateAgentSelection(type) {
 
 function updateAgentBadges(type) {
   const container = document.getElementById(type === 'main' ? 'valoMainAgentContainer' : 'valoSubAgentContainer');
+  if (!container) return;
   const selected = tempSelectedAgents[type];
   
   container.querySelectorAll('.agent-btn').forEach(btn => {
     btn.classList.remove('selected');
     const existingBadge = btn.querySelector('.select-badge');
-    if (existingBadge) existingBadge.remove(); // 선택 해제 시 우상단 박스 제거
+    if (existingBadge) {
+      existingBadge.remove();
+    }
   });
 
   selected.forEach((agentName, index) => {
     const btn = container.querySelector(`.agent-btn[data-agent="${agentName}"]`);
     if (btn) {
       btn.classList.add('selected');
-      // 선택되었을 때만 우상단 박스와 번호를 생성하여 추가합니다.
       const badge = document.createElement('div');
       badge.className = 'select-badge agent-rank-badge';
       badge.textContent = index + 1;
@@ -526,34 +527,8 @@ function toggleAgentSelect(type, agentName, btnEl) {
   updateAgentBadges(type);
 }
 
-function updateAgentBadges(type) {
-  const container = document.getElementById(type === 'main' ? 'valoMainAgentContainer' : 'valoSubAgentContainer');
-  if (!container) return;
-  const selected = tempSelectedAgents[type];
-  
-  // 기존에 선택되어 있던 버튼들의 선택 상태를 해제하고 뱃지를 안전하게 제거
-  container.querySelectorAll('.agent-btn').forEach(btn => {
-    btn.classList.remove('selected');
-    const existingBadge = btn.querySelector('.select-badge');
-    if (existingBadge) {
-      existingBadge.remove();
-    }
-  });
-
-  // 새로 선택된 요원들에게 순서 번호 뱃지 부여
-  selected.forEach((agentName, index) => {
-    const btn = container.querySelector(`.agent-btn[data-agent="${agentName}"]`);
-    if (btn) {
-      btn.classList.add('selected');
-      const badge = document.createElement('div');
-      badge.className = 'select-badge agent-rank-badge';
-      badge.textContent = index + 1;
-      btn.appendChild(badge);
-    }
-  });
-}
 // =============================================================
-// 오버워치 2 티어 선택 로직 (발로란트 방식과 동일한 이미지 피커)
+// 오버워치 2 티어 선택 로직
 // =============================================================
 function renderOwTierPicker(selectedTierName = '브론즈') {
   const container = document.getElementById('owTierContainer');
@@ -706,8 +681,6 @@ function openProfileModal() {
   // 2. 오버워치 2 정보 로드
   const ow = currentProfile.ow_info || {};
   document.getElementById('owId').value = ow.game_id || '';
-  
-  // 💡 기존 select 대신 방금 만든 이미지 티어 피커 호출
   renderOwTierPicker(ow.tier || '브론즈');
 
   if (ow.main_role) {
@@ -729,39 +702,6 @@ function openProfileModal() {
     document.getElementById('owSubRole').value = "";
     updateOwAgentSelection('sub');
   }
-
-  // =============================================================
-// 오버워치 2 티어 선택 로직 (발로란트 방식과 동일하게 이미지화)
-// =============================================================
-function renderOwTierPicker(selectedTierName = '브론즈') {
-  const container = document.getElementById('owTierContainer');
-  if (!container) return;
-  container.innerHTML = '';
-  
-  // 숨겨진 입력폼이나 select 요소가 있다면 값 동기화 (HTML 구조에 맞게 활용)
-  const owTierInput = document.getElementById('owTier');
-  if (owTierInput) owTierInput.value = selectedTierName;
-
-  Ow_TIER_DATA.forEach(tier => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `tier-btn ${tier.name === selectedTierName ? 'selected' : ''}`;
-    btn.onclick = () => selectOwTier(tier.name, btn);
-    btn.innerHTML = `<img src="${tier.img}" alt="${tier.label}" /><span class="tier-name">${tier.label}</span>`;
-    container.appendChild(btn);
-  });
-}
-
-function selectOwTier(tierName, btnEl) {
-  const owTierInput = document.getElementById('owTier');
-  if (owTierInput) owTierInput.value = tierName;
-
-  const container = document.getElementById('owTierContainer');
-  if (container) {
-    container.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('selected'));
-  }
-  btnEl.classList.add('selected');
-}
 
   // 3. 롤 정보 로드
   const lol = currentProfile.lol_info || {};
@@ -894,10 +834,10 @@ function showTab(tabId) {
 
   if (tabId === 'team') showTeamSubtab('auto');
   
-  // 💡 맵 투표 탭을 누를 때 맵 목록 그리기가 확실하게 실행되도록 설정
+  // 맵 투표 탭을 누를 때 참가 중인 내전 목록 자동 로드
   if (tabId === 'mapVote') {
     setTimeout(() => {
-      loadMapVoteView('valo');
+      loadMapVoteScrims();
     }, 50);
   }
 }
@@ -927,7 +867,6 @@ async function fetchScrims() {
   if (!list) return;
   list.innerHTML = '<p class="placeholder-info">내전 목록을 불러오는 중...</p>';
 
-  // 참여자들의 롤, 발로란트, 오버워치 정보까지 모두 함께 조인(Join)하여 가져옴
   let query = supabaseClient.from('scrims').select(`
     *, 
     scrim_participants ( 
@@ -968,7 +907,6 @@ function renderScrims(scrims) {
     const isFull = currentCount >= scrim.max_players;
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
 
-    // 참여자 목록 HTML 생성 (아이콘 이미지 포함)
     let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
     participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
     
@@ -984,7 +922,6 @@ function renderScrims(scrims) {
         let champList = [];
         let tierText = '';
         
-        // 종목별 선호 캐릭터 및 티어 추출
         if (scrim.game === 'valo') {
           const valo = profile.valo_info || {};
           champList = valo.main_agents || [];
@@ -999,7 +936,6 @@ function renderScrims(scrims) {
           tierText = lol.tier || 'Unranked';
         }
 
-        // 캐릭터 아이콘 이미지 태그들을 조합할 HTML 생성
         let champIconsHtml = '';
         if (champList.length === 0) {
           champIconsHtml = '<span style="font-size: 0.75rem; color: #888;">픽 없음</span>';
@@ -1168,7 +1104,7 @@ function switchGameTab(gameType) {
 }
 
 // =============================================================
-// 게임별 맵 정보 및 고화질 배경 이미지 데이터
+// 게임별 맵 정보 데이터
 // =============================================================
 const GAME_MAPS = {
   valo: [
@@ -1185,14 +1121,11 @@ const GAME_MAPS = {
     { name: "어비스", img: "images/maps/val/어비스.webp" },
     { name: "코로드", img: "images/maps/val/코로드.webp" },
     { name: "서밋", img: "images/maps/val/서밋.webp" },
-
   ],
   ow: [
-    // 플래시포인트
     { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.webp", mode: "플래시포인트" },
     { name: "수라바사", img: "images/maps/ove/수라바사.webp", mode: "플래시포인트" },
     { name: "아틀리스", img: "images/maps/ove/아틀리스.webp", mode: "플래시포인트" },
-    // 호위
     { name: "샴발리 수도원", img: "images/maps/ove/샴발리.webp", mode: "호위" },
     { name: "서킷 로얄", img: "images/maps/ove/서킷로얄.webp", mode: "호위" },
     { name: "감시기지: 지브롤터", img: "images/maps/ove/지브롤터.webp", mode: "호위" },
@@ -1202,7 +1135,6 @@ const GAME_MAPS = {
     { name: "쓰레기촌", img: "images/maps/ove/쓰레기촌.webp", mode: "호위" },
     { name: "하바나", img: "images/maps/ove/하바나.webp", mode: "호위" },
     { name: "그림스뵈튼", img: "images/maps/ove/그림스뵈튼.webp", mode: "호위" },
-    // 쟁탈
     { name: "네팔", img: "images/maps/ove/네팔.webp", mode: "쟁탈" },
     { name: "리장 타워", img: "images/maps/ove/리장타워.webp", mode: "쟁탈" },
     { name: "부산", img: "images/maps/ove/부산.webp", mode: "쟁탈" },
@@ -1210,7 +1142,6 @@ const GAME_MAPS = {
     { name: "오아시스", img: "images/maps/ove/오아시스.webp", mode: "쟁탈" },
     { name: "일리오스", img: "images/maps/ove/일리오스.webp", mode: "쟁탈" },
     { name: "남극 반도", img: "images/maps/ove/남극반도.webp", mode: "쟁탈" },
-    // 혼합
     { name: "할리우드", img: "images/maps/ove/할리우드.webp", mode: "혼합" },
     { name: "왕의 길", img: "images/maps/ove/왕의길.webp", mode: "혼합" },
     { name: "눔바니", img: "images/maps/ove/눔바니.webp", mode: "혼합" },
@@ -1219,7 +1150,6 @@ const GAME_MAPS = {
     { name: "아이헨발데", img: "images/maps/ove/아이헨발데.webp", mode: "혼합" },
     { name: "파라이수", img: "images/maps/ove/파라이수.webp", mode: "혼합" },
     { name: "네온 교차로", img: "images/maps/ove/네온 교차로.webp", mode: "혼합" },
-    // 밀기
     { name: "뉴 퀸 스트리트", img: "images/maps/ove/뉴퀸스트리트.webp", mode: "밀기" },
     { name: "이스페란사", img: "images/maps/ove/이스페란사.webp", mode: "밀기" },
     { name: "콜로세오", img: "images/maps/ove/콜로세오.webp", mode: "밀기" },
@@ -1227,90 +1157,133 @@ const GAME_MAPS = {
   ],
 };
 
-// 현재 선택된 오버워치 맵 세부 모드 ('all', '쟁탈', '호위', '플래시포인트', '밀기', '혼합')
-let currentOwMapMode = 'all';
+// =============================================================
+// 🗺️ 내전 참가자 전용 맵 투표 시스템
+// =============================================================
 
-async function loadMapVoteView(gameType = 'valo', owMode = 'all') {
-  currentOwMapMode = owMode;
+// 1. 맵 투표 탭 진입 시 로그인 유저가 '참가 중인 내전' 목록 불러오기
+async function loadMapVoteScrims() {
+  const selectEl = document.getElementById('mapVoteScrimSelect');
+  const container = document.getElementById('mapVoteContainer');
+  if (!selectEl) return;
+
+  if (!currentUser || !currentProfile) {
+    selectEl.innerHTML = '<option value="">로그인이 필요합니다.</option>';
+    if (container) container.innerHTML = '<div class="placeholder-box">로그인 후 맵 투표를 이용하실 수 있습니다.</div>';
+    return;
+  }
+
+  selectEl.innerHTML = '<option value="">참가 중인 내전을 불러오는 중...</option>';
+
+  // Supabase에서 현재 유저가 참가자로 등록된 내전 정보 조인 조회
+  const { data: myParticipations, error } = await supabaseClient
+    .from('scrim_participants')
+    .select(`
+      scrim_id,
+      scrims (
+        id, title, game, max_players, current_players, map_votes,
+        scrim_participants (
+          user_id,
+          profiles ( nickname )
+        )
+      )
+    `)
+    .eq('user_id', currentUser.id);
+
+  if (error) {
+    console.error('참가 내전 로딩 에러:', error);
+    selectEl.innerHTML = '<option value="">내전 목록 로딩 실패</option>';
+    return;
+  }
+
+  if (!myParticipations || myParticipations.length === 0) {
+    selectEl.innerHTML = '<option value="">참가 중인 내전이 없습니다.</option>';
+    if (container) container.innerHTML = '<div class="placeholder-box">현재 참가 중인 내전이 없습니다. 내전 탭에서 먼저 내전에 참가해 주세요!</div>';
+    return;
+  }
+
+  selectEl.innerHTML = '<option value="">-- 투표할 내전을 선택하세요 --</option>';
+  
+  window.myActiveScrims = [];
+  
+  myParticipations.forEach(item => {
+    const scrim = item.scrims;
+    if (scrim) {
+      window.myActiveScrims.push(scrim);
+      const opt = document.createElement('option');
+      opt.value = scrim.id;
+      opt.textContent = `[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)`;
+      selectEl.appendChild(opt);
+    }
+  });
+
+  if (container) container.innerHTML = '<div class="placeholder-box">위에서 참가 중인 내전을 선택해 주세요.</div>';
+}
+
+// 2. 내전 드롭다운 변경 시 권한 검증 및 해당 내전 종목 맵 UI 렌더링
+function onMapVoteScrimChange() {
+  const selectEl = document.getElementById('mapVoteScrimSelect');
+  const container = document.getElementById('mapVoteContainer');
+  if (!selectEl || !container) return;
+
+  const scrimId = selectEl.value;
+  if (!scrimId) {
+    container.innerHTML = '<div class="placeholder-box">위에서 참가 중인 내전을 선택해 주세요.</div>';
+    return;
+  }
+
+  const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
+  if (!selectedScrim) return;
+
+  // 권한 검증: 현재 사용자가 해당 내전의 참가자인지 재확인
+  const participants = selectedScrim.scrim_participants || [];
+  const isParticipant = participants.some(p => p.user_id === currentUser.id);
+
+  if (!isParticipant) {
+    container.innerHTML = '<div class="placeholder-box danger-notice" style="color: #ff4757; border: 1px solid #ff4757; background: rgba(255,71,87,0.1); padding: 15px; border-radius: 10px;">⚠️ 해당 내전의 참가자만 맵 투표에 참여할 수 있습니다.</div>';
+    return;
+  }
+
+  renderMapVoteCards(selectedScrim);
+}
+
+// 3. 선택한 내전의 종목에 맞는 맵 카드 및 투표 현황 렌더링
+function renderMapVoteCards(scrim) {
   const container = document.getElementById('mapVoteContainer');
   if (!container) return;
 
-  container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9rem;">투표 현황을 불러오는 중...</p>';
-
-  // DB에서 해당 게임의 모든 투표 데이터 가져오기
-  const { data: votes, error } = await supabaseClient
-    .from('map_votes')
-    .select('*')
-    .eq('game_type', gameType);
-
-  if (error) {
-    console.error('투표 현황 로딩 실패:', error);
-  }
-
-  // 맵별 투표 수 집계 객체 생성
-  const voteCounts = {};
-  let userVotedMap = null;
-
-  if (votes) {
-    votes.forEach(v => {
-      voteCounts[v.map_name] = (voteCounts[v.map_name] || 0) + 1;
-      if (currentUser && v.user_id === currentUser.id) {
-        userVotedMap = v.map_name; // 내가 이미 투표한 맵
-      }
-    });
-  }
-
-  // 게임별 맵 데이터 가져오기
-  let maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
-
-  // 오버워치이고 세부 모드가 선택된 경우 필터링
-  if (gameType === 'ow' && owMode !== 'all') {
-    maps = maps.filter(map => map.mode === owMode);
-  }
+  const gameType = scrim.game;
+  const maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
+  const votes = scrim.map_votes || {};
+  const userNick = currentProfile?.nickname || currentUser.email.split('@')[0];
 
   let html = `
-    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-      <button class="filter-btn ${gameType === 'valo' ? 'active' : ''}" onclick="loadMapVoteView('valo')">발로란트</button>
-      <button class="filter-btn ${gameType === 'ow' ? 'active' : ''}" onclick="loadMapVoteView('ow', 'all')">오버워치</button>
+    <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 0.95rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}] ${scrim.title} 맵 투표 현황</span>
+      <span style="font-size: 0.85rem; color: var(--text-secondary);">참가자 인증 완료 ✔️ (1인 1표)</span>
     </div>
+    <div class="map-card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
   `;
 
-  // 오버워치 탭일 때만 5개 세부 모드 탭 노출
-  if (gameType === 'ow') {
-    const owModes = [
-      { key: 'all', label: '전체' },
-      { key: '쟁탈', label: '쟁탈' },
-      { key: '호위', label: '호위' },
-      { key: '플래시포인트', label: '플래시포인트' },
-      { key: '밀기', label: '밀기' },
-      { key: '혼합', label: '혼합' }
-    ];
-
-    html += `<div style="margin-bottom: 20px; display: flex; gap: 6px; flex-wrap: wrap;">`;
-    owModes.forEach(mode => {
-      html += `<button class="filter-btn ${currentOwMapMode === mode.key ? 'active' : ''}" style="font-size: 0.85rem; padding: 6px 12px;" onclick="loadMapVoteView('ow', '${mode.key}')">${mode.label}</button>`;
-    });
-    html += `</div>`;
-  }
-
-  html += `<div class="map-card-grid">`;
-
   maps.forEach(map => {
-    const count = voteCounts[map.name] || 0;
-    const isMyVote = (userVotedMap === map.name);
+    const mapVoters = votes[map.name] || [];
+    const count = mapVoters.length;
+    const hasVotedThisMap = mapVoters.includes(userNick);
 
     html += `
-      <div class="map-vote-card ${isMyVote ? 'voted' : ''}" onclick="castMapVote('${gameType}', '${map.name}')">
-        <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
-        <div class="map-card-overlay"></div>
-        <div class="map-card-content">
-          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 4px;">
-            <h3 class="map-title" style="margin: 0;">${map.name}</h3>
-            <span style="background: ${isMyVote ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
+      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')" style="cursor: pointer; position: relative; border-radius: 12px; overflow: hidden; border: 2px solid ${hasVotedThisMap ? '#10b981' : 'var(--border-color)'}; background: rgba(255,255,255,0.05); transition: all 0.2s;">
+        <div class="map-card-bg" style="background-image: url('${map.img}'); height: 130px; background-size: cover; background-position: center;"></div>
+        <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2));"></div>
+        <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1rem;">${map.name}</h3>
+            <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
               🔥 ${count}표
             </span>
           </div>
-          <span class="map-vote-btn">${isMyVote ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}</span>
+          <span class="map-vote-btn" style="font-size: 0.8rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#a1a1aa'};">
+            ${hasVotedThisMap ? '✔️ 내 투표 완료 (취소하려면 재클릭)' : '클릭하여 투표하기'}
+          </span>
         </div>
       </div>
     `;
@@ -1319,145 +1292,61 @@ async function loadMapVoteView(gameType = 'valo', owMode = 'all') {
   html += `</div>`;
   container.innerHTML = html;
 }
-// =============================================================
-// 맵 투표 관련 연동 로직
-// =============================================================
 
-// 맵 투표 탭을 열 때 참가 중인 내전 목록 불러오기
-async function loadMapVoteScrims() {
-  const selectEl = document.getElementById('mapVoteScrimSelect');
-  if (!selectEl) return;
-
-  selectEl.innerHTML = '<option value="">참가 중인 내전을 불러오는 중...</option>';
-
-  // 현재 사용자 닉네임 또는 ID 가져오기
-  const currentNick = currentUser ? currentUser.nickname : null;
-  
-  if (!currentNick) {
-    selectEl.innerHTML = '<option value="">로그인이 필요합니다.</option>';
+// 4. 투표 실행 및 내전 데이터(map_votes 컬럼) 실시간 업데이트 처리
+async function submitScrimMapVote(scrimId, mapName) {
+  if (!currentUser || !currentProfile) {
+    alert('로그인 후 투표할 수 있습니다.');
     return;
   }
 
-  // 전체 내전 중 현재 유저가 참가자로 등록된 내전만 필터링
-  // (scrim.participants 또는 연동된 데이터 구조에 맞춰 확인)
-  const myScrims = globalScrims.filter(scrim => {
-    if (!scrim.participants) return false;
-    return scrim.participants.some(p => p.nickname === currentNick || p.user_id === currentUser.id);
-  });
-
-  if (myScrims.length === 0) {
-    selectEl.innerHTML = '<option value="">참가 중인 내전이 없습니다.</option>';
-    document.getElementById('mapVoteContainer').innerHTML = 
-      '<div class="placeholder-box">현재 참가 중인 내전이 없습니다. 내전에 먼저 참가해 주세요!</div>';
-    return;
-  }
-
-  selectEl.innerHTML = '<option value="">-- 투표할 내전을 선택하세요 --</option>';
-  myScrims.forEach(scrim => {
-    const opt = document.createElement('option');
-    opt.value = scrim.id;
-    opt.textContent = `[${scrim.game_type.toUpperCase()}] ${scrim.title} (${scrim.participants.length}/${scrim.max_players}명)`;
-    selectEl.appendChild(opt);
-  });
-}
-
-// 내전 선택 변경 시 호출되는 함수
-function onMapVoteScrimChange() {
-  const scrimId = document.getElementById('mapVoteScrimSelect').value;
-  const container = document.getElementById('mapVoteContainer');
-
-  if (!scrimId) {
-    container.innerHTML = '<div class="placeholder-box">위에서 참가 중인 내전을 선택해 주세요.</div>';
-    return;
-  }
-
-  const selectedScrim = globalScrims.find(s => s.id == scrimId);
+  const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
   if (!selectedScrim) return;
 
-  // 권한 검증: 현재 사용자가 참가자인지 재확인
-  const isParticipant = selectedScrim.participants && selectedScrim.participants.some(
-    p => p.nickname === currentUser?.nickname || p.user_id === currentUser?.id
-  );
+  if (!selectedScrim.map_votes) {
+    selectedScrim.map_votes = {};
+  }
 
-  if (!isParticipant) {
-    container.innerHTML = '<div class="placeholder-box danger-notice">⚠️ 해당 내전의 참가자만 투표에 참여할 수 있습니다.</div>';
+  const userNick = currentProfile.nickname || currentUser.email.split('@')[0];
+
+  // 1인 1표 원칙: 다른 맵에 투표한 기록이 있다면 먼저 제거
+  Object.keys(selectedScrim.map_votes).forEach(m => {
+    selectedScrim.map_votes[m] = (selectedScrim.map_votes[m] || []).filter(nick => nick !== userNick);
+    if (selectedScrim.map_votes[m].length === 0) {
+      delete selectedScrim.map_votes[m];
+    }
+  });
+
+  const currentMapVoters = selectedScrim.map_votes[mapName] || [];
+  const alreadyVoted = currentMapVoters.includes(userNick);
+
+  if (alreadyVoted) {
+    selectedScrim.map_votes[mapName] = currentMapVoters.filter(nick => nick !== userNick);
+    if (selectedScrim.map_votes[mapName].length === 0) {
+      delete selectedScrim.map_votes[mapName];
+    }
+  } else {
+    if (!selectedScrim.map_votes[mapName]) {
+      selectedScrim.map_votes[mapName] = [];
+    }
+    selectedScrim.map_votes[mapName].push(userNick);
+  }
+
+  const { error } = await supabaseClient
+    .from('scrims')
+    .update({ map_votes: selectedScrim.map_votes })
+    .eq('id', scrimId);
+
+  if (error) {
+    console.error('맵 투표 저장 에러:', error);
+    alert('투표 반영 실패: ' + error.message);
     return;
   }
 
-  // 해당 내전 종목(발로란트/오버워치/롤)에 맞는 맵 투표 UI 렌더링
-  renderMapVoteUI(selectedScrim);
+  renderMapVoteCards(selectedScrim);
 }
 
-// 맵 투표 UI 렌더링 함수 (내전 데이터 기준)
-function renderMapVoteUI(scrim) {
-  const container = document.getElementById('mapVoteContainer');
-  container.innerHTML = '';
-
-  // 종목별 맵 데이터 예시 (기존 프로젝트 맵 데이터 배열 활용)
-  const mapList = GAME_MAP_DATA[scrim.game_type] || GAME_MAP_DATA['valo'];
-  
-  // 내전에 저장된 map_votes 객체 (없을 경우 초기화)
-  const votes = scrim.map_votes || {};
-
-  const grid = document.createElement('div');
-  grid.className = 'map-vote-grid';
-  grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 15px;';
-
-  mapList.forEach(map => {
-    const voteCount = votes[map.name] ? votes[map.name].length : 0;
-    const hasVoted = votes[map.name] && votes[map.name].includes(currentUser.nickname);
-
-    const card = document.createElement('div');
-    card.className = `map-card ${hasVoted ? 'voted' : ''}`;
-    card.onclick = () => submitMapVote(scrim.id, map.name);
-    card.innerHTML = `
-      <div class="map-img-box" style="position: relative; overflow: hidden; border-radius: 10px;">
-        <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 130px; object-fit: cover;" onerror="this.src='images/maps/default.jpg'" />
-        <span class="vote-badge" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">
-          🗳️ ${voteCount}표
-        </span>
-      </div>
-      <div style="padding: 10px 4px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 700; font-size: 1rem;">${map.name}</span>
-        <button type="button" class="btn-sm ${hasVoted ? 'btn-primary' : 'btn-secondary'}">
-          ${hasVoted ? '투표 완료' : '투표하기'}
-        </button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-
-  container.appendChild(grid);
-}
-
-// 투표 실행 처리 (Supabase DB 연동 또는 로컬 상태 반영)
-async function submitMapVote(scrimId, mapName) {
-  const scrim = globalScrims.find(s => s.id == scrimId);
-  if (!scrim) return;
-
-  if (!scrim.map_votes) scrim.map_votes = {};
-
-  const userNick = currentUser.nickname;
-
-  // 이미 다른 맵에 투표했는지 확인 후 이전 투표 취소 처리 (1인 1표 방식)
-  Object.keys(scrim.map_votes).forEach(m => {
-    scrim.map_votes[m] = scrim.map_votes[m].filter(nick => nick !== userNick);
-  });
-
-  // 선택한 맵에 투표 추가
-  if (!scrim.map_votes[mapName]) scrim.map_votes[mapName] = [];
-  scrim.map_votes[mapName].push(userNick);
-
-  // DB(Supabase)가 연결되어 있다면 update 로직 실행
-  if (typeof supabase !== 'undefined') {
-    await supabase.from('scrims').update({ map_votes: scrim.map_votes }).eq('id', scrimId);
-  }
-
-  // 화면 갱신
-  renderMapVoteUI(scrim);
-}
-
-// 탭 전환 시 'mapVote' 탭이면 자동으로 목록 로드하도록 연결
+// 5. 탭 전환 시 'mapVote' 탭이면 참가 중인 내전 자동 로드
 const originalShowTab = window.showTab;
 window.showTab = function(tabId) {
   if (typeof originalShowTab === 'function') originalShowTab(tabId);
@@ -1466,74 +1355,9 @@ window.showTab = function(tabId) {
   }
 };
 
-async function castMapVote(gameType, mapName) {
-  if (!currentUser) {
-    alert('로그인 후 투표할 수 있습니다.');
-    return;
-  }
-
-  console.log('투표 시도:', { userId: currentUser.id, gameType, mapName });
-
-  // 1. 기존에 이 게임에서 투표한 내역이 있는지 확인
-  const { data: existing, error: selectError } = await supabaseClient
-    .from('map_votes')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .eq('game_type', gameType)
-    .maybeSingle();
-
-  if (selectError) {
-    console.error('기존 투표 조회 에러:', selectError);
-    return;
-  }
-
-  if (existing) {
-    if (existing.map_name === mapName) {
-      // 이미 같은 맵에 투표한 경우 -> 투표 취소
-      const { error: deleteError } = await supabaseClient
-        .from('map_votes')
-        .delete()
-        .eq('id', existing.id);
-
-      if (deleteError) {
-        console.error('투표 취소 에러:', deleteError);
-        alert('투표 취소 실패: ' + deleteError.message);
-      } else {
-        alert(`[${mapName}] 투표가 취소되었습니다.`);
-        loadMapVoteView(gameType);
-      }
-    } else {
-      // 다른 맵에 투표했던 경우 -> 투표 맵 변경
-      const { error: updateError } = await supabaseClient
-        .from('map_votes')
-        .update({ map_name: mapName })
-        .eq('id', existing.id);
-
-      if (updateError) {
-        console.error('투표 변경 에러:', updateError);
-        alert('투표 변경 실패: ' + updateError.message);
-      } else {
-        alert(`[${mapName}] (으)로 투표가 변경되었습니다!`);
-        loadMapVoteView(gameType);
-      }
-    }
-  } else {
-    // 신규 투표 생성
-    const { error: insertError } = await supabaseClient
-      .from('map_votes')
-      .insert([{ user_id: currentUser.id, game_type: gameType, map_name: mapName }]);
-
-    if (insertError) {
-      console.error('신규 투표 저장 에러:', insertError);
-      alert('투표 저장 실패: ' + insertError.message);
-    } else {
-      alert(`[${mapName}]에 투표가 완료되었습니다!`);
-      loadMapVoteView(gameType);
-    }
-  }
-}
-
+// =============================================================
 // 앱 실행 시 초기화 이벤트 리스너
+// =============================================================
 document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') {
@@ -1545,29 +1369,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchValorantAgents();
   await fetchAllLolChampions(); 
   checkAuthState();
-
-  // 앱이 켜질 때 맵 투표 컨테이너도 미리 채워두기
-  loadMapVoteView('valo');
-
-  // 💡 [실시간 구독 설정] 다른 사람이 투표하거나 변경했을 때 화면 자동 갱신
-  supabaseClient
-    .channel('public:map_votes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'map_votes' }, (payload) => {
-      // 현재 열려있는 게임 타입 기준으로 화면 새로고침
-      const activeFilterBtn = document.querySelector('#mapVoteContainer .filter-btn.active');
-      let currentGame = 'valo';
-      if (activeFilterBtn) {
-        const text = activeFilterBtn.textContent;
-        if (text.includes('오버워치')) currentGame = 'ow';
-      }
-      loadMapVoteView(currentGame);
-    })
-    .subscribe();
 });
 
-// --- 기존 팀 구성 서브 탭 전환 함수 내 드래프트 연동 보완 ---
+// --- 기존 팀 구성 서브 탭 전환 및 드래프트 연동 ---
 function showTeamSubtab(subtabName) {
-  // 모든 뷰 비활성화
   document.querySelectorAll('.team-view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
 
@@ -1577,7 +1382,6 @@ function showTeamSubtab(subtabName) {
   } else if (subtabName === 'draft') {
     document.getElementById('draftView').classList.add('active');
     document.getElementById('subDraftBtn').classList.add('active');
-    // 드래프트 탭 진입 시 내전 셀렉트박스 업데이트 및 초기 보드 렌더링
     initDraftTab();
   } else if (subtabName === 'auction') {
     document.getElementById('auctionView').classList.add('active');
@@ -1585,20 +1389,18 @@ function showTeamSubtab(subtabName) {
   }
 }
 
-// --- 스네이크 드래프트 시스템 상태 ---
 let draftState = {
   active: false,
   scrimId: null,
-  leaderA: null, // A팀장 user_id
-  leaderB: null, // B팀장 user_id
+  leaderA: null,
+  leaderB: null,
   teamA: [],
   teamB: [],
   availablePlayers: [],
-  turn: 'A', // 'A' 또는 'B'
+  turn: 'A',
   round: 1
 };
 
-// 드래프트 탭 초기화 및 내전 선택 / 팀장 지정 화면 렌더링
 async function initDraftTab() {
   const draftView = document.getElementById('draftView');
   if (!draftView) return;
@@ -1641,7 +1443,6 @@ async function initDraftTab() {
   }
 }
 
-// Supabase에서 내전 목록과 실제 참가자 수를 조회하여 드래프트 셀렉트박스에 채우기
 async function loadScrimsForDraftSelect() {
   try {
     const { data, error } = await supabaseClient.from('scrims').select(`
@@ -1659,14 +1460,13 @@ async function loadScrimsForDraftSelect() {
 
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
       const count = scrim.scrim_participants ? scrim.scrim_participants.length : 0;
-      return `<option value="${scrim.id}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)</option>`;
+      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
   }
 }
 
-// 내전 선택 시 해당 내전의 참가자들로 팀장 드롭다운 채우기
 async function onDraftScrimSelected() {
   const selectEl = document.getElementById('draftScrimSelect');
   const leaderBox = document.getElementById('leaderSelectBox');
@@ -1697,7 +1497,6 @@ async function onDraftScrimSelected() {
   if (leaderBox) leaderBox.style.display = 'block';
 }
 
-// --- 1. 상세 프로필 보기 모달 팝업 렌더링 (선호 영웅/챔피언 3개 아이콘 및 순위 포함) ---
 function showPlayerProfileModal(player, gameType = 'valo') {
   const existingModal = document.getElementById('playerDetailModal');
   if (existingModal) existingModal.remove();
@@ -1706,7 +1505,6 @@ function showPlayerProfileModal(player, gameType = 'valo') {
   const ow = player.ow_info || {};
   const lol = player.lol_info || {};
 
-  // 요원/챔피언 아이콘 HTML 생성 헬퍼 함수
   const renderAgentIcons = (list, type) => {
     if (!list || list.length === 0) return '<span style="font-size: 0.8rem; color: var(--text-muted);">선택된 영웅/챔피언 없음</span>';
     
@@ -1750,7 +1548,6 @@ function showPlayerProfileModal(player, gameType = 'valo') {
         </div>
         <div style="display: flex; flex-direction: column; gap: 14px; max-height: 65vh; overflow-y: auto; padding-right: 4px;">
           
-          <!-- 발로란트 정보 -->
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'valo' ? 'border-left: 5px solid #ff4757;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #ff4757;">🔴 발로란트</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">아이디: <strong>${valo.game_id || '등록 안 함'}</strong></p>
@@ -1759,7 +1556,6 @@ function showPlayerProfileModal(player, gameType = 'valo') {
             ${renderAgentIcons(valo.main_agents, 'valo')}
           </div>
 
-          <!-- 오버워치 2 정보 -->
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'ow' ? 'border-left: 5px solid #f97316;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #f97316;">🟠 오버워치 2</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">배틀태그: <strong>${ow.game_id || '등록 안 함'}</strong></p>
@@ -1768,7 +1564,6 @@ function showPlayerProfileModal(player, gameType = 'valo') {
             ${renderAgentIcons(ow.main_agents, 'ow')}
           </div>
 
-          <!-- 롤 정보 -->
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'lol' ? 'border-left: 5px solid #3b82f6;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #3b82f6;">🔵 리그 오브 레전드</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">소환사명: <strong>${lol.game_id || '등록 안 함'}</strong></p>
@@ -1788,7 +1583,6 @@ function showPlayerProfileModal(player, gameType = 'valo') {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- 2. 드래프트 세션 시작 (내전의 종목 정보 scrim.game을 함께 보관) ---
 async function startDraftSession() {
   const selectEl = document.getElementById('draftScrimSelect');
   const scrimId = selectEl?.value;
@@ -1799,7 +1593,6 @@ async function startDraftSession() {
   if (!leaderA || !leaderB) { alert('A팀장과 B팀장을 모두 지정해 주세요.'); return; }
   if (leaderA === leaderB) { alert('A팀장과 B팀장은 서로 다른 유저여야 합니다.'); return; }
 
-  // 선택된 내전의 종목(game) 가져오기
   const selectedOption = selectEl.options[selectEl.selectedIndex];
   const scrimGame = selectedOption.getAttribute('data-game') || 'valo';
 
@@ -1817,7 +1610,6 @@ async function startDraftSession() {
   participantsData.forEach(p => {
     const profile = p.profiles || {};
     
-    // 내전 종목에 맞는 티어와 주 포지션 우선 추출
     let tier = 'Unranked';
     if (scrimGame === 'valo') tier = profile.valo_info?.tier || 'Unranked';
     else if (scrimGame === 'ow') tier = profile.ow_info?.tier || 'Unranked';
@@ -1839,7 +1631,7 @@ async function startDraftSession() {
 
   draftState.active = true;
   draftState.scrimId = scrimId;
-  draftState.scrimGame = scrimGame; // 내전 종목 저장
+  draftState.scrimGame = scrimGame;
   draftState.leaderA = leaderA;
   draftState.leaderB = leaderB;
   draftState.teamA = [leaderAObj];
@@ -1851,7 +1643,6 @@ async function startDraftSession() {
   renderDraftBoard();
 }
 
-// --- 3. 드래프트 화면 렌더링 (내전 종목별 맞춤 프로필 요약 카드 표현) ---
 function renderDraftBoard() {
   const draftView = document.getElementById('draftView');
   if (!draftView) return;
@@ -1859,7 +1650,6 @@ function renderDraftBoard() {
   const currentTeamName = draftState.turn === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
   const gameKey = draftState.scrimGame || 'valo';
 
-  // 카드 내부에 해당 내전 종목의 선호 요원/챔피언 아이콘들을 미리 보여주는 렌더러
   const renderCardMiniIcons = (player) => {
     let list = [];
     if (gameKey === 'valo') list = player.valo_info?.main_agents || [];
@@ -1869,7 +1659,7 @@ function renderDraftBoard() {
     if (list.length === 0) return '<span style="font-size: 0.75rem; color: var(--text-muted);">주력 픽 없음</span>';
 
     let html = '<div style="display: flex; gap: 4px; justify-content: center; margin-top: 4px;">';
-    list.forEach((name, idx) => {
+    list.forEach((name) => {
       let imgUrl = '';
       if (gameKey === 'valo') {
         for (let role in VALO_AGENT_DATA) {
@@ -1958,32 +1748,6 @@ function renderDraftBoard() {
   `;
 }
 
-// 4. 내전 목록 로드 시 종목(game) 속성을 option 태그에 함께 담아주도록 보완
-async function loadScrimsForDraftSelect() {
-  try {
-    const { data, error } = await supabaseClient.from('scrims').select(`
-      id, title, game, max_players,
-      scrim_participants ( user_id )
-    `).order('created_at', { ascending: false });
-
-    const selectEl = document.getElementById('draftScrimSelect');
-    if (!selectEl) return;
-
-    if (error || !data || data.length === 0) {
-      selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
-      return;
-    }
-
-    selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
-      const count = scrim.scrim_participants ? scrim.scrim_participants.length : 0;
-      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)</option>`;
-    }).join('');
-  } catch (err) {
-    console.error('드래프트 내전 로드 오류:', err);
-  }
-}
-
-// 선수 지명 실행
 function selectDraftPlayer(index) {
   if (!currentUser) {
     alert('로그인 후 이용 가능합니다.');
@@ -2016,7 +1780,6 @@ function selectDraftPlayer(index) {
   renderDraftBoard();
 }
 
-// 드래프트 초기화
 function resetDraft() {
   if (!confirm('드래프트를 초기화하시겠습니까?')) return;
   draftState.active = false;
