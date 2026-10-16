@@ -527,16 +527,6 @@ function updateOwAgentSelection(type) {
   const selectedRole = document.getElementById(roleSelectId).value;
   const container = document.getElementById(containerId);
 
-  OW_TIER_DATA.forEach(tier => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `tier-btn ${tier.name === selectedTierName ? 'selected' : ''}`;
-    btn.onclick = () => selectTier(tier.name, btn);
-    btn.innerHTML = `<img src="${tier.img}" alt="${tier.label}" /><span class="tier-name">${tier.label}</span>`;
-    container.appendChild(btn);
-  });
-}
-
   if (!container) return;
   container.innerHTML = '';
   tempOwSelectedAgents[type] = [];
@@ -559,7 +549,7 @@ function updateOwAgentSelection(type) {
     item.onclick = () => toggleOwAgent(type, heroName, item);
     container.appendChild(item);
   });
-
+}
 
 function toggleOwAgent(type, heroName, element) {
   const list = tempOwSelectedAgents[type];
