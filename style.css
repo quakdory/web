@@ -29,7 +29,7 @@ body.dark-mode {
 
 body {
   margin: 0;
-  font-family: '동글', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-family: '도현', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
   background-image: 
