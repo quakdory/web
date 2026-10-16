@@ -1046,7 +1046,18 @@ async function loadScrimOptionsForTeamTab() {
   if (!selectEl) return;
   selectEl.innerHTML = '<option value="">내전 로딩 중...</option>';
 
-  const { data: scrims } = await supabaseClient.from('scrims').select('id, title, game, current_players, max_players').order('created_at', { ascending: false });
+  // map_votes 컬럼을 제외하고 순수 내전 기본 정보만 안전하게 조회
+  const { data: scrims, error } = await supabaseClient
+    .from('scrims')
+    .select('id, title, game, current_players, max_players')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('팀 구성 내전 로딩 에러:', error);
+    selectEl.innerHTML = '<option value="">내전 목록 로딩 실패</option>';
+    return;
+  }
+
   if (!scrims || scrims.length === 0) {
     selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
     return;
@@ -1056,7 +1067,7 @@ async function loadScrimOptionsForTeamTab() {
   scrims.forEach(scrim => {
     const opt = document.createElement('option');
     opt.value = scrim.id;
-    opt.textContent = `[${scrim.game.toUpperCase()}] ${scrim.title} (${scrim.current_players}/${scrim.max_players}명)`;
+    opt.textContent = `[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)`;
     selectEl.appendChild(opt);
   });
 }
@@ -1445,10 +1456,13 @@ async function initDraftTab() {
 
 async function loadScrimsForDraftSelect() {
   try {
-    const { data, error } = await supabaseClient.from('scrims').select(`
-      id, title, game, max_players,
-      scrim_participants ( user_id )
-    `).order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient
+      .from('scrims')
+      .select(`
+        id, title, game, max_players, current_players,
+        scrim_participants ( user_id )
+      `)
+      .order('created_at', { ascending: false });
 
     const selectEl = document.getElementById('draftScrimSelect');
     if (!selectEl) return;
@@ -1459,7 +1473,7 @@ async function loadScrimsForDraftSelect() {
     }
 
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
-      const count = scrim.scrim_participants ? scrim.scrim_participants.length : 0;
+      const count = scrim.scrim_participants ? scrim.scrim_participants.length : (scrim.current_players || 0);
       return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
