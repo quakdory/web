@@ -6,13 +6,17 @@
   <title>도도도동 - 내전 & 팀 구성 플랫폼</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- 구글 폰트 연결 (Jua 및 Noto Sans KR 포함) -->
+  <!-- 구글 폰트 연결 (Jua) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">
-</head>
 
- <!-- 탭 전환식 로그인 & 회원가입 화면 -->
+  <!-- 💡 빠져있던 CSS 파일 연결 추가 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 탭 전환식 로그인 & 회원가입 화면 -->
   <div id="authContainer" class="auth-container">
     <div class="auth-box">
       <div class="auth-logo">도도도동</div>
@@ -59,13 +63,12 @@
   <div id="appContainer" class="app-container" style="display: none;">
     <header class="navbar">
       <div class="logo" onclick="goToMain()">
-  <img src="images/로고.png" alt="서버 아이콘" class="custom-logo-img">
-  <span>도도도동</span>
-</div>
+        <img src="images/로고.png" alt="서버 아이콘" class="custom-logo-img">
+        <span>도도도동</span>
+      </div>
       <nav class="nav-links">
         <button onclick="showTab('scrim')" class="nav-btn active-tab-btn" id="navScrimBtn">내전</button>
         <button onclick="showTab('team')" class="nav-btn" id="navTeamBtn">팀 구성</button>
-        <!-- 💡 수정 완료: mapVote로 정확히 연결 -->
         <button class="nav-btn" id="navMapVoteBtn" onclick="showTab('mapVote')">맵 투표</button>
       </nav>
       
@@ -75,9 +78,9 @@
         <button onclick="openProfileModal()" class="btn-sm">프로필 설정</button>
         <button onclick="handleLogout()" class="btn-sm danger-sub">로그아웃</button>
         <!-- 예쁜 원형 아이콘 토글 버튼 -->
-<button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="테마 변경">
-  <span class="theme-icon">🌙</span>
-</button>
+        <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="테마 변경">
+          <span class="theme-icon">🌙</span>
+        </button>
       </div>
     </header>
 
@@ -151,14 +154,15 @@
       </section>
 
       <!-- 3. 맵 투표 탭 -->
-<section id="mapVote" class="tab-content">
-  <h2>🗺️ 내전 맵 투표</h2>
-  <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 선택해 투표해 주세요.</p>
-  
-  <!-- 자바스크립트가 게임별 맵 카드들을 그려 넣을 공간 -->
-  <div id="mapVoteContainer"></div>
-</section>
-  <!-- 프로필 설정 모달 (게임별 서브 탭 전환형) -->
+      <section id="mapVote" class="tab-content">
+        <h2>🗺️ 내전 맵 투표</h2>
+        <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 선택해 투표해 주세요.</p>
+        <div id="mapVoteContainer"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 프로필 설정 모달 -->
   <div id="profileModal" class="modal">
     <div class="modal-content modal-lg">
       <div class="modal-header">
@@ -166,7 +170,6 @@
         <button class="close-btn" onclick="closeProfileModal()">&times;</button>
       </div>
       <form id="profileForm" onsubmit="saveFullProfile(event)">
-        <!-- 기본 계정 및 보안 정보 -->
         <div class="section-box">
           <h4>기본 계정 및 보안 정보</h4>
           <div class="form-grid-2">
@@ -192,18 +195,15 @@
           </div>
         </div>
 
-        <!-- 게임별 프로필 서브 탭 영역 -->
         <div class="section-box" style="margin-top: 20px;">
           <h4>게임별 상세 프로필 설정</h4>
-          
-          <!-- 게임 선택 서브 탭 버튼 -->
           <div class="game-sub-tabs">
             <button type="button" id="gameTabValoBtn" class="game-subtab-btn active" onclick="switchGameTab('valo')">🔴 발로란트</button>
             <button type="button" id="gameTabOwBtn" class="game-subtab-btn" onclick="switchGameTab('ow')">🟠 오버워치 2</button>
             <button type="button" id="gameTabLolBtn" class="game-subtab-btn" onclick="switchGameTab('lol')">🔵 롤</button>
           </div>
 
-          <!-- 1. 발로란트 설정 뷰 -->
+          <!-- 발로란트 뷰 -->
           <div id="gameViewValo" class="game-profile-view active">
             <div class="game-card valo full-width-card">
               <div class="form-group">
@@ -246,7 +246,7 @@
             </div>
           </div>
 
-          <!-- 2. 오버워치 2 설정 뷰 -->
+          <!-- 오버워치 뷰 -->
           <div id="gameViewOw" class="game-profile-view">
             <div class="game-card ow full-width-card">
               <div class="form-group">
@@ -255,7 +255,7 @@
               </div>
               <div class="form-group">
                 <label>경쟁전 티어</label>
-                <input type="hidden" id=""owTier" value="Unranked" />
+                <input type="hidden" id="owTier" value="Unranked" />
                 <div id="owTierContainer" class="tier-image-picker"></div>
               </div>
               <div class="form-group">
@@ -287,7 +287,7 @@
             </div>
           </div>
 
-          <!-- 3. 롤 설정 뷰 -->
+          <!-- 롤 뷰 -->
           <div id="gameViewLol" class="game-profile-view">
             <div class="game-card lol full-width-card">
               <div class="form-group">
@@ -322,7 +322,6 @@
                 </select>
               </div>
               
-              <!-- 롤 주 선호 챔피언 선택 버튼 및 영역 -->
               <div class="form-group">
                 <label>주 선호 챔피언 (최대 3개)</label>
                 <button type="button" class="btn-sm full-width" onclick="openLolChampModal('main')">챔피언 선택하기</button>
@@ -341,7 +340,6 @@
                 </select>
               </div>
 
-              <!-- 롤 부 선호 챔피언 선택 버튼 및 영역 -->
               <div class="form-group">
                 <label>부 선호 챔피언 (최대 3개)</label>
                 <button type="button" class="btn-sm full-width" onclick="openLolChampModal('sub')">챔피언 선택하기</button>
@@ -377,7 +375,7 @@
       </div>
       
       <div class="form-group" style="margin-bottom: 15px;">
-        <input type="text" id="lolChampSearchInput" placeholder="챔피언 이름을 검색하세요 (예: 야스오, 아리)..." oninput="onLolSearchInput()" />
+        <input type="text" id="lolChampSearchInput" placeholder="챔피언 이름을 검색하세요..." oninput="onLolSearchInput()" />
       </div>
 
       <div id="lolModalChampContainer" class="agent-image-picker" style="max-height: 350px;"></div>
@@ -422,10 +420,10 @@
 
   <script src="./app.js"></script>
   <!-- 오른쪽 하단 고정 디스코드 플로팅 버튼 -->
-<a href="https://discord.gg/yHsSpASqT2" target="_blank" title="도도도동 디스코드 바로가기" class="discord-float-btn">
-  <svg viewBox="0 0 127.14 96.36" fill="currentColor">
-    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.15c2.65-27.28-4.51-51.19-19-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5.18-12.72,11.45-12.72S53.9,46,53.88,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.18-12.72,11.45-12.72S96.15,46,96.13,53,91,65.69,84.69,65.69Z"/>
-  </svg>
-</a>
+  <a href="https://discord.gg/yHsSpASqT2" target="_blank" title="도도도동 디스코드 바로가기" class="discord-float-btn">
+    <svg viewBox="0 0 127.14 96.36" fill="currentColor">
+      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.15c2.65-27.28-4.51-51.19-19-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5.18-12.72,11.45-12.72S53.9,46,53.88,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.18-12.72,11.45-12.72S96.15,46,96.13,53,91,65.69,84.69,65.69Z"/>
+    </svg>
+  </a>
 </body>
 </html>
