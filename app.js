@@ -1055,13 +1055,6 @@ function renderTeamList(elementId, teamMembers) {
   });
 }
 
-async function createSnsPost() {
-  const input = document.getElementById('snsContentInput');
-  if (!input || !input.value.trim()) return;
-  alert('SNS 피드 기능이 연동되었습니다.');
-  input.value = '';
-}
-
 function switchGameTab(gameType) {
   document.querySelectorAll('.game-profile-view').forEach(view => view.classList.remove('active'));
   document.querySelectorAll('.game-subtab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1131,7 +1124,7 @@ const GAME_MAPS = {
     { name: "콜로세오", img: "images/maps/ove/콜로세오.webp", mode: "밀기" },
     { name: "루나사피", img: "images/maps/ove/루나사피.webp", mode: "밀기" },
   ],
-  
+
   lol: [
     { name: "소환사의 협곡", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop" },
     { name: "칼바람 나락", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" }
