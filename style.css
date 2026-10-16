@@ -767,3 +767,30 @@ select option:checked {
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
   font-weight: 700;
 }
+
+/* --- 맵 투표 카드 및 상태 스타일 --- */
+.map-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.map-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-color, #6366f1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.map-card.voted {
+  border: 2px solid var(--primary-color, #6366f1);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.placeholder-box.danger-notice {
+  border-color: #ff4757;
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+}

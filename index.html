@@ -154,12 +154,26 @@
 
       <!-- 3. 맵 투표 탭 -->
       <section id="mapVote" class="tab-content">
-        <h2>🗺️ 내전 맵 투표</h2>
-        <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">내전에서 플레이할 맵을 선택해 투표해 주세요.</p>
-        <div id="mapVoteContainer"></div>
+        <h2>내전 맵 투표</h2>
+        <p style="margin-bottom: 16px; font-size: 0.9rem; color: var(--text-secondary);">
+          내가 참가 중인 내전을 선택한 뒤, 플레이하고 싶은 맵에 투표해 주세요. (내전 참가자만 투표 가능)
+        </p>
+
+        <!-- 내전 선택 영역 -->
+        <div class="team-control-box" style="margin-bottom: 20px;">
+          <div class="team-action-row">
+            <label for="mapVoteScrimSelect" style="font-weight: 600; white-space: nowrap;">🎯 대상 내전 선택:</label>
+            <select id="mapVoteScrimSelect" class="styled-select" onchange="onMapVoteScrimChange()">
+              <option value="">참가 중인 내전을 선택하세요...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 맵 투표 메인 컨테이너 -->
+        <div id="mapVoteContainer">
+          <div class="placeholder-box">위에서 참가 중인 내전을 선택하면 투표 가능한 맵 목록이 표시됩니다.</div>
+        </div>
       </section>
-    </main>
-  </div>
 
   <!-- 프로필 설정 모달 -->
   <div id="profileModal" class="modal">
@@ -267,7 +281,6 @@
                   <option value="지원">지원 (힐러)</option>
                 </select>
               </div>
-              <!-- (이하 생략) -->
               <div class="form-group">
                 <label>주 선호 영웅 (최대 3개)</label>
                 <div id="owMainAgentContainer" class="agent-image-picker"></div>

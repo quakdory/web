@@ -1319,6 +1319,152 @@ async function loadMapVoteView(gameType = 'valo', owMode = 'all') {
   html += `</div>`;
   container.innerHTML = html;
 }
+// =============================================================
+// 맵 투표 관련 연동 로직
+// =============================================================
+
+// 맵 투표 탭을 열 때 참가 중인 내전 목록 불러오기
+async function loadMapVoteScrims() {
+  const selectEl = document.getElementById('mapVoteScrimSelect');
+  if (!selectEl) return;
+
+  selectEl.innerHTML = '<option value="">참가 중인 내전을 불러오는 중...</option>';
+
+  // 현재 사용자 닉네임 또는 ID 가져오기
+  const currentNick = currentUser ? currentUser.nickname : null;
+  
+  if (!currentNick) {
+    selectEl.innerHTML = '<option value="">로그인이 필요합니다.</option>';
+    return;
+  }
+
+  // 전체 내전 중 현재 유저가 참가자로 등록된 내전만 필터링
+  // (scrim.participants 또는 연동된 데이터 구조에 맞춰 확인)
+  const myScrims = globalScrims.filter(scrim => {
+    if (!scrim.participants) return false;
+    return scrim.participants.some(p => p.nickname === currentNick || p.user_id === currentUser.id);
+  });
+
+  if (myScrims.length === 0) {
+    selectEl.innerHTML = '<option value="">참가 중인 내전이 없습니다.</option>';
+    document.getElementById('mapVoteContainer').innerHTML = 
+      '<div class="placeholder-box">현재 참가 중인 내전이 없습니다. 내전에 먼저 참가해 주세요!</div>';
+    return;
+  }
+
+  selectEl.innerHTML = '<option value="">-- 투표할 내전을 선택하세요 --</option>';
+  myScrims.forEach(scrim => {
+    const opt = document.createElement('option');
+    opt.value = scrim.id;
+    opt.textContent = `[${scrim.game_type.toUpperCase()}] ${scrim.title} (${scrim.participants.length}/${scrim.max_players}명)`;
+    selectEl.appendChild(opt);
+  });
+}
+
+// 내전 선택 변경 시 호출되는 함수
+function onMapVoteScrimChange() {
+  const scrimId = document.getElementById('mapVoteScrimSelect').value;
+  const container = document.getElementById('mapVoteContainer');
+
+  if (!scrimId) {
+    container.innerHTML = '<div class="placeholder-box">위에서 참가 중인 내전을 선택해 주세요.</div>';
+    return;
+  }
+
+  const selectedScrim = globalScrims.find(s => s.id == scrimId);
+  if (!selectedScrim) return;
+
+  // 권한 검증: 현재 사용자가 참가자인지 재확인
+  const isParticipant = selectedScrim.participants && selectedScrim.participants.some(
+    p => p.nickname === currentUser?.nickname || p.user_id === currentUser?.id
+  );
+
+  if (!isParticipant) {
+    container.innerHTML = '<div class="placeholder-box danger-notice">⚠️ 해당 내전의 참가자만 투표에 참여할 수 있습니다.</div>';
+    return;
+  }
+
+  // 해당 내전 종목(발로란트/오버워치/롤)에 맞는 맵 투표 UI 렌더링
+  renderMapVoteUI(selectedScrim);
+}
+
+// 맵 투표 UI 렌더링 함수 (내전 데이터 기준)
+function renderMapVoteUI(scrim) {
+  const container = document.getElementById('mapVoteContainer');
+  container.innerHTML = '';
+
+  // 종목별 맵 데이터 예시 (기존 프로젝트 맵 데이터 배열 활용)
+  const mapList = GAME_MAP_DATA[scrim.game_type] || GAME_MAP_DATA['valo'];
+  
+  // 내전에 저장된 map_votes 객체 (없을 경우 초기화)
+  const votes = scrim.map_votes || {};
+
+  const grid = document.createElement('div');
+  grid.className = 'map-vote-grid';
+  grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 15px;';
+
+  mapList.forEach(map => {
+    const voteCount = votes[map.name] ? votes[map.name].length : 0;
+    const hasVoted = votes[map.name] && votes[map.name].includes(currentUser.nickname);
+
+    const card = document.createElement('div');
+    card.className = `map-card ${hasVoted ? 'voted' : ''}`;
+    card.onclick = () => submitMapVote(scrim.id, map.name);
+    card.innerHTML = `
+      <div class="map-img-box" style="position: relative; overflow: hidden; border-radius: 10px;">
+        <img src="${map.img}" alt="${map.name}" style="width: 100%; height: 130px; object-fit: cover;" onerror="this.src='images/maps/default.jpg'" />
+        <span class="vote-badge" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">
+          🗳️ ${voteCount}표
+        </span>
+      </div>
+      <div style="padding: 10px 4px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 700; font-size: 1rem;">${map.name}</span>
+        <button type="button" class="btn-sm ${hasVoted ? 'btn-primary' : 'btn-secondary'}">
+          ${hasVoted ? '투표 완료' : '투표하기'}
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  container.appendChild(grid);
+}
+
+// 투표 실행 처리 (Supabase DB 연동 또는 로컬 상태 반영)
+async function submitMapVote(scrimId, mapName) {
+  const scrim = globalScrims.find(s => s.id == scrimId);
+  if (!scrim) return;
+
+  if (!scrim.map_votes) scrim.map_votes = {};
+
+  const userNick = currentUser.nickname;
+
+  // 이미 다른 맵에 투표했는지 확인 후 이전 투표 취소 처리 (1인 1표 방식)
+  Object.keys(scrim.map_votes).forEach(m => {
+    scrim.map_votes[m] = scrim.map_votes[m].filter(nick => nick !== userNick);
+  });
+
+  // 선택한 맵에 투표 추가
+  if (!scrim.map_votes[mapName]) scrim.map_votes[mapName] = [];
+  scrim.map_votes[mapName].push(userNick);
+
+  // DB(Supabase)가 연결되어 있다면 update 로직 실행
+  if (typeof supabase !== 'undefined') {
+    await supabase.from('scrims').update({ map_votes: scrim.map_votes }).eq('id', scrimId);
+  }
+
+  // 화면 갱신
+  renderMapVoteUI(scrim);
+}
+
+// 탭 전환 시 'mapVote' 탭이면 자동으로 목록 로드하도록 연결
+const originalShowTab = window.showTab;
+window.showTab = function(tabId) {
+  if (typeof originalShowTab === 'function') originalShowTab(tabId);
+  if (tabId === 'mapVote') {
+    loadMapVoteScrims();
+  }
+};
 
 async function castMapVote(gameType, mapName) {
   if (!currentUser) {
