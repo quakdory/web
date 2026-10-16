@@ -1094,50 +1094,55 @@ const GAME_MAPS = {
 
   ],
   ow: [
-    { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.webp" },
-    { name: "수라바사", img: "images/maps/ove/수라바사.webp" },
-    { name: "아틀리스", img: "images/maps/ove/아틀리스.webp" },
-    //호위//
-    { name: "샴발리 수도원", img: "images/maps/ove/샴발리.webp" },
-    { name: "서킷 로얄", img: "images/maps/ove/서킷로얄.webp" },
-    { name: "감시기지: 지브롤터", img: "images/maps/ove/지브롤터.webp" },
-    { name: "66번 국도", img: "images/maps/ove/66번 국도.webp" },
-    { name: "도라도", img: "images/maps/ove/도라도.webp" },
-    { name: "리알토", img: "images/maps/ove/리알토.webp" },
-    { name: "쓰레기촌", img: "images/maps/ove/쓰레기촌.webp" },
-    { name: "하바나", img: "images/maps/ove/하바나.webp" },
-    { name: "그림스뵈튼", img: "images/maps/ove/그림스뵈튼.webp" },
-    //쟁탈//
-    { name: "네팔", img: "images/maps/ove/네팔.webp" },
-    { name: "리장 타워", img: "images/maps/ove/리장타워.webp" },
-    { name: "부산", img: "images/maps/ove/부산.webp" },
-    { name: "사모아", img: "images/maps/ove/사모아.webp" },
-    { name: "오아시스", img: "images/maps/ove/오아시스.webp" },
-    { name: "일리오스", img: "images/maps/ove/일리오스.webp" },
-    { name: "남극 반도", img: "images/maps/ove/남극반도.webp" },
-    //혼합//
-    { name: "할리우드", img: "images/maps/ove/할리우드.webp" },
-    { name: "왕의 길", img: "images/maps/ove/왕의길.webp" },
-    { name: "눔바니", img: "images/maps/ove/눔바니.webp" },
-    { name: "미드타운", img: "images/maps/ove/미드타운.webp" },
-    { name: "블리자드 월드", img: "images/maps/ove/블리자드월드.webp" },
-    { name: "아이헨발데", img: "images/maps/ove/아이헨발데.webp" },
-    { name: "파라이수", img: "images/maps/ove/파라이수.webp" },
-    { name: "네온 교차로", img: "images/maps/ove/네온 교차로.webp" },
-    //밀기//
-    { name: "뉴 퀸 스트리트", img: "images/maps/ove/뉴퀸스트리트.webp" },
-    { name: "이스페란사", img: "images/maps/ove/이스페란사.webp" },
-    { name: "콜로세오", img: "images/maps/ove/콜로세오.webp" },
-    { name: "루나사피", img: "images/maps/ove/루나사피.webp" },
-
+    // 플래시포인트
+    { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.webp", mode: "플래시포인트" },
+    { name: "수라바사", img: "images/maps/ove/수라바사.webp", mode: "플래시포인트" },
+    { name: "아틀리스", img: "images/maps/ove/아틀리스.webp", mode: "플래시포인트" },
+    // 호위
+    { name: "샴발리 수도원", img: "images/maps/ove/샴발리.webp", mode: "호위" },
+    { name: "서킷 로얄", img: "images/maps/ove/서킷로얄.webp", mode: "호위" },
+    { name: "감시기지: 지브롤터", img: "images/maps/ove/지브롤터.webp", mode: "호위" },
+    { name: "66번 국도", img: "images/maps/ove/66번 국도.webp", mode: "호위" },
+    { name: "도라도", img: "images/maps/ove/도라도.webp", mode: "호위" },
+    { name: "리알토", img: "images/maps/ove/리알토.webp", mode: "호위" },
+    { name: "쓰레기촌", img: "images/maps/ove/쓰레기촌.webp", mode: "호위" },
+    { name: "하바나", img: "images/maps/ove/하바나.webp", mode: "호위" },
+    { name: "그림스뵈튼", img: "images/maps/ove/그림스뵈튼.webp", mode: "호위" },
+    // 쟁탈
+    { name: "네팔", img: "images/maps/ove/네팔.webp", mode: "쟁탈" },
+    { name: "리장 타워", img: "images/maps/ove/리장타워.webp", mode: "쟁탈" },
+    { name: "부산", img: "images/maps/ove/부산.webp", mode: "쟁탈" },
+    { name: "사모아", img: "images/maps/ove/사모아.webp", mode: "쟁탈" },
+    { name: "오아시스", img: "images/maps/ove/오아시스.webp", mode: "쟁탈" },
+    { name: "일리오스", img: "images/maps/ove/일리오스.webp", mode: "쟁탈" },
+    { name: "남극 반도", img: "images/maps/ove/남극반도.webp", mode: "쟁탈" },
+    // 혼합
+    { name: "할리우드", img: "images/maps/ove/할리우드.webp", mode: "혼합" },
+    { name: "왕의 길", img: "images/maps/ove/왕의길.webp", mode: "혼합" },
+    { name: "눔바니", img: "images/maps/ove/눔바니.webp", mode: "혼합" },
+    { name: "미드타운", img: "images/maps/ove/미드타운.webp", mode: "혼합" },
+    { name: "블리자드 월드", img: "images/maps/ove/블리자드월드.webp", mode: "혼합" },
+    { name: "아이헨발데", img: "images/maps/ove/아이헨발데.webp", mode: "혼합" },
+    { name: "파라이수", img: "images/maps/ove/파라이수.webp", mode: "혼합" },
+    { name: "네온 교차로", img: "images/maps/ove/네온 교차로.webp", mode: "혼합" },
+    // 밀기
+    { name: "뉴 퀸 스트리트", img: "images/maps/ove/뉴퀸스트리트.webp", mode: "밀기" },
+    { name: "이스페란사", img: "images/maps/ove/이스페란사.webp", mode: "밀기" },
+    { name: "콜로세오", img: "images/maps/ove/콜로세오.webp", mode: "밀기" },
+    { name: "루나사피", img: "images/maps/ove/루나사피.webp", mode: "밀기" },
   ],
+  
   lol: [
     { name: "소환사의 협곡", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop" },
     { name: "칼바람 나락", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" }
   ]
 };
 
-async function loadMapVoteView(gameType = 'valo') {
+// 현재 선택된 오버워치 맵 세부 모드 ('all', '쟁탈', '호위', '플래시포인트', '밀기', '혼합')
+let currentOwMapMode = 'all';
+
+async function loadMapVoteView(gameType = 'valo', owMode = 'all') {
+  currentOwMapMode = owMode;
   const container = document.getElementById('mapVoteContainer');
   if (!container) return;
 
@@ -1166,16 +1171,41 @@ async function loadMapVoteView(gameType = 'valo') {
     });
   }
 
-  const maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
+  // 게임별 맵 데이터 가져오기
+  let maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
+
+  // 오버워치이고 세부 모드가 선택된 경우 필터링
+  if (gameType === 'ow' && owMode !== 'all') {
+    maps = maps.filter(map => map.mode === owMode);
+  }
 
   let html = `
-    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
       <button class="filter-btn ${gameType === 'valo' ? 'active' : ''}" onclick="loadMapVoteView('valo')">발로란트</button>
-      <button class="filter-btn ${gameType === 'ow' ? 'active' : ''}" onclick="loadMapVoteView('ow')">오버워치</button>
+      <button class="filter-btn ${gameType === 'ow' ? 'active' : ''}" onclick="loadMapVoteView('ow', 'all')">오버워치</button>
       <button class="filter-btn ${gameType === 'lol' ? 'active' : ''}" onclick="loadMapVoteView('lol')">롤</button>
     </div>
-    <div class="map-card-grid">
   `;
+
+  // 오버워치 탭일 때만 5개 세부 모드 탭 노출
+  if (gameType === 'ow') {
+    const owModes = [
+      { key: 'all', label: '전체' },
+      { key: '쟁탈', label: '쟁탈' },
+      { key: '호위', label: '호위' },
+      { key: '플래시포인트', label: '플래시포인트' },
+      { key: '밀기', label: '밀기' },
+      { key: '혼합', label: '혼합' }
+    ];
+
+    html += `<div style="margin-bottom: 20px; display: flex; gap: 6px; flex-wrap: wrap;">`;
+    owModes.forEach(mode => {
+      html += `<button class="filter-btn ${currentOwMapMode === mode.key ? 'active' : ''}" style="font-size: 0.85rem; padding: 6px 12px;" onclick="loadMapVoteView('ow', '${mode.key}')">${mode.label}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<div class="map-card-grid">`;
 
   maps.forEach(map => {
     const count = voteCounts[map.name] || 0;
