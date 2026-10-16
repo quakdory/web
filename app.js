@@ -1061,7 +1061,7 @@ function switchGameTab(gameType) {
 }
 
 // =============================================================
-// 맵 투표 기능 로직 (이미지 썸네일 카드형)
+// 맵 투표 기능 로직 (실시간 DB 연동 및 투표 집계형)
 // =============================================================
 const GAME_MAPS = {
   valo: [
@@ -1087,11 +1087,35 @@ const GAME_MAPS = {
   ]
 };
 
-function loadMapVoteView(gameType = 'valo') {
+async function loadMapVoteView(gameType = 'valo') {
   const container = document.getElementById('mapVoteContainer');
   if (!container) return;
 
-  container.innerHTML = '';
+  container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9rem;">투표 현황을 불러오는 중...</p>';
+
+  // DB에서 해당 게임의 모든 투표 데이터 가져오기
+  const { data: votes, error } = await supabaseClient
+    .from('map_votes')
+    .select('*')
+    .eq('game_type', gameType);
+
+  if (error) {
+    console.error('투표 현황 로딩 실패:', error);
+  }
+
+  // 맵별 투표 수 집계 객체 생성
+  const voteCounts = {};
+  let userVotedMap = null;
+
+  if (votes) {
+    votes.forEach(v => {
+      voteCounts[v.map_name] = (voteCounts[v.map_name] || 0) + 1;
+      if (currentUser && v.user_id === currentUser.id) {
+        userVotedMap = v.map_name; // 내가 이미 투표한 맵
+      }
+    });
+  }
+
   const maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
 
   let html = `
@@ -1104,13 +1128,21 @@ function loadMapVoteView(gameType = 'valo') {
   `;
 
   maps.forEach(map => {
+    const count = voteCounts[map.name] || 0;
+    const isMyVote = (userVotedMap === map.name);
+
     html += `
-      <div class="map-vote-card" onclick="castMapVote('${map.name}')">
+      <div class="map-vote-card ${isMyVote ? 'voted' : ''}" onclick="castMapVote('${gameType}', '${map.name}')">
         <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
         <div class="map-card-overlay"></div>
         <div class="map-card-content">
-          <h3 class="map-title">${map.name}</h3>
-          <span class="map-vote-btn">투표하기</span>
+          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 4px;">
+            <h3 class="map-title" style="margin: 0;">${map.name}</h3>
+            <span style="background: ${isMyVote ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
+              🔥 ${count표 || count + '표'}
+            </span>
+          </div>
+          <span class="map-vote-btn">${isMyVote ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}</span>
         </div>
       </div>
     `;
@@ -1118,6 +1150,59 @@ function loadMapVoteView(gameType = 'valo') {
 
   html += `</div>`;
   container.innerHTML = html;
+}
+
+async function castMapVote(gameType, mapName) {
+  if (!currentUser) {
+    alert('로그인 후 투표할 수 있습니다.');
+    return;
+  }
+
+  // 1. 기존에 이 게임에서 투표한 내역이 있는지 확인
+  const { data: existing } = await supabaseClient
+    .from('map_votes')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .eq('game_type', gameType)
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.map_name === mapName) {
+      // 이미 같은 맵에 투표한 경우 -> 투표 취소
+      const { error } = await supabaseClient
+        .from('map_votes')
+        .delete()
+        .eq('id', existing.id);
+
+      if (!error) {
+        alert(`[${mapName}] 투표가 취소되었습니다.`);
+        loadMapVoteView(gameType);
+      }
+    } else {
+      // 다른 맵에 투표했던 경우 -> 투표 맵 변경
+      const { error } = await supabaseClient
+        .from('map_votes')
+        .update({ map_name: mapName })
+        .eq('id', existing.id);
+
+      if (!error) {
+        alert(`[${mapName}] (으)로 투표가 변경되었습니다!`);
+        loadMapVoteView(gameType);
+      }
+    }
+  } else {
+    // 신규 투표 생성
+    const { error } = await supabaseClient
+      .from('map_votes')
+      .insert([{ user_id: currentUser.id, game_type: gameType, map_name: mapName }]);
+
+    if (!error) {
+      alert(`[${mapName}]에 투표가 완료되었습니다!`);
+      loadMapVoteView(gameType);
+    } else {
+      alert('투표 처리 중 오류가 발생했습니다: ' + error.message);
+    }
+  }
 }
 
 function castMapVote(mapName) {
