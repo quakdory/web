@@ -67,6 +67,7 @@ const Ow_TIER_DATA = [
   { name: "실버", label: '실버', img: "images/tiers/실버.webp" },
   { name: "골드", label: '골드', img: "images/tiers/골드.webp" },
   { name: "플래티넘", label: '플래티넘', img: "images/tiers/플래티넘.webp" },
+  { name: "에메랄드", label: '플래티넘', img: "images/tiers/에메랄드.webp" },
   { name: "다이아몬드", label: '다이아몬드', img: "images/tiers/다이아몬드.webp" },
   { name: "마스터", label: '마스터', img: "images/tiers/마스터.webp" },
   { name: "그랜드마스터", label: '그랜드마스터', img: "images/tiers/그랜드마스터.webp" },
