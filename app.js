@@ -1329,7 +1329,7 @@ function renderMapVoteCards(scrim) {
     `;
   }
 
-  // 필터링 적용 (오버워치의 경우 모드가 일치하는 것만 추출)
+  // 필터링 적용
   const maps = allMaps.filter(map => {
     if (gameType === 'ow' && currentOwMapMode !== 'all') {
       return map.mode === currentOwMapMode;
@@ -1360,17 +1360,24 @@ function renderMapVoteCards(scrim) {
           <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
           <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
           <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; z-index: 2;">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px;">
+            
+            <!-- 맵 이름 및 모드 뱃지 -->
+            <div style="width: 100%; margin-bottom: 6px;">
               <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
                 ${map.name} ${modeBadgeText}
               </h3>
-              <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
+            </div>
+
+            <!-- 하단부: [🔥 X표 뱃지]가 [투표하기 버튼] 왼쪽에 오도록 가로 정렬 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
                 🔥 ${count}표
               </span>
+              <span class="map-vote-btn" style="font-size: 0.75rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#d1d5db'}; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px;">
+                ${hasVotedThisMap ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}
+              </span>
             </div>
-            <span class="map-vote-btn" style="font-size: 0.75rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#d1d5db'}; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px;">
-              ${hasVotedThisMap ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}
-            </span>
+
           </div>
         </div>
       `;
