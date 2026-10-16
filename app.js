@@ -386,7 +386,7 @@ async function checkAuthState() {
   if (session) {
     currentUser = session.user;
 
-    const { data: profile, error: profileError } = await supabaseClient
+    const { data: profileData, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
       .eq('id', currentUser.id)
@@ -396,7 +396,7 @@ async function checkAuthState() {
       console.error("프로필 조회 에러:", profileError);
     }
 
-    currentProfile = profile;
+    currentProfile = profileData; // 전역 변수에 저장
 
     const authContainer = document.getElementById('authContainer');
     const appContainer = document.getElementById('appContainer');
@@ -406,17 +406,29 @@ async function checkAuthState() {
     if (authContainer) authContainer.style.display = 'none';
     if (appContainer) appContainer.style.display = 'block';
 
-    const displayNickname = profile?.nickname || currentUser.email.split('@')[0];
+    const displayNickname = currentProfile?.nickname || currentUser.email.split('@')[0];
     if (nicknameElem) nicknameElem.textContent = displayNickname;
 
     if (badgeElem) {
-      if (profile?.is_admin) {
+      if (currentProfile?.is_admin) {
         badgeElem.textContent = '관리자';
         badgeElem.classList.add('admin');
       } else {
         badgeElem.textContent = '로스터';
         badgeElem.classList.remove('admin');
       }
+    }
+
+    // 👑 관리자 권한에 따른 UI 노출 처리 (currentProfile 사용)
+    const newScrimBtn = document.querySelector('button[onclick="openModal()"]');
+    const adminTabBtn = document.getElementById('navAdminTabBtn');
+
+    if (currentProfile?.is_admin) {
+      if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
+      if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
+    } else {
+      if (newScrimBtn) newScrimBtn.style.display = 'none'; // 일반 로스터는 내전 생성 버튼 숨김
+      if (adminTabBtn) adminTabBtn.style.display = 'none';
     }
 
     fetchScrims();
@@ -430,18 +442,6 @@ async function checkAuthState() {
     if (authContainer) authContainer.style.display = 'flex';
     if (appContainer) appContainer.style.display = 'none';
   }
-  // 👑 관리자 권한에 따른 UI 노출 처리
-    const newScrimBtn = document.querySelector('button[onclick="openModal()"]');
-    const adminTabBtn = document.getElementById('navAdminTabBtn');
-
-    if (profile?.is_admin) {
-      if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
-      if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
-    } else {
-      if (newScrimBtn) newScrimBtn.style.display = 'none'; // 일반 로스터는 내전 생성 버튼 숨김
-      if (adminTabBtn) adminTabBtn.style.display = 'none';
-    }
-
 }
 
 supabaseClient.auth.onAuthStateChange(() => {
