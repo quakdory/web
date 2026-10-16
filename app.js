@@ -1280,7 +1280,7 @@ function renderMapVoteCards(scrim) {
     container.innerHTML = `
       <div class="placeholder-box" style="padding: 30px; text-align: center; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px;">
         <h4 style="color: #3b82f6; margin-bottom: 8px;">🔵 리그 오브 레전드 내전 안내</h4>
-        <p style="color: var(--text-muted); margin: 0;">리그 오브 레전드는 '소환사의 협곡' 단일 맵으로 진행되므로 맵 투표가 별도로 필요하지 않습니다!</p>
+        <p style="color: var(--text-muted); margin: 0;">리그 오브 레전드는 '소환사의 협곡' 단일 맵으로 진행되므로 맵 투표가 별도로 진행되지 않습니다!</p>
       </div>
     `;
     return;
