@@ -1175,13 +1175,13 @@ async function loadMapVoteScrims() {
 
   selectEl.innerHTML = '<option value="">참가 중인 내전을 불러오는 중...</option>';
 
-  // Supabase에서 현재 유저가 참가자로 등록된 내전 정보 조인 조회
+  // scrim_participants 및 scrims 테이블에서 참가 중인 내전 조회 (map_votes 제외)
   const { data: myParticipations, error } = await supabaseClient
     .from('scrim_participants')
     .select(`
       scrim_id,
       scrims (
-        id, title, game, max_players, current_players, map_votes,
+        id, title, game, max_players, current_players,
         scrim_participants (
           user_id,
           profiles ( nickname )
