@@ -610,3 +610,40 @@ body {
   background-color: #4752C4;
   box-shadow: 0 6px 16px rgba(88, 101, 242, 0.4);
 }
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 로고와 글자 사이 간격 */
+}
+
+.logo-container svg {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* 기존 .logo 클래스에 디스코드 로고를 왼쪽에 자동으로 붙여주는 스타일 */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 로고와 글자 사이 간격 */
+  cursor: pointer;
+}
+
+/* 로고 영역 전체 가로 정렬 */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 아이콘과 텍스트 사이 간격 */
+  cursor: pointer;
+}
+
+/* 로고 이미지 크기 및 디자인 조절 */
+.custom-logo-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%; /* 동그란 아이콘으로 만들고 싶을 때 (네모로 하려면 이 줄을 삭제하세요) */
+  object-fit: cover;
+  flex-shrink: 0;
+}
