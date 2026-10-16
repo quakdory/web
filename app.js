@@ -63,15 +63,15 @@ const VALO_TIER_DATA = [
 ];
 
 const Ow_TIER_DATA = [
-  { name: "브론즈", label: '브론즈', img: "images/tiers/ow/브론즈.webp" },
-  { name: "실버", label: '실버', img: "images/tiers/ow/실버.webp" },
-  { name: "골드", label: '골드', img: "images/tiers/ow/골드.webp" },
-  { name: "플래티넘", label: '플래티넘', img: "images/tiers/ow/플래티넘.webp" },
-  { name: "다이아몬드", label: '다이아몬드', img: "images/tiers/ow/다이아몬드.webp" },
-  { name: "마스터", label: '마스터', img: "images/tiers/ow/마스터.webp" },
-  { name: "그랜드마스터", label: '그랜드마스터', img: "images/tiers/ow/그랜드마스터.webp" },
-  { name: "챔피언", label: '챔피언', img: "images/tiers/ow/챔피언.webp" },
-  { name: "챌린저", label: '챌린저', img: "images/tiers/ow/챌린저.webp" },
+  { name: "브론즈", label: '브론즈', img: "images/tiers/브론즈.webp" },
+  { name: "실버", label: '실버', img: "images/tiers/실버.webp" },
+  { name: "골드", label: '골드', img: "images/tiers/골드.webp" },
+  { name: "플래티넘", label: '플래티넘', img: "images/tiers/플래티넘.webp" },
+  { name: "다이아몬드", label: '다이아몬드', img: "images/tiers/다이아몬드.webp" },
+  { name: "마스터", label: '마스터', img: "images/tiers/마스터.webp" },
+  { name: "그랜드마스터", label: '그랜드마스터', img: "images/tiers/그랜드마스터.webp" },
+  { name: "챔피언", label: '챔피언', img: "images/tiers/챔피언.webp" },
+  { name: "챌린저", label: '챌린저', img: "images/tiers/챌린저.webp" },
 ];
 
 
