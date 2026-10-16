@@ -528,16 +528,27 @@ function toggleAgentSelect(type, agentName, btnEl) {
 
 function updateAgentBadges(type) {
   const container = document.getElementById(type === 'main' ? 'valoMainAgentContainer' : 'valoSubAgentContainer');
+  if (!container) return;
   const selected = tempSelectedAgents[type];
+  
+  // 기존에 선택되어 있던 버튼들의 선택 상태를 해제하고 뱃지를 안전하게 제거
   container.querySelectorAll('.agent-btn').forEach(btn => {
     btn.classList.remove('selected');
-    btn.querySelector('.select-badge').textContent = '';
+    const existingBadge = btn.querySelector('.select-badge');
+    if (existingBadge) {
+      existingBadge.remove();
+    }
   });
+
+  // 새로 선택된 요원들에게 순서 번호 뱃지 부여
   selected.forEach((agentName, index) => {
     const btn = container.querySelector(`.agent-btn[data-agent="${agentName}"]`);
     if (btn) {
       btn.classList.add('selected');
-      btn.querySelector('.select-badge').textContent = index + 1;
+      const badge = document.createElement('div');
+      badge.className = 'select-badge agent-rank-badge';
+      badge.textContent = index + 1;
+      btn.appendChild(badge);
     }
   });
 }
