@@ -559,7 +559,7 @@ function updateOwAgentSelection(type) {
     item.onclick = () => toggleOwAgent(type, heroName, item);
     container.appendChild(item);
   });
-}
+
 
 function toggleOwAgent(type, heroName, element) {
   const list = tempOwSelectedAgents[type];
