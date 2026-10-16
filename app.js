@@ -552,6 +552,37 @@ function updateAgentBadges(type) {
     }
   });
 }
+// =============================================================
+// 오버워치 2 티어 선택 로직 (발로란트 방식과 동일한 이미지 피커)
+// =============================================================
+function renderOwTierPicker(selectedTierName = '브론즈') {
+  const container = document.getElementById('owTierContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  const owTierInput = document.getElementById('owTier');
+  if (owTierInput) owTierInput.value = selectedTierName;
+
+  Ow_TIER_DATA.forEach(tier => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `tier-btn ${tier.name === selectedTierName ? 'selected' : ''}`;
+    btn.onclick = () => selectOwTier(tier.name, btn);
+    btn.innerHTML = `<img src="${tier.img}" alt="${tier.label}" /><span class="tier-name">${tier.label}</span>`;
+    container.appendChild(btn);
+  });
+}
+
+function selectOwTier(tierName, btnEl) {
+  const owTierInput = document.getElementById('owTier');
+  if (owTierInput) owTierInput.value = tierName;
+
+  const container = document.getElementById('owTierContainer');
+  if (container) {
+    container.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('selected'));
+  }
+  btnEl.classList.add('selected');
+}
 
 // =============================================================
 // 오버워치 2 영웅 선택 로직
@@ -675,7 +706,9 @@ function openProfileModal() {
   // 2. 오버워치 2 정보 로드
   const ow = currentProfile.ow_info || {};
   document.getElementById('owId').value = ow.game_id || '';
-  document.getElementById('owTier').value = ow.tier || 'Unranked';
+  
+  // 💡 기존 select 대신 방금 만든 이미지 티어 피커 호출
+  renderOwTierPicker(ow.tier || '브론즈');
 
   if (ow.main_role) {
     document.getElementById('owMainRole').value = ow.main_role;
@@ -696,6 +729,39 @@ function openProfileModal() {
     document.getElementById('owSubRole').value = "";
     updateOwAgentSelection('sub');
   }
+
+  // =============================================================
+// 오버워치 2 티어 선택 로직 (발로란트 방식과 동일하게 이미지화)
+// =============================================================
+function renderOwTierPicker(selectedTierName = '브론즈') {
+  const container = document.getElementById('owTierContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  // 숨겨진 입력폼이나 select 요소가 있다면 값 동기화 (HTML 구조에 맞게 활용)
+  const owTierInput = document.getElementById('owTier');
+  if (owTierInput) owTierInput.value = selectedTierName;
+
+  Ow_TIER_DATA.forEach(tier => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `tier-btn ${tier.name === selectedTierName ? 'selected' : ''}`;
+    btn.onclick = () => selectOwTier(tier.name, btn);
+    btn.innerHTML = `<img src="${tier.img}" alt="${tier.label}" /><span class="tier-name">${tier.label}</span>`;
+    container.appendChild(btn);
+  });
+}
+
+function selectOwTier(tierName, btnEl) {
+  const owTierInput = document.getElementById('owTier');
+  if (owTierInput) owTierInput.value = tierName;
+
+  const container = document.getElementById('owTierContainer');
+  if (container) {
+    container.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('selected'));
+  }
+  btnEl.classList.add('selected');
+}
 
   // 3. 롤 정보 로드
   const lol = currentProfile.lol_info || {};
