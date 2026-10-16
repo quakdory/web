@@ -1158,55 +1158,65 @@ async function castMapVote(gameType, mapName) {
     return;
   }
 
+  console.log('투표 시도:', { userId: currentUser.id, gameType, mapName });
+
   // 1. 기존에 이 게임에서 투표한 내역이 있는지 확인
-  const { data: existing } = await supabaseClient
+  const { data: existing, error: selectError } = await supabaseClient
     .from('map_votes')
     .select('*')
     .eq('user_id', currentUser.id)
     .eq('game_type', gameType)
     .maybeSingle();
 
+  if (selectError) {
+    console.error('기존 투표 조회 에러:', selectError);
+    return;
+  }
+
   if (existing) {
     if (existing.map_name === mapName) {
       // 이미 같은 맵에 투표한 경우 -> 투표 취소
-      const { error } = await supabaseClient
+      const { error: deleteError } = await supabaseClient
         .from('map_votes')
         .delete()
         .eq('id', existing.id);
 
-      if (!error) {
+      if (deleteError) {
+        console.error('투표 취소 에러:', deleteError);
+        alert('투표 취소 실패: ' + deleteError.message);
+      } else {
         alert(`[${mapName}] 투표가 취소되었습니다.`);
         loadMapVoteView(gameType);
       }
     } else {
       // 다른 맵에 투표했던 경우 -> 투표 맵 변경
-      const { error } = await supabaseClient
+      const { error: updateError } = await supabaseClient
         .from('map_votes')
         .update({ map_name: mapName })
         .eq('id', existing.id);
 
-      if (!error) {
+      if (updateError) {
+        console.error('투표 변경 에러:', updateError);
+        alert('투표 변경 실패: ' + updateError.message);
+      } else {
         alert(`[${mapName}] (으)로 투표가 변경되었습니다!`);
         loadMapVoteView(gameType);
       }
     }
   } else {
     // 신규 투표 생성
-    const { error } = await supabaseClient
+    const { error: insertError } = await supabaseClient
       .from('map_votes')
       .insert([{ user_id: currentUser.id, game_type: gameType, map_name: mapName }]);
 
-    if (!error) {
+    if (insertError) {
+      console.error('신규 투표 저장 에러:', insertError);
+      alert('투표 저장 실패: ' + insertError.message);
+    } else {
       alert(`[${mapName}]에 투표가 완료되었습니다!`);
       loadMapVoteView(gameType);
-    } else {
-      alert('투표 처리 중 오류가 발생했습니다: ' + error.message);
     }
   }
-}
-
-function castMapVote(mapName) {
-  alert(`[${mapName}]에 투표가 완료되었습니다!`);
 }
 
 // 앱 실행 시 초기화 이벤트 리스너
