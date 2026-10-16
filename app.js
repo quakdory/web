@@ -1287,12 +1287,12 @@ function renderMapVoteCards(scrim) {
 
   const gameType = scrim.game;
 
-  // 리그 오브 레전드(lol)는 맵 투표가 필요 없으므로 안내 메시지 출력 후 종료
+  // 리그 오브 레전드(lol)는 맵 투표 제외
   if (gameType === 'lol') {
     container.innerHTML = `
       <div class="placeholder-box" style="padding: 30px; text-align: center; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px;">
         <h4 style="color: #3b82f6; margin-bottom: 8px;">🔵 리그 오브 레전드 내전 안내</h4>
-        <p style="color: var(--text-muted); margin: 0;">리그 오브 레전드는 '소환사의 협곡' 단일 맵으로 진행되므로 맵 투표가 별도로 진행되지 않습니다!</p>
+        <p style="color: var(--text-muted); margin: 0;">리그 오브 레전드는 '소환사의 협곡' 단일 맵으로 진행되므로 맵 투표가 별도로 필요하지 않습니다!</p>
       </div>
     `;
     return;
@@ -1303,11 +1303,11 @@ function renderMapVoteCards(scrim) {
   const userNick = currentProfile?.nickname || currentUser.email.split('@')[0];
 
   let html = `
-    <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-size: 0.95rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}] ${scrim.title} 맵 투표 현황</span>
+    <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 1rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}] ${scrim.title} 맵 투표 현황</span>
       <span style="font-size: 0.85rem; color: var(--text-secondary);">참가자 인증 완료 ✔️ (1인 1표)</span>
     </div>
-    <div class="map-card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+    <div class="map-card-grid">
   `;
 
   maps.forEach(map => {
@@ -1316,18 +1316,18 @@ function renderMapVoteCards(scrim) {
     const hasVotedThisMap = mapVoters.includes(userNick);
 
     html += `
-      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')" style="cursor: pointer; position: relative; border-radius: 12px; overflow: hidden; border: 2px solid ${hasVotedThisMap ? '#10b981' : 'var(--border-color)'}; background: rgba(255,255,255,0.05); transition: all 0.2s;">
-        <div class="map-card-bg" style="background-image: url('${map.img}'); height: 130px; background-size: cover; background-position: center;"></div>
-        <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2));"></div>
-        <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; display: flex; flex-direction: column; gap: 4px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1rem;">${map.name}</h3>
-            <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
+      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')" style="border-color: ${hasVotedThisMap ? '#10b981' : 'var(--border-color)'};">
+        <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
+        <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
+        <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; z-index: 2;">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px;">
+            <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">${map.name}</h3>
+            <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
               🔥 ${count}표
             </span>
           </div>
-          <span class="map-vote-btn" style="font-size: 0.8rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#a1a1aa'};">
-            ${hasVotedThisMap ? '✔️ 내 투표 완료 (취소하려면 재클릭)' : '클릭하여 투표하기'}
+          <span class="map-vote-btn" style="font-size: 0.75rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#d1d5db'}; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px;">
+            ${hasVotedThisMap ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}
           </span>
         </div>
       </div>

@@ -792,3 +792,32 @@ select option:checked {
   color: #ff4757;
   background: rgba(255, 71, 87, 0.1);
 }
+
+/* 맵 투표 그리드 및 카드 비율 완벽 고정 */
+.map-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 16px !important;
+  align-items: stretch;
+}
+
+.map-vote-card {
+  position: relative !important;
+  height: 160px !important; /* 모든 카드의 높이를 일정하게 고정 */
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  border: 2px solid var(--border-color) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  transition: transform 0.2s ease, border-color 0.2s ease !important;
+}
+
+.map-card-bg {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
