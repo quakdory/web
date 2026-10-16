@@ -892,7 +892,14 @@ async function fetchScrims() {
     )
   `).order('created_at', { ascending: false });
 
-  if (currentFilter !== 'all') query = query.eq('game', currentFilter);
+  // 💡 필터 조건 적용 (발로란트의 경우 'valo', 'val' 모두 호환되도록 처리)
+  if (currentFilter !== 'all') {
+    if (currentFilter === 'val' || currentFilter === 'valo') {
+      query = query.in('game', ['valo', 'val', 'VALORANT', 'valorant']);
+    } else {
+      query = query.eq('game', currentFilter);
+    }
+  }
 
   const { data: scrims, error } = await query;
   if (error) { 
