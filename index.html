@@ -211,48 +211,45 @@
             <button type="button" id="gameTabLolBtn" class="game-subtab-btn" onclick="switchGameTab('lol')">🔵 롤</button>
           </div>
 
-          <!-- 발로란트 뷰 -->
-          <div id="gameViewValo" class="game-profile-view active">
-            <div class="game-card valo full-width-card">
-              <div class="form-group">
-                <label>게임 태그 (아이디#태그)</label>
-                <input type="text" id="valoId" placeholder="예: HIDE#KR1" />
-              </div>
-              <div class="form-group">
-                <label>경쟁전 티어</label>
-                <input type="hidden" id="valoTier" value="Unranked" />
-                <div id="valoTierContainer" class="tier-image-picker"></div>
-              </div>
-              <div class="form-group">
-                <label>주 역할군 <span class="req">*필수</span></label>
-                <select id="valoMainRole" onchange="updateAgentSelection('main')">
-                  <option value="">역할군 선택</option>
-                  <option value="타격대">타격대</option>
-                  <option value="척후대">척후대</option>
-                  <option value="감시자">감시자</option>
-                  <option value="전략가">전략가</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>주 선호 요원 (최대 3개)</label>
-                <div id="valoMainAgentContainer" class="agent-image-picker"></div>
-              </div>
-              <div class="form-group">
-                <label>부 역할군 (선택)</label>
-                <select id="valoSubRole" onchange="updateAgentSelection('sub')">
-                  <option value="">선택 안 함</option>
-                  <option value="타격대">타격대</option>
-                  <option value="척후대">척후대</option>
-                  <option value="감시자">감시자</option>
-                  <option value="전략가">전략가</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>부 선호 요원 (최대 3개)</label>
-                <div id="valoSubAgentContainer" class="agent-image-picker"></div>
-              </div>
-            </div>
-          </div>
+          <!-- 발로란트 프로필 설정 뷰 (id="gameViewValo" 확인!) -->
+<div id="gameViewValo" class="game-profile-view active">
+  <div class="form-group" style="margin-top: 15px;">
+    <label>발로란트 라이엇 ID (예: 닉네임#TAG)</label>
+    <input type="text" id="valoId" placeholder="닉네임#KR1" />
+  </div>
+
+  <div class="form-group">
+    <label>현재 티어</label>
+    <input type="hidden" id="valoTier" value="Unranked" />
+    <div id="valoTierContainer" class="tier-image-picker"></div>
+  </div>
+
+  <div class="form-grid-2">
+    <div class="form-group">
+      <label>주 역할군 (Main Role)</label>
+      <select id="valoMainRole" onchange="updateAgentSelection('main')">
+        <option value="">역할군 선택</option>
+        <option value="타격대">타격대</option>
+        <option value="척후대">척후대</option>
+        <option value="감시자">감시자</option>
+        <option value="전략가">전략가</option>
+      </select>
+      <div id="valoMainAgentContainer" class="agent-image-picker" style="margin-top: 8px;"></div>
+    </div>
+
+    <div class="form-group">
+      <label>부 역할군 (Sub Role)</label>
+      <select id="valoSubRole" onchange="updateAgentSelection('sub')">
+        <option value="">역할군 선택</option>
+        <option value="타격대">타격대</option>
+        <option value="척후대">척후대</option>
+        <option value="감시자">감시자</option>
+        <option value="전략가">전략가</option>
+      </select>
+      <div id="valoSubAgentContainer" class="agent-image-picker" style="margin-top: 8px;"></div>
+    </div>
+  </div>
+</div>
 
           <!-- 오버워치 뷰 -->
           <div id="gameViewOw" class="game-profile-view">
