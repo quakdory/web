@@ -1980,7 +1980,7 @@ async function loadAdminUserManager() {
       <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 12px;">
           <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-color);">${nickname}</span>
-          <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '일반 로스터'}</span>
+          <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '로스터'}</span>
           <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
         </div>
         <div>
