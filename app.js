@@ -1345,21 +1345,53 @@ function showTeamSubtab(subtabName) {
   }
 }
 
-// 드래프트 탭 초기화 및 내전 목록 바인딩
+// --- 스네이크 드래프트 시스템 상태 ---
+let draftState = {
+  active: false,
+  scrimId: null,
+  leaderA: null, // A팀장 user_id
+  leaderB: null, // B팀장 user_id
+  teamA: [],
+  teamB: [],
+  availablePlayers: [],
+  turn: 'A', // 'A' 또는 'B'
+  round: 1
+};
+
+// 드래프트 탭 초기화 및 내전 선택 / 팀장 지정 화면 렌더링
 async function initDraftTab() {
   const draftView = document.getElementById('draftView');
+  if (!draftView) return;
+
   if (!draftState.active) {
     draftView.innerHTML = `
       <h3>📋 스네이크 드래프트 턴제 지명</h3>
       <p>팀장이 순서대로 팀원을 지명하는 드래프트 전용 공간입니다.</p>
       <div class="team-control-box" style="margin-top: 20px;">
-        <h3>드래프트 시작하기</h3>
-        <p>참여 완료된 내전을 선택하고 드래프트를 시작하세요.</p>
-        <div class="team-action-row">
-          <select id="draftScrimSelect">
+        <h3>1. 드래프트를 진행할 내전 선택</h3>
+        <div class="team-action-row" style="margin-top: 10px;">
+          <select id="draftScrimSelect" onchange="onDraftScrimSelected()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-color); font-weight: 600;">
             <option value="">내전 목록 불러오는 중...</option>
           </select>
-          <button class="btn-primary" onclick="startDraftSession()">드래프트 시작</button>
+        </div>
+
+        <div id="leaderSelectBox" style="margin-top: 20px; display: none;">
+          <h4 style="margin-bottom: 10px;">2. 양 팀 팀장 지정</h4>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label style="color: #6366f1;">🟦 BLUE TEAM (A팀장)</label>
+              <select id="leaderASelect" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-color);">
+                <option value="">A팀장 선택</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="color: #f43f5e;">🟥 RED TEAM (B팀장)</label>
+              <select id="leaderBSelect" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-color);">
+                <option value="">B팀장 선택</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary full-width" style="margin-top: 15px;" onclick="startDraftSession()">드래프트 방 생성 및 시작</button>
         </div>
       </div>
     `;
@@ -1367,6 +1399,62 @@ async function initDraftTab() {
   } else {
     renderDraftBoard();
   }
+}
+
+// Supabase에서 내전 목록과 실제 참가자 수를 조회하여 드래프트 셀렉트박스에 채우기
+async function loadScrimsForDraftSelect() {
+  try {
+    const { data, error } = await supabaseClient.from('scrims').select(`
+      id, title, game, max_players,
+      scrim_participants ( user_id )
+    `).order('created_at', { ascending: false });
+
+    const selectEl = document.getElementById('draftScrimSelect');
+    if (!selectEl) return;
+
+    if (error || !data || data.length === 0) {
+      selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
+      return;
+    }
+
+    selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
+      const count = scrim.scrim_participants ? scrim.scrim_participants.length : 0;
+      return `<option value="${scrim.id}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)</option>`;
+    }).join('');
+  } catch (err) {
+    console.error('드래프트 내전 로드 오류:', err);
+  }
+}
+
+// 내전 선택 시 해당 내전의 참가자들로 팀장 드롭다운 채우기
+async function onDraftScrimSelected() {
+  const selectEl = document.getElementById('draftScrimSelect');
+  const leaderBox = document.getElementById('leaderSelectBox');
+  if (!selectEl || !selectEl.value) {
+    if (leaderBox) leaderBox.style.display = 'none';
+    return;
+  }
+
+  const scrimId = selectEl.value;
+  const { data: participantsData } = await supabaseClient
+    .from('scrim_participants')
+    .select(`user_id, profiles ( nickname )`)
+    .eq('scrim_id', scrimId);
+
+  if (!participantsData || participantsData.length < 2) {
+    alert('드래프트를 진행하려면 최소 2명 이상의 참가자가 필요합니다.');
+    if (leaderBox) leaderBox.style.display = 'none';
+    return;
+  }
+
+  const optionsHtml = '<option value="">팀장 선택</option>' + participantsData.map(p => {
+    const nick = p.profiles?.nickname || '알 수 없음';
+    return `<option value="${p.user_id}">${nick}</option>`;
+  }).join('');
+
+  document.getElementById('leaderASelect').innerHTML = optionsHtml;
+  document.getElementById('leaderBSelect').innerHTML = optionsHtml;
+  if (leaderBox) leaderBox.style.display = 'block';
 }
 
 // --- 선수 상세 프로필 보기 모달 팝업 렌더링 ---
@@ -1414,7 +1502,57 @@ function showPlayerProfileModal(player) {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// 드래프트 화면 렌더링 (대기 선수 카드에 [프로필 보기]와 [선수 지명] 버튼 명확히 분리)
+// 드래프트 세션 시작
+async function startDraftSession() {
+  const scrimId = document.getElementById('draftScrimSelect')?.value;
+  const leaderA = document.getElementById('leaderASelect')?.value;
+  const leaderB = document.getElementById('leaderBSelect')?.value;
+
+  if (!scrimId) { alert('내전을 선택해 주세요.'); return; }
+  if (!leaderA || !leaderB) { alert('A팀장과 B팀장을 모두 지정해 주세요.'); return; }
+  if (leaderA === leaderB) { alert('A팀장과 B팀장은 서로 다른 유저여야 합니다.'); return; }
+
+  const { data: participantsData } = await supabaseClient
+    .from('scrim_participants')
+    .select(`user_id, profiles ( nickname, valo_info, ow_info, lol_info )`)
+    .eq('scrim_id', scrimId);
+
+  if (!participantsData) return;
+
+  let leaderAObj = null;
+  let leaderBObj = null;
+  const remainingPlayers = [];
+
+  participantsData.forEach(p => {
+    const profile = p.profiles || {};
+    const formatted = {
+      user_id: p.user_id,
+      nickname: profile.nickname || '알 수 없음',
+      tier: profile.valo_info?.tier || profile.ow_info?.tier || profile.lol_info?.tier || 'Unranked',
+      valo_info: profile.valo_info,
+      ow_info: profile.ow_info,
+      lol_info: profile.lol_info
+    };
+
+    if (p.user_id === leaderA) leaderAObj = formatted;
+    else if (p.user_id === leaderB) leaderBObj = formatted;
+    else remainingPlayers.push(formatted);
+  });
+
+  draftState.active = true;
+  draftState.scrimId = scrimId;
+  draftState.leaderA = leaderA;
+  draftState.leaderB = leaderB;
+  draftState.teamA = [leaderAObj];
+  draftState.teamB = [leaderBObj];
+  draftState.availablePlayers = remainingPlayers;
+  draftState.turn = 'A';
+  draftState.round = 1;
+
+  renderDraftBoard();
+}
+
+// 드래프트 화면 렌더링 (대기 선수 카드에 [프로필 보기]와 [선수 지명하기] 버튼 명확히 분리)
 function renderDraftBoard() {
   const draftView = document.getElementById('draftView');
   if (!draftView) return;
@@ -1465,7 +1603,7 @@ function renderDraftBoard() {
 
     <div class="team-control-box">
       <h4>지명 대기 선수 목록</h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">선수 이름을 클릭하면 상세 프로필을 볼 수 있고, 아래의 [선수 지명] 버튼을 누르면 현재 차례인 팀에 영입됩니다.</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">선수 이름을 클릭하면 상세 프로필을 볼 수 있고, 아래의 [선수 지명하기] 버튼을 누르면 현재 차례인 팀에 영입됩니다.</p>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 10px;">
         ${draftState.availablePlayers.map((player, idx) => `
@@ -1492,7 +1630,6 @@ function selectDraftPlayer(index) {
   const currentTurnLeader = draftState.turn === 'A' ? draftState.leaderA : draftState.leaderB;
   const isAdmin = currentProfile?.is_admin || false;
 
-  // 권한 체크: 현재 턴의 팀장 또는 관리자(방장)만 지명 버튼을 누를 수 있음
   if (currentUser.id !== currentTurnLeader && !isAdmin) {
     alert(`현재 지명 권한이 없습니다! (${draftState.turn === 'A' ? 'A팀장' : 'B팀장'}만 지명 가능합니다)`);
     return;
@@ -1506,7 +1643,6 @@ function selectDraftPlayer(index) {
     draftState.teamB.push(selectedPlayer);
   }
 
-  // 턴 전환 (스네이크 규칙 적용 가능)
   if (draftState.turn === 'A') {
     draftState.turn = 'B';
   } else {
