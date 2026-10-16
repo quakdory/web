@@ -71,7 +71,10 @@
         <span id="userNickname">로딩 중...</span>님
         <button onclick="openProfileModal()" class="btn-sm">프로필 설정</button>
         <button onclick="handleLogout()" class="btn-sm danger-sub">로그아웃</button>
-        <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-btn">🌙</button>
+        <!-- 예쁜 원형 아이콘 토글 버튼 -->
+<button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="테마 변경">
+  <span class="theme-icon">🌙</span>
+</button>
       </div>
     </header>
 
