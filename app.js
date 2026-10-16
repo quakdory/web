@@ -1324,3 +1324,186 @@ document.addEventListener('DOMContentLoaded', async () => {
     })
     .subscribe();
 });
+
+// --- 기존 팀 구성 서브 탭 전환 함수 내 드래프트 연동 보완 ---
+function showTeamSubtab(subtabName) {
+  // 모든 뷰 비활성화
+  document.querySelectorAll('.team-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+
+  if (subtabName === 'auto') {
+    document.getElementById('autoView').classList.add('active');
+    document.getElementById('subAutoBtn').classList.add('active');
+  } else if (subtabName === 'draft') {
+    document.getElementById('draftView').classList.add('active');
+    document.getElementById('subDraftBtn').classList.add('active');
+    // 드래프트 탭 진입 시 내전 셀렉트박스 업데이트 및 초기 보드 렌더링
+    initDraftTab();
+  } else if (subtabName === 'auction') {
+    document.getElementById('auctionView').classList.add('active');
+    document.getElementById('subAuctionBtn').classList.add('active');
+  }
+}
+
+// 드래프트 탭 초기화 및 내전 목록 바인딩
+async function initDraftTab() {
+  const draftView = document.getElementById('draftView');
+  if (!draftState.active) {
+    draftView.innerHTML = `
+      <h3>📋 스네이크 드래프트 턴제 지명</h3>
+      <p>팀장이 순서대로 팀원을 지명하는 드래프트 전용 공간입니다.</p>
+      <div class="team-control-box" style="margin-top: 20px;">
+        <h3>드래프트 시작하기</h3>
+        <p>참여 완료된 내전을 선택하고 드래프트를 시작하세요.</p>
+        <div class="team-action-row">
+          <select id="draftScrimSelect">
+            <option value="">내전 목록 불러오는 중...</option>
+          </select>
+          <button class="btn-primary" onclick="startDraftSession()">드래프트 시작</button>
+        </div>
+      </div>
+    `;
+    await loadScrimsForDraftSelect();
+  } else {
+    renderDraftBoard();
+  }
+}
+
+// Supabase 등에서 내전 목록을 가져와 드래프트 셀렉트박스에 채우기
+async function loadScrimsForDraftSelect() {
+  try {
+    const { data, error } = await supabaseClient.from('scrims').select('*').order('created_at', { ascending: false });
+    const selectEl = document.getElementById('draftScrimSelect');
+    if (!selectEl) return;
+
+    if (error || !data || data.length === 0) {
+      selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
+      return;
+    }
+
+    selectEl.innerHTML = '<option value="">내전을 선택하세요</option>' + data.map(scrim => `
+      <option value="${scrim.id}" data-participants='${JSON.stringify(scrim.participants || [])}'>
+        [${scrim.game.toUpperCase()}] ${scrim.title} (${(scrim.participants || []).length}명)
+      </option>
+    `).join('');
+  } catch (err) {
+    console.error('드래프트 내전 로드 오류:', err);
+  }
+}
+
+// 드래프트 세션 시작
+function startDraftSession() {
+  const selectEl = document.getElementById('draftScrimSelect');
+  if (!selectEl || !selectEl.value) {
+    alert('드래프트를 진행할 내전을 선택해주세요!');
+    return;
+  }
+
+  const selectedOption = selectEl.options[selectEl.selectedIndex];
+  const participantsStr = selectedOption.getAttribute('data-participants');
+  let participants = [];
+  try {
+    participants = JSON.parse(participantsStr || '[]');
+  } catch (e) {
+    participants = [];
+  }
+
+  if (participants.length === 0) {
+    alert('선택한 내전에 참가한 인원이 없습니다.');
+    return;
+  }
+
+  // 드래프트 상태 초기화
+  draftState.active = true;
+  draftState.scrimId = selectEl.value;
+  draftState.teamA = [];
+  draftState.teamB = [];
+  draftState.availablePlayers = [...participants];
+  draftState.turn = 'A';
+  draftState.round = 1;
+
+  renderDraftBoard();
+}
+
+// --- 스네이크 드래프트 시스템 상태 및 로직 ---
+let draftState = {
+  active: false,
+  scrimId: null,
+  teamA: [],
+  teamB: [],
+  availablePlayers: [],
+  turn: 'A', // 'A' 또는 'B'
+  round: 1
+};
+
+// 드래프트 화면 렌더링
+function renderDraftBoard() {
+  const draftView = document.getElementById('draftView');
+  if (!draftView) return;
+
+  draftView.innerHTML = `
+    <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h3>📋 스네이크 드래프트 지명 중 (Round ${draftState.round})</h3>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span class="badge" style="background: linear-gradient(135deg, #6366f1, #818cf8); color: white; padding: 6px 14px;">
+          현재 차례: ${draftState.turn === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)'}
+        </span>
+        <button class="btn-danger-sm" onclick="resetDraft()">드래프트 초기화</button>
+      </div>
+    </div>
+
+    <div class="team-result-grid" style="margin-bottom: 20px;">
+      <div class="team-card-box team-a" style="border-color: ${draftState.turn === 'A' ? '#6366f1' : 'var(--border-color)'};">
+        <h4 style="color: #6366f1;">BLUE TEAM (A팀)</h4>
+        <ul class="team-member-list">
+          ${draftState.teamA.map(p => `<li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">${p.nickname || p.username} <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier || 'Unranked'})</span></li>`).join('') || '<li class="empty-notice">지명된 선수가 없습니다.</li>'}
+        </ul>
+      </div>
+      <div class="team-card-box team-b" style="border-color: ${draftState.turn === 'B' ? '#f43f5e' : 'var(--border-color)'};">
+        <h4 style="color: #f43f5e;">RED TEAM (B팀)</h4>
+        <ul class="team-member-list">
+          ${draftState.teamB.map(p => `<li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">${p.nickname || p.username} <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier || 'Unranked'})</span></li>`).join('') || '<li class="empty-notice">지명된 선수가 없습니다.</li>'}
+        </ul>
+      </div>
+    </div>
+
+    <div class="team-control-box">
+      <h4>지명 가능한 대기 선수 목록 (클릭하여 지명)</h4>
+      <div class="agent-image-picker" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-height: 250px; margin-top: 10px;">
+        ${draftState.availablePlayers.map((player, idx) => `
+          <div class="agent-btn" onclick="selectDraftPlayer(${idx})" style="padding: 12px; text-align: center; cursor: pointer;">
+            <div style="font-weight: 700; color: var(--text-color);">${player.nickname || player.username}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">티어: ${player.tier || 'Unranked'}</div>
+          </div>
+        `).join('') || '<div class="placeholder-info" style="grid-column: 1 / -1; text-align: center; padding: 20px;">모든 선수가 지명되었습니다! 🎉</div>'}
+      </div>
+    </div>
+  `;
+}
+
+// 선수 지명 실행 (스네이크 룰 적용: A -> B -> B -> A 방식 등 턴 교대)
+function selectDraftPlayer(index) {
+  const selectedPlayer = draftState.availablePlayers.splice(index, 1)[0];
+  
+  if (draftState.turn === 'A') {
+    draftState.teamA.push(selectedPlayer);
+  } else {
+    draftState.teamB.push(selectedPlayer);
+  }
+
+  // 간단한 교대 턴 전환 로직 (필요에 따라 스네이크 순서 확장 가능)
+  if (draftState.turn === 'A') {
+    draftState.turn = 'B';
+  } else {
+    draftState.turn = 'A';
+    draftState.round++;
+  }
+
+  renderDraftBoard();
+}
+
+// 드래프트 초기화
+function resetDraft() {
+  draftState.active = false;
+  initDraftTab();
+}
