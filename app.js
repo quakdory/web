@@ -1338,10 +1338,20 @@ function renderMapVoteCards(scrim) {
     return true;
   });
 
+  // 👑 관리자 전용: 맵 투표 전체 초기화 버튼
+  const adminResetBtnHtml = currentProfile?.is_admin ? `
+    <button class="btn-danger-sm" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminResetMapVotes('${scrim.id}')">
+      💥 [관리자] 맵 투표 전체 초기화
+    </button>
+  ` : '';
+
   let html = `
-    <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <span style="font-size: 1rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}] ${scrim.title} 맵 투표 현황</span>
-      <span style="font-size: 0.85rem; color: var(--text-secondary);">참가자 인증 완료 ✔️ (1인 1표)</span>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">참가자 인증 완료 ✔️ (1인 1표)</span>
+        ${adminResetBtnHtml}
+      </div>
     </div>
     ${modeTabsHtml}
     <div class="map-card-grid">
@@ -2062,3 +2072,34 @@ window.showTab = function(tabId) {
     loadAdminUserManager(); // 관리자 탭 열릴 때 유저 목록도 자동 로드
   }
 };
+
+// 👑 관리자 전용: 해당 내전의 맵 투표 전체 초기화
+async function adminResetMapVotes(scrimId) {
+  if (!currentProfile?.is_admin) {
+    alert('관리자 권한이 없습니다.');
+    return;
+  }
+
+  if (!confirm('정말 이 내전의 모든 맵 투표 기록을 전체 취소(초기화)하시겠습니까?')) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('scrims')
+    .update({ map_votes: {} })
+    .eq('id', scrimId);
+
+  if (error) {
+    alert('맵 투표 초기화 실패: ' + error.message);
+    return;
+  }
+
+  alert('모든 맵 투표 내역이 성공적으로 초기화되었습니다!');
+
+  // 메모리 상의 내전 객체 갱신 및 화면 재렌더링
+  const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
+  if (selectedScrim) {
+    selectedScrim.map_votes = {};
+    renderMapVoteCards(selectedScrim);
+  }
+}
