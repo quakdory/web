@@ -1065,19 +1065,19 @@ function switchGameTab(gameType) {
 // =============================================================
 const GAME_MAPS = {
   valo: [
-    { name: "스플릿", img: "images/maps/ove/스플릿.webp" },
-    { name: "바인드", img: "images/maps/ove/바인드.webp" },
-    { name: "헤이븐", img: "images/maps/ove/헤이븐.webp" },
-    { name: "어센트", img: "images/maps/ove/어센트.webp" },
-    { name: "아이스박스", img: "images/maps/ove/아이스박스.webp" },
-    { name: "브리즈", img: "images/maps/ove/브리즈.webp" },
-    { name: "프랙처", img: "images/maps/ove/프랙처.webp" },
-    { name: "펄", img: "images/maps/ove/펄.webp" },
-    { name: "로터스", img: "images/maps/ove/로터스.webp" },
-    { name: "선셋", img: "images/maps/ove/선셋.webp" },
-    { name: "어비스", img: "images/maps/ove/어비스.webp" },
-    { name: "코로드", img: "images/maps/ove/코로드.webp" },
-    { name: "서밋", img: "images/maps/ove/서밋.webp" },
+    { name: "스플릿", img: "images/maps/val/스플릿.webp" },
+    { name: "바인드", img: "images/maps/val/바인드.webp" },
+    { name: "헤이븐", img: "images/maps/val/헤이븐.webp" },
+    { name: "어센트", img: "images/maps/val/어센트.webp" },
+    { name: "아이스박스", img: "images/maps/val/아이스박스.webp" },
+    { name: "브리즈", img: "images/maps/val/브리즈.webp" },
+    { name: "프랙처", img: "images/maps/val/프랙처.webp" },
+    { name: "펄", img: "images/maps/val/펄.webp" },
+    { name: "로터스", img: "images/maps/val/로터스.webp" },
+    { name: "선셋", img: "images/maps/val/선셋.webp" },
+    { name: "어비스", img: "images/maps/val/어비스.webp" },
+    { name: "코로드", img: "images/maps/val/코로드.webp" },
+    { name: "서밋", img: "images/maps/val/서밋.webp" },
 
   ],
   ow: [
