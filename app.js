@@ -1940,3 +1940,92 @@ window.showTab = function(tabId) {
     loadAdminScrimManager();
   }
 };
+
+// =============================================================
+// 👑 관리자 전용: 서버 로스터(유저) 목록 조회 및 권한 토글 기능
+// =============================================================
+async function loadAdminUserManager() {
+  if (!currentProfile?.is_admin) {
+    alert('관리자 권한이 없습니다.');
+    return;
+  }
+
+  const container = document.getElementById('adminUserListContainer');
+  if (!container) return;
+  container.innerHTML = '<p class="placeholder-info">유저 목록을 불러오는 중...</p>';
+
+  // profiles 테이블에서 전체 유저 조회
+  const { data: users, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .order('nickname', { ascending: true });
+
+  if (error || !users) {
+    container.innerHTML = '<p class="placeholder-info">유저 목록을 불러오지 못했습니다.</p>';
+    return;
+  }
+
+  if (users.length === 0) {
+    container.innerHTML = '<p class="placeholder-info">등록된 유저가 없습니다.</p>';
+    return;
+  }
+
+  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+  users.forEach(user => {
+    const isAdmin = user.is_admin;
+    const nickname = user.nickname || '닉네임 없음';
+    const userId = user.id;
+
+    html += `
+      <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-color);">${nickname}</span>
+          <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '일반 로스터'}</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
+        </div>
+        <div>
+          ${userId === currentUser?.id ? 
+            '<span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold;">(본인 계정)</span>' : 
+            `<button class="${isAdmin ? 'btn-secondary' : 'btn-primary'}" style="padding: 6px 14px; font-size: 0.85rem;" onclick="toggleAdminRole('${userId}',${isAdmin})">
+              ${isAdmin ? '관리자 권한 회수' : '관리자 권한 부여'}
+            </button>`
+          }
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// 유저의 관리자 권한 토글 함수
+async function toggleAdminRole(userId, currentStatus) {
+  if (!currentProfile?.is_admin) return;
+
+  const nextStatus = !currentStatus;
+  const confirmMsg = nextStatus ? '해당 유저에게 관리자 권한을 부여하시겠습니까?' : '해당 유저의 관리자 권한을 회수하시겠습니까?';
+  if (!confirm(confirmMsg)) return;
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update({ is_admin: nextStatus })
+    .eq('id', userId);
+
+  if (error) {
+    alert('권한 변경 실패: ' + error.message);
+    return;
+  }
+
+  alert('권한이 성공적으로 변경되었습니다!');
+  loadAdminUserManager(); // 목록 새로고침
+}
+
+// 관리자 탭 진입 시 자동 로드 함수 확장
+const originalShowTabForAdminCenter = window.showTab;
+window.showTab = function(tabId) {
+  if (typeof originalShowTabForAdminCenter === 'function') originalShowTabForAdminCenter(tabId);
+  if (tabId === 'adminTab') {
+    loadAdminScrimManager();
+    loadAdminUserManager(); // 관리자 탭 열릴 때 유저 목록도 자동 로드
+  }
+};
