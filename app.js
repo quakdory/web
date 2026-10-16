@@ -1061,12 +1061,30 @@ function switchGameTab(gameType) {
 }
 
 // =============================================================
-// 맵 투표 기능 로직
+// 맵 투표 기능 로직 (이미지 썸네일 카드형)
 // =============================================================
 const GAME_MAPS = {
-  valo: ["어센트", "헤이븐", "바인드", "스플릿", "로터스", "선셋", "아이스박스", "브리즈"],
-  ow: ["일리오스", "리알토", "왕의 길", "네팔", "아이헨발데", "콜로세오", "서킷 로얄"],
-  lol: ["소환사의 협곡", "칼바람 나락"]
+  valo: [
+    { name: "어센트", img: "https://media.valorant-api.com/maps/7edd9e53-491b-270f-bc23-a6a645701d9d/splash.png" },
+    { name: "헤이븐", img: "https://media.valorant-api.com/maps/2bee0692-4b2b-70a7-097f-4a9039635877/splash.png" },
+    { name: "바인드", img: "https://media.valorant-api.com/maps/2c9d33f3-4151-1126-9dd5-b2d96500b2c3/splash.png" },
+    { name: "스플릿", img: "https://media.valorant-api.com/maps/d1872349-4122-99a6-325a-abe09465a646/splash.png" },
+    { name: "로터스", img: "https://media.valorant-api.com/maps/2fe4ed3a-450a-948b-6d6b-e89a78e680a9/splash.png" },
+    { name: "선셋", img: "https://media.valorant-api.com/maps/925477f4-48e3-522b-b115-738275228633/splash.png" },
+    { name: "아이스박스", img: "https://media.valorant-api.com/maps/e2ad5c54-4114-a870-9641-8f21b95080a2/splash.png" },
+    { name: "브리즈", img: "https://media.valorant-api.com/maps/2fb432be-437a-a13d-d14f-23a46e0b350a/splash.png" }
+  ],
+  ow: [
+    { name: "일리오스", img: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&auto=format&fit=crop" },
+    { name: "리알토", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=600&auto=format&fit=crop" },
+    { name: "왕의 길", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&auto=format&fit=crop" },
+    { name: "네팔", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop" },
+    { name: "아이헨발데", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop" }
+  ],
+  lol: [
+    { name: "소환사의 협곡", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop" },
+    { name: "칼바람 나락", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop" }
+  ]
 };
 
 function loadMapVoteView(gameType = 'valo') {
@@ -1077,19 +1095,23 @@ function loadMapVoteView(gameType = 'valo') {
   const maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
 
   let html = `
-    <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
       <button class="filter-btn ${gameType === 'valo' ? 'active' : ''}" onclick="loadMapVoteView('valo')">발로란트</button>
       <button class="filter-btn ${gameType === 'ow' ? 'active' : ''}" onclick="loadMapVoteView('ow')">오버워치</button>
       <button class="filter-btn ${gameType === 'lol' ? 'active' : ''}" onclick="loadMapVoteView('lol')">롤</button>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+    <div class="map-card-grid">
   `;
 
-  maps.forEach(mapName => {
+  maps.forEach(map => {
     html += `
-      <div class="scrim-card" style="text-align: center; cursor: pointer; transition: transform 0.2s;" onclick="castMapVote('${mapName}')">
-        <h4 style="margin-bottom: 8px;">${mapName}</h4>
-        <p style="font-size: 0.85rem; color: var(--text-secondary);">클릭하여 투표하기</p>
+      <div class="map-vote-card" onclick="castMapVote('${map.name}')">
+        <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
+        <div class="map-card-overlay"></div>
+        <div class="map-card-content">
+          <h3 class="map-title">${map.name}</h3>
+          <span class="map-vote-btn">투표하기</span>
+        </div>
       </div>
     `;
   });
