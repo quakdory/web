@@ -1065,16 +1065,20 @@ function switchGameTab(gameType) {
 // =============================================================
 const GAME_MAPS = {
   valo: [
-    { name: "어센트", img: "https://media.valorant-api.com/maps/7edd9e53-491b-270f-bc23-a6a645701d9d/splash.png" },
-    { name: "헤이븐", img: "https://media.valorant-api.com/maps/2bee0692-4b2b-70a7-097f-4a9039635877/splash.png" },
-    { name: "바인드", img: "https://media.valorant-api.com/maps/2c9d33f3-4151-1126-9dd5-b2d96500b2c3/splash.png" },
-    { name: "스플릿", img: "https://media.valorant-api.com/maps/d1872349-4122-99a6-325a-abe09465a646/splash.png" },
-    { name: "로터스", img: "https://media.valorant-api.com/maps/2fe4ed3a-450a-948b-6d6b-e89a78e680a9/splash.png" },
-    { name: "선셋", img: "https://media.valorant-api.com/maps/925477f4-48e3-522b-b115-738275228633/splash.png" },
-    { name: "아이스박스", img: "https://media.valorant-api.com/maps/e2ad5c54-4114-a870-9641-8f21b95080a2/splash.png" },
-    { name: "브리즈", img: "https://media.valorant-api.com/maps/2fb432be-437a-a13d-d14f-23a46e0b350a/splash.png" },
-    { name: "펄", img: "https://media.valorant-api.com/maps/fd2673d6-4f2d-881b-8690-e186a9d600d8/splash.png" },
-    { name: "어비스", img: "https://media.valorant-api.com/maps/22403790-4d74-3269-57a4-848e02d8f766/splash.png" }
+    { name: "스플릿", img: "images/maps/ove/스플릿.webp" },
+    { name: "바인드", img: "images/maps/ove/바인드.webp" },
+    { name: "헤이븐", img: "images/maps/ove/헤이븐.webp" },
+    { name: "어센트", img: "images/maps/ove/어센트.webp" },
+    { name: "아이스박스", img: "images/maps/ove/아이스박스.webp" },
+    { name: "브리즈", img: "images/maps/ove/브리즈.webp" },
+    { name: "프랙처", img: "images/maps/ove/프랙처.webp" },
+    { name: "펄", img: "images/maps/ove/펄.webp" },
+    { name: "로터스", img: "images/maps/ove/로터스.webp" },
+    { name: "선셋", img: "images/maps/ove/선셋.webp" },
+    { name: "어비스", img: "images/maps/ove/어비스.webp" },
+    { name: "코로드", img: "images/maps/ove/코로드.webp" },
+    { name: "서밋", img: "images/maps/ove/서밋.webp" },
+
   ],
   ow: [
     { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.webp" },
