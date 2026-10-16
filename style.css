@@ -245,28 +245,35 @@ body {
   flex-wrap: wrap;
 }
 
-.game-filter .filter-btn {
+/* --- 프로젝트 전체 필터 버튼 (.filter-btn) 통합 스타일 --- */
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 18px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
   border-radius: 10px;
-  color: var(--text-color, #fff);
+  color: var(--text-color, #ffffff);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease-in-out;
+  outline: none;
 }
 
-.game-filter .filter-btn:hover {
+.filter-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--primary-color, #6366f1);
+  transform: translateY(-1px);
 }
 
-.game-filter .filter-btn.active {
+.filter-btn.active {
   background: var(--primary-color, #6366f1) !important;
   color: #ffffff !important;
   border-color: var(--primary-color, #6366f1) !important;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  font-weight: 700;
 }
 
 .user-info { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; font-weight: 600; }
