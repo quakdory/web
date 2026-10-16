@@ -398,10 +398,10 @@ async function checkAuthState() {
 
     if (badgeElem) {
       if (profile?.is_admin) {
-        badgeElem.textContent = '👑 관리자';
+        badgeElem.textContent = '관리자';
         badgeElem.classList.add('admin');
       } else {
-        badgeElem.textContent = '일반유저';
+        badgeElem.textContent = '로스터';
         badgeElem.classList.remove('admin');
       }
     }
