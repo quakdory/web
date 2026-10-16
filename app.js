@@ -1369,10 +1369,18 @@ async function initDraftTab() {
   }
 }
 
-// Supabase 등에서 내전 목록을 가져와 드래프트 셀렉트박스에 채우기
+// Supabase에서 내전 목록과 실제 참가자 수를 조회하여 드래프트 셀렉트박스에 채우기
 async function loadScrimsForDraftSelect() {
   try {
-    const { data, error } = await supabaseClient.from('scrims').select('*').order('created_at', { ascending: false });
+    // scrim_participants 조인을 통해 실제 참여 인원 수 파악
+    const { data, error } = await supabaseClient.from('scrims').select(`
+      id,
+      title,
+      game,
+      max_players,
+      scrim_participants ( user_id )
+    `).order('created_at', { ascending: false });
+
     const selectEl = document.getElementById('draftScrimSelect');
     if (!selectEl) return;
 
@@ -1381,48 +1389,79 @@ async function loadScrimsForDraftSelect() {
       return;
     }
 
-    selectEl.innerHTML = '<option value="">내전을 선택하세요</option>' + data.map(scrim => `
-      <option value="${scrim.id}" data-participants='${JSON.stringify(scrim.participants || [])}'>
-        [${scrim.game.toUpperCase()}] ${scrim.title} (${(scrim.participants || []).length}명)
-      </option>
-    `).join('');
+    selectEl.innerHTML = '<option value="">내전을 선택하세요</option>' + data.map(scrim => {
+      const count = scrim.scrim_participants ? scrim.scrim_participants.length : 0;
+      return `
+        <option value="${scrim.id}">
+          [${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)
+        </option>
+      `;
+    }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
   }
 }
 
-// 드래프트 세션 시작
-function startDraftSession() {
+// 드래프트 세션 시작 (선택한 내전의 참가자와 프로필 정보를 정확히 조회)
+async function startDraftSession() {
   const selectEl = document.getElementById('draftScrimSelect');
   if (!selectEl || !selectEl.value) {
     alert('드래프트를 진행할 내전을 선택해주세요!');
     return;
   }
 
-  const selectedOption = selectEl.options[selectEl.selectedIndex];
-  const participantsStr = selectedOption.getAttribute('data-participants');
-  let participants = [];
+  const scrimId = selectEl.value;
+
   try {
-    participants = JSON.parse(participantsStr || '[]');
-  } catch (e) {
-    participants = [];
+    // 해당 내전의 참가자 목록과 프로필 정보(티어, 닉네임 등)를 안전하게 조인해서 가져오기
+    const { data: participantsData, error } = await supabaseClient
+      .from('scrim_participants')
+      .select(`
+        user_id,
+        profiles (
+          nickname,
+          valo_info,
+          ow_info,
+          lol_info
+        )
+      `)
+      .eq('scrim_id', scrimId);
+
+    if (error || !participantsData || participantsData.length === 0) {
+      alert('선택한 내전에 참가한 인원이 없거나 정보를 불러오지 못했습니다.');
+      return;
+    }
+
+    // 드래프트 대기 선수 목록 포맷팅 (닉네임과 티어 추출)
+    const formattedPlayers = participantsData.map(p => {
+      const profile = p.profiles || {};
+      const nickname = profile.nickname || '알 수 없음';
+      
+      // 발로란트 티어를 기본값으로 우선 반영 (원하시는 게임별 티어로 확장 가능)
+      const valo = profile.valo_info || {};
+      const tier = valo.tier || 'Unranked';
+
+      return {
+        user_id: p.user_id,
+        nickname: nickname,
+        tier: tier
+      };
+    });
+
+    // 드래프트 상태 초기화
+    draftState.active = true;
+    draftState.scrimId = scrimId;
+    draftState.teamA = [];
+    draftState.teamB = [];
+    draftState.availablePlayers = formattedPlayers;
+    draftState.turn = 'A';
+    draftState.round = 1;
+
+    renderDraftBoard();
+  } catch (err) {
+    console.error('드래프트 시작 중 오류 발생:', err);
+    alert('드래프트를 시작하는 중 문제가 발생했습니다.');
   }
-
-  if (participants.length === 0) {
-    alert('선택한 내전에 참가한 인원이 없습니다.');
-    return;
-  }
-
-  // 드래프트 상태 초기화
-  draftState.active = true;
-  draftState.scrimId = selectEl.value;
-  draftState.teamA = [];
-  draftState.teamB = [];
-  draftState.availablePlayers = [...participants];
-  draftState.turn = 'A';
-  draftState.round = 1;
-
-  renderDraftBoard();
 }
 
 // --- 스네이크 드래프트 시스템 상태 및 로직 ---
@@ -1454,15 +1493,15 @@ function renderDraftBoard() {
 
     <div class="team-result-grid" style="margin-bottom: 20px;">
       <div class="team-card-box team-a" style="border-color: ${draftState.turn === 'A' ? '#6366f1' : 'var(--border-color)'};">
-        <h4 style="color: #6366f1;">BLUE TEAM (A팀)</h4>
+        <h4 style="color: #4f46e5;">BLUE TEAM (A팀)</h4>
         <ul class="team-member-list">
-          ${draftState.teamA.map(p => `<li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">${p.nickname || p.username} <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier || 'Unranked'})</span></li>`).join('') || '<li class="empty-notice">지명된 선수가 없습니다.</li>'}
+          ${draftState.teamA.map(p => `<li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">${p.nickname} <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span></li>`).join('') || '<li class="empty-notice">지명된 선수가 없습니다.</li>'}
         </ul>
       </div>
       <div class="team-card-box team-b" style="border-color: ${draftState.turn === 'B' ? '#f43f5e' : 'var(--border-color)'};">
-        <h4 style="color: #f43f5e;">RED TEAM (B팀)</h4>
+        <h4 style="color: #ff4757;">RED TEAM (B팀)</h4>
         <ul class="team-member-list">
-          ${draftState.teamB.map(p => `<li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">${p.nickname || p.username} <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier || 'Unranked'})</span></li>`).join('') || '<li class="empty-notice">지명된 선수가 없습니다.</li>'}
+          ${draftState.teamB.map(p => `<li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">${p.nickname} <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span></li>`).join('') || '<li class="empty-notice">지명된 선수가 없습니다.</li>'}
         </ul>
       </div>
     </div>
@@ -1472,8 +1511,8 @@ function renderDraftBoard() {
       <div class="agent-image-picker" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-height: 250px; margin-top: 10px;">
         ${draftState.availablePlayers.map((player, idx) => `
           <div class="agent-btn" onclick="selectDraftPlayer(${idx})" style="padding: 12px; text-align: center; cursor: pointer;">
-            <div style="font-weight: 700; color: var(--text-color);">${player.nickname || player.username}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">티어: ${player.tier || 'Unranked'}</div>
+            <div style="font-weight: 700; color: var(--text-color);">${player.nickname}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">티어: ${player.tier}</div>
           </div>
         `).join('') || '<div class="placeholder-info" style="grid-column: 1 / -1; text-align: center; padding: 20px;">모든 선수가 지명되었습니다! 🎉</div>'}
       </div>
@@ -1481,7 +1520,7 @@ function renderDraftBoard() {
   `;
 }
 
-// 선수 지명 실행 (스네이크 룰 적용: A -> B -> B -> A 방식 등 턴 교대)
+// 선수 지명 실행
 function selectDraftPlayer(index) {
   const selectedPlayer = draftState.availablePlayers.splice(index, 1)[0];
   
@@ -1491,7 +1530,7 @@ function selectDraftPlayer(index) {
     draftState.teamB.push(selectedPlayer);
   }
 
-  // 간단한 교대 턴 전환 로직 (필요에 따라 스네이크 순서 확장 가능)
+  // 턴 교대 및 라운드 증가
   if (draftState.turn === 'A') {
     draftState.turn = 'B';
   } else {
