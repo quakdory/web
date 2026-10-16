@@ -190,16 +190,19 @@ body {
 
 .divider { margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border-color); }
 
-/* --- 상단 네비게이션 바 중앙 정렬 및 탭 크기 확대 --- */
+/* --- 1. 상단 네비게이션 바 (블록 구분 및 중앙 정렬 유지) --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 24px;
-  position: relative; /* 중앙 정렬 배치를 위한 기준점 */
+  padding: 14px 28px;
+  position: relative;
+  background: var(--bg-card, #1e1e2e); /* 카드/네비 배경색 */
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); /* 하단 블록 구분선 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* 은은한 입체감 */
 }
 
-/* 탭 버튼 컨테이너를 상단바 중앙으로 배치 */
+/* 탭 버튼 컨테이너 중앙 정렬 */
 .nav-links {
   position: absolute;
   left: 50%;
@@ -209,31 +212,61 @@ body {
   align-items: center;
 }
 
-/* 탭 버튼 스타일 확대 및 고도화 */
+/* 탭 버튼 디자인 */
 .nav-btn {
   padding: 10px 24px;
-  font-size: 1.15rem; /* 버튼 글자 크기 키움 */
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-muted, #a1a1aa);
   background: transparent;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.25s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
-/* 마우스 호버 효과 */
 .nav-btn:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
 }
 
-/* 활성화된 탭 스타일 (현재 선택된 탭 강조) */
 .nav-btn.active-tab-btn {
   color: #ffffff;
   background: var(--primary-color, #6366f1);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+
+/* --- 2. 망가진 게임 필터 버튼(전체, 발로란트 등) 스타일 복구 및 고도화 --- */
+.game-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.game-filter .filter-btn {
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 10px;
+  color: var(--text-color, #fff);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.game-filter .filter-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--primary-color, #6366f1);
+}
+
+.game-filter .filter-btn.active {
+  background: var(--primary-color, #6366f1) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-color, #6366f1) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .user-info { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; font-weight: 600; }
