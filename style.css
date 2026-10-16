@@ -190,49 +190,50 @@ body {
 
 .divider { margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border-color); }
 
-/* 네비게이션 바 */
+/* --- 상단 네비게이션 바 중앙 정렬 및 탭 크기 확대 --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 3rem;
-  background-color: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-lg);
+  padding: 12px 24px;
+  position: relative; /* 중앙 정렬 배치를 위한 기준점 */
 }
 
-.nav-links { display: flex; gap: 10px; }
+/* 탭 버튼 컨테이너를 상단바 중앙으로 배치 */
+.nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
 
-.nav-btn, .filter-btn, .subtab-btn {
-  padding: 9px 18px;
-  border: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-color);
+/* 탭 버튼 스타일 확대 및 고도화 */
+.nav-btn {
+  padding: 10px 24px;
+  font-size: 1.15rem; /* 버튼 글자 크기 키움 */
+  font-weight: 700;
+  color: var(--text-muted, #a1a1aa);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s ease-in-out;
 }
 
-.nav-btn:hover, .filter-btn:hover, .subtab-btn:hover {
-  border-color: var(--primary-color);
-  color: #818cf8;
-  background: rgba(99, 102, 241, 0.1);
+/* 마우스 호버 효과 */
+.nav-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
 }
 
-/* 이미지에서 선택되어 있던 보라색 탭 스타일 고정 */
-.nav-btn.active-tab-btn, .filter-btn.active, .subtab-btn.active {
-  background: linear-gradient(135deg, #6366f1, #818cf8) !important;
-  color: white !important;
-  border-color: transparent !important;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.45) !important;
+/* 활성화된 탭 스타일 (현재 선택된 탭 강조) */
+.nav-btn.active-tab-btn {
+  color: #ffffff;
+  background: var(--primary-color, #6366f1);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
 }
 
 .user-info { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; font-weight: 600; }
