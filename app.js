@@ -1984,8 +1984,11 @@ window.showTab = function(tabId) {
   }
 };
 
+// 전역 변수로 유저 목록 원본 저장
+let cachedAdminUsers = [];
+
 // =============================================================
-// 👑 관리자 전용: 서버 로스터(유저) 목록 조회 및 권한 토글 기능
+// 👑 관리자 전용: 서버 로스터(유저) 목록 조회 및 검색, 강제 닉네임 변경, 권한 토글 기능
 // =============================================================
 async function loadAdminUserManager() {
   if (!currentProfile?.is_admin) {
@@ -2008,12 +2011,29 @@ async function loadAdminUserManager() {
     return;
   }
 
-  if (users.length === 0) {
-    container.innerHTML = '<p class="placeholder-info">등록된 유저가 없습니다.</p>';
+  cachedAdminUsers = users; // 원본 데이터 캐싱
+  renderAdminUserList(cachedAdminUsers);
+}
+
+// 유저 목록 렌더링 (검색 필터 적용 가능)
+function renderAdminUserList(users) {
+  const container = document.getElementById('adminUserListContainer');
+  if (!container) return;
+
+  let html = `
+    <!-- 🔍 닉네임 검색바 -->
+    <div style="margin-bottom: 16px;">
+      <input type="text" id="adminUserSearchInput" placeholder="닉네임으로 유저 검색..." oninput="filterAdminUserList()" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 1rem;" />
+    </div>
+  `;
+
+  if (!users || users.length === 0) {
+    html += '<p class="placeholder-info">검색된 유저가 없습니다.</p>';
+    container.innerHTML = html;
     return;
   }
 
-  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+  html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
   users.forEach(user => {
     const isAdmin = user.is_admin;
     const nickname = user.nickname || '닉네임 없음';
@@ -2021,16 +2041,21 @@ async function loadAdminUserManager() {
 
     html += `
       <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
           <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-color);">${nickname}</span>
           <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '로스터'}</span>
           <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
         </div>
-        <div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <!-- ✏️ 관리자 강제 닉네임 변경 버튼 -->
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminPromptChangeNickname('${userId}', '${nickname}')">
+            닉네임 변경
+          </button>
+          
           ${userId === currentUser?.id ? 
-            '<span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold;">(본인 계정)</span>' : 
+            '<span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; margin-left: 6px;">(본인 계정)</span>' : 
             `<button class="${isAdmin ? 'btn-secondary' : 'btn-primary'}" style="padding: 6px 14px; font-size: 0.85rem;" onclick="toggleAdminRole('${userId}',${isAdmin})">
-              ${isAdmin ? '관리자 권한 회수' : '관리자 권한 부여'}
+              ${isAdmin ? '권한 회수' : '관리자 부여'}
             </button>`
           }
         </div>
@@ -2039,27 +2064,62 @@ async function loadAdminUserManager() {
   });
   html += '</div>';
   container.innerHTML = html;
+
+  // 검색어 입력 중이었다면 포커스 및 값 유지
+  const searchInput = document.getElementById('adminUserSearchInput');
+  const query = window._lastAdminSearchQuery || '';
+  if (searchInput) {
+    searchInput.value = query;
+    // 만약 검색어가 있었다면 필터 재적용
+    if (query) {
+      searchInput.focus();
+    }
+  }
 }
 
-// 유저의 관리자 권한 토글 함수
-async function toggleAdminRole(userId, currentStatus) {
+// 🔍 유저 검색 필터 함수
+function filterAdminUserList() {
+  const searchInput = document.getElementById('adminUserSearchInput');
+  if (!searchInput) return;
+  const query = searchInput.value.trim().toLowerCase();
+  window._lastAdminSearchQuery = query;
+
+  const filtered = cachedAdminUsers.filter(user => {
+    const nick = (user.nickname || '').toLowerCase();
+    const uid = (user.id || '').toLowerCase();
+    return nick.includes(query) || uid.includes(query);
+  });
+
+  // 입력창을 제외한 리스트 부분만 리렌더링하거나 전체 목록 갱신
+  const container = document.getElementById('adminUserListContainer');
+  if (!container) return;
+
+  // 인풋 포커스 유지를 위해 DOM 전체를 통째로 바꾸지 않고 리스트 영역만 갱신
+  renderAdminUserList(filtered);
+}
+
+// ✏️ 관리자가 특정 유저의 닉네임을 강제로 변경하는 함수
+async function adminPromptChangeNickname(userId, currentNickname) {
   if (!currentProfile?.is_admin) return;
 
-  const nextStatus = !currentStatus;
-  const confirmMsg = nextStatus ? '해당 유저에게 관리자 권한을 부여하시겠습니까?' : '해당 유저의 관리자 권한을 회수하시겠습니까?';
-  if (!confirm(confirmMsg)) return;
-
-  const { error } = await supabaseClient
-    .from('profiles')
-    .update({ is_admin: nextStatus })
-    .eq('id', userId);
-
-  if (error) {
-    alert('권한 변경 실패: ' + error.message);
+  const newNickname = prompt(`[${currentNickname}] 유저의 새로운 닉네임을 입력하세요:`, currentNickname);
+  if (newNickname === null) return; // 취소 버튼 누름
+  if (!newNickname.trim()) {
+    alert('변경할 닉네임을 올바르게 입력해 주세요.');
     return;
   }
 
-  alert('권한이 성공적으로 변경되었습니다!');
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update({ nickname: newNickname.trim() })
+    .eq('id', userId);
+
+  if (error) {
+    alert('닉네임 변경 실패: ' + error.message);
+    return;
+  }
+
+  alert('닉네임이 성공적으로 변경되었습니다!');
   loadAdminUserManager(); // 목록 새로고침
 }
 
