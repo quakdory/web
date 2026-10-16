@@ -1061,9 +1061,6 @@ function switchGameTab(gameType) {
 }
 
 // =============================================================
-// 맵 투표 기능 로직 (실시간 DB 연동 및 투표 집계형)
-// =============================================================
-// =============================================================
 // 게임별 맵 정보 및 고화질 배경 이미지 데이터
 // =============================================================
 const GAME_MAPS = {
@@ -1080,13 +1077,42 @@ const GAME_MAPS = {
     { name: "어비스", img: "https://media.valorant-api.com/maps/22403790-4d74-3269-57a4-848e02d8f766/splash.png" }
   ],
   ow: [
-    { name: "일리오스", img: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&auto=format&fit=crop" },
-    { name: "리알토", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop" },
-    { name: "왕의 길", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&auto=format&fit=crop" },
-    { name: "네팔", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&auto=format&fit=crop" },
-    { name: "아이헨발데", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" },
-    { name: "콜로세오", img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&auto=format&fit=crop" },
-    { name: "서킷 로얄", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&auto=format&fit=crop" }
+    { name: "뉴 정크 시티", img: "images/maps/ove/뉴정크시티.webp" },
+    { name: "수라바사", img: "images/maps/ove/수라바사.webp" },
+    { name: "아틀리스", img: "images/maps/ove/아틀리스.webp" },
+    //호위//
+    { name: "샴발리 수도원", img: "images/maps/ove/샴발리.webp" },
+    { name: "서킷 로얄", img: "images/maps/ove/서킷로얄.webp" },
+    { name: "감시기지: 지브롤터", img: "images/maps/ove/지브롤터.webp" },
+    { name: "66번 국도", img: "images/maps/ove/66번 국도.webp" },
+    { name: "도라도", img: "images/maps/ove/도라도.webp" },
+    { name: "리알토", img: "images/maps/ove/리알토.webp" },
+    { name: "쓰레기촌", img: "images/maps/ove/쓰레기촌.webp" },
+    { name: "하바나", img: "images/maps/ove/하바나.webp" },
+    { name: "그림스뵈튼", img: "images/maps/ove/그림스뵈튼.webp" },
+    //쟁탈//
+    { name: "네팔", img: "images/maps/ove/일리오스.webp" },
+    { name: "리장 타워", img: "images/maps/ove/일리오스.webp" },
+    { name: "부산", img: "images/maps/ove/일리오스.webp" },
+    { name: "사모아", img: "images/maps/ove/사모아.webp" },
+    { name: "오아시스", img: "images/maps/ove/오아시스.webp" },
+    { name: "일리오스", img: "images/maps/ove/일리오스.webp" },
+    { name: "남극 반도", img: "images/maps/ove/남극반도.webp" },
+    //혼합//
+    { name: "할리우드", img: "images/maps/ove/할리우드.webp" },
+    { name: "왕의 길", img: "images/maps/ove/왕의 길.webp" },
+    { name: "눔바니", img: "images/maps/ove/눔바니.webp" },
+    { name: "미드타운", img: "images/maps/ove/미드타운.webp" },
+    { name: "블리자드 월드", img: "images/maps/ove/블리자드 월드.webp" },
+    { name: "아이헨발데", img: "images/maps/ove/아이헨발데.webp" },
+    { name: "파라이수", img: "images/maps/ove/파라이수.webp" },
+    { name: "네온 교차로", img: "images/maps/ove/네온 교차로.webp" },
+    //밀기//
+    { name: "뉴 퀸 스트리트", img: "images/maps/ove/뉴퀸스트리트.webp" },
+    { name: "이스페란사", img: "images/maps/ove/이스페란사.webp" },
+    { name: "콜로세오", img: "images/maps/ove/콜로세오.webp" },
+    { name: "루나사피", img: "images/maps/ove/루나사피.webp" },
+
   ],
   lol: [
     { name: "소환사의 협곡", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop" },
