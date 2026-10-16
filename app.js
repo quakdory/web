@@ -1316,7 +1316,7 @@ function renderMapVoteCards(scrim) {
     const hasVotedThisMap = mapVoters.includes(userNick);
 
     html += `
-      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')" style="border-color: ${hasVotedThisMap ? '#10b981' : 'var(--border-color)'};">
+      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')">
         <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
         <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
         <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; z-index: 2;">
@@ -1328,33 +1328,6 @@ function renderMapVoteCards(scrim) {
           </div>
           <span class="map-vote-btn" style="font-size: 0.75rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#d1d5db'}; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px;">
             ${hasVotedThisMap ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}
-          </span>
-        </div>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  container.innerHTML = html;
-
-  maps.forEach(map => {
-    const mapVoters = votes[map.name] || [];
-    const count = mapVoters.length;
-    const hasVotedThisMap = mapVoters.includes(userNick);
-
-    html += `
-      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')" style="cursor: pointer; position: relative; border-radius: 12px; overflow: hidden; border: 2px solid ${hasVotedThisMap ? '#10b981' : 'var(--border-color)'}; background: rgba(255,255,255,0.05); transition: all 0.2s;">
-        <div class="map-card-bg" style="background-image: url('${map.img}'); height: 130px; background-size: cover; background-position: center;"></div>
-        <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2));"></div>
-        <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; display: flex; flex-direction: column; gap: 4px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1rem;">${map.name}</h3>
-            <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
-              🔥 ${count}표
-            </span>
-          </div>
-          <span class="map-vote-btn" style="font-size: 0.8rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#a1a1aa'};">
-            ${hasVotedThisMap ? '✔️ 내 투표 완료 (취소하려면 재클릭)' : '클릭하여 투표하기'}
           </span>
         </div>
       </div>
