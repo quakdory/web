@@ -482,8 +482,32 @@ function updateAgentSelection(type) {
     btn.className = 'agent-btn';
     btn.setAttribute('data-agent', agent.name);
     btn.onclick = () => toggleAgentSelect(type, agent.name, btn);
-    btn.innerHTML = `<img src="${agent.img}" alt="${agent.name}" /><span class="agent-name">${agent.name}</span><div class="select-badge"></div>`;
+    // 평상시에는 우상단 박스(select-badge)를 아예 만들지 않고 깔끔하게 유지합니다.
+    btn.innerHTML = `<img src="${agent.img}" alt="${agent.name}" /><span class="agent-name">${agent.name}</span>`;
     container.appendChild(btn);
+  });
+}
+
+function updateAgentBadges(type) {
+  const container = document.getElementById(type === 'main' ? 'valoMainAgentContainer' : 'valoSubAgentContainer');
+  const selected = tempSelectedAgents[type];
+  
+  container.querySelectorAll('.agent-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    const existingBadge = btn.querySelector('.select-badge');
+    if (existingBadge) existingBadge.remove(); // 선택 해제 시 우상단 박스 제거
+  });
+
+  selected.forEach((agentName, index) => {
+    const btn = container.querySelector(`.agent-btn[data-agent="${agentName}"]`);
+    if (btn) {
+      btn.classList.add('selected');
+      // 선택되었을 때만 우상단 박스와 번호를 생성하여 추가합니다.
+      const badge = document.createElement('div');
+      badge.className = 'select-badge agent-rank-badge';
+      badge.textContent = index + 1;
+      btn.appendChild(badge);
+    }
   });
 }
 
