@@ -2020,20 +2020,40 @@ function renderAdminUserList(users) {
   const container = document.getElementById('adminUserListContainer');
   if (!container) return;
 
-  let html = `
-    <!-- 🔍 닉네임 검색바 -->
-    <div style="margin-bottom: 16px;">
+  const query = window._lastAdminSearchQuery || '';
+
+  // 1. 컨테이너 전체에 검색창이 없다면 처음 한 번만 검색창 뼈대 생성
+  let searchBarWrapper = document.getElementById('adminUserSearchWrapper');
+  if (!searchBarWrapper) {
+    searchBarWrapper = document.createElement('div');
+    searchBarWrapper.id = 'adminUserSearchWrapper';
+    searchBarWrapper.style.marginBottom = '16px';
+    searchBarWrapper.innerHTML = `
       <input type="text" id="adminUserSearchInput" placeholder="닉네임으로 유저 검색..." oninput="filterAdminUserList()" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 1rem;" />
-    </div>
-  `;
+    `;
+    container.prepend(searchBarWrapper);
+  }
+
+  // 검색창 입력값 유지
+  const searchInput = document.getElementById('adminUserSearchInput');
+  if (searchInput && searchInput.value !== query) {
+    searchInput.value = query;
+  }
+
+  // 2. 유저 카드들이 들어갈 리스트 영역을 따로 관리
+  let listWrapper = document.getElementById('adminUserCardListWrapper');
+  if (!listWrapper) {
+    listWrapper = document.createElement('div');
+    listWrapper.id = 'adminUserCardListWrapper';
+    container.appendChild(listWrapper);
+  }
 
   if (!users || users.length === 0) {
-    html += '<p class="placeholder-info">검색된 유저가 없습니다.</p>';
-    container.innerHTML = html;
+    listWrapper.innerHTML = '<p class="placeholder-info">검색된 유저가 없습니다.</p>';
     return;
   }
 
-  html += '<div style="display: flex; flex-direction: column; gap: 10px;">';
+  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
   users.forEach(user => {
     const isAdmin = user.is_admin;
     const nickname = user.nickname || '닉네임 없음';
@@ -2047,7 +2067,6 @@ function renderAdminUserList(users) {
           <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <!-- ✏️ 관리자 강제 닉네임 변경 버튼 -->
           <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminPromptChangeNickname('${userId}', '${nickname}')">
             닉네임 변경
           </button>
@@ -2063,18 +2082,64 @@ function renderAdminUserList(users) {
     `;
   });
   html += '</div>';
-  container.innerHTML = html;
+  listWrapper.innerHTML = html;
+}
 
-  // 검색어 입력 중이었다면 포커스 및 값 유지
+// 🔍 유저 검색 필터 함수 (검색창 포커스가 풀리지 않도록 분리)
+function filterAdminUserList() {
   const searchInput = document.getElementById('adminUserSearchInput');
-  const query = window._lastAdminSearchQuery || '';
-  if (searchInput) {
-    searchInput.value = query;
-    // 만약 검색어가 있었다면 필터 재적용
-    if (query) {
-      searchInput.focus();
-    }
+  if (!searchInput) return;
+  const query = searchInput.value.trim().toLowerCase();
+  window._lastAdminSearchQuery = query;
+
+  const filtered = cachedAdminUsers.filter(user => {
+    const nick = (user.nickname || '').toLowerCase();
+    const uid = (user.id || '').toLowerCase();
+    return nick.includes(query) || uid.includes(query);
+  });
+
+  // 검색창은 그대로 두고 카드 리스트만 갱신
+  const listWrapper = document.getElementById('adminUserCardListWrapper');
+  if (!listWrapper) {
+    renderAdminUserList(filtered);
+    return;
   }
+
+  // 카드 목록 영역만 다시 그리기
+  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+  if (filtered.length === 0) {
+    html = '<p class="placeholder-info">검색된 유저가 없습니다.</p>';
+  } else {
+    filtered.forEach(user => {
+      const isAdmin = user.is_admin;
+      const nickname = user.nickname || '닉네임 없음';
+      const userId = user.id;
+
+      html += `
+        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-color);">${nickname}</span>
+            <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '로스터'}</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminPromptChangeNickname('${userId}', '${nickname}')">
+              닉네임 변경
+            </button>
+            
+            ${userId === currentUser?.id ? 
+              '<span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; margin-left: 6px;">(본인 계정)</span>' : 
+              `<button class="${isAdmin ? 'btn-secondary' : 'btn-primary'}" style="padding: 6px 14px; font-size: 0.85rem;" onclick="toggleAdminRole('${userId}',${isAdmin})">
+                ${isAdmin ? '권한 회수' : '관리자 부여'}
+              </button>`
+            }
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  listWrapper.innerHTML = html;
 }
 
 // 🔍 유저 검색 필터 함수
