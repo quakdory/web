@@ -430,6 +430,18 @@ async function checkAuthState() {
     if (authContainer) authContainer.style.display = 'flex';
     if (appContainer) appContainer.style.display = 'none';
   }
+  // 👑 관리자 권한에 따른 UI 노출 처리
+    const newScrimBtn = document.querySelector('button[onclick="openModal()"]');
+    const adminTabBtn = document.getElementById('navAdminTabBtn');
+
+    if (profile?.is_admin) {
+      if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
+      if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
+    } else {
+      if (newScrimBtn) newScrimBtn.style.display = 'none'; // 일반 로스터는 내전 생성 버튼 숨김
+      if (adminTabBtn) adminTabBtn.style.display = 'none';
+    }
+
 }
 
 supabaseClient.auth.onAuthStateChange(() => {
@@ -1848,3 +1860,83 @@ function resetDraft() {
   draftState.active = false;
   initDraftTab();
 }
+
+// 관리자 전용 내전 및 참가자 강제 관리 기능
+async function loadAdminScrimManager() {
+  if (!currentProfile?.is_admin) {
+    alert('관리자 권한이 없습니다.');
+    return;
+  }
+
+  const container = document.getElementById('adminScrimManagerList');
+  if (!container) return;
+  container.innerHTML = '<p class="placeholder-info">내전 데이터를 불러오는 중...</p>';
+
+  const { data: scrims, error } = await supabaseClient.from('scrims').select(`
+    *,
+    scrim_participants (
+      user_id,
+      profiles ( nickname )
+    )
+  `).order('created_at', { ascending: false });
+
+  if (error || !scrims) {
+    container.innerHTML = '<p class="placeholder-info">내전 데이터를 불러오지 못했습니다.</p>';
+    return;
+  }
+
+  if (scrims.length === 0) {
+    container.innerHTML = '<p class="placeholder-info">생성된 내전이 없습니다.</p>';
+    return;
+  }
+
+  let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+  scrims.forEach(scrim => {
+    const parts = scrim.scrim_participants || [];
+    html += `
+      <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">[${(scrim.game || '').toUpperCase()}] ${scrim.title}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">참가 인원: ${parts.length} / ${scrim.max_players}명 | 개설일: ${new Date(scrim.created_at).toLocaleDateString()}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">
+            참가자 목록: ${parts.length > 0 ? parts.map(p => `<span style="background:rgba(99,102,241,0.15); padding:2px 6px; border-radius:4px; margin-right:4px; display:inline-block;">${p.profiles?.nickname || '알 수 없음'} <button style="background:none; border:none; color:#f43f5e; cursor:pointer; font-weight:bold;" onclick="adminForceKickUser('${scrim.id}', '${p.user_id}')" title="강제 퇴장">×</button></span>`).join('') : '없음'}
+          </div>
+        </div>
+        <div>
+          <button class="btn-danger-sm" style="padding: 8px 14px; font-size: 0.85rem;" onclick="deleteScrim('${scrim.id}'); setTimeout(loadAdminScrimManager, 500);">내전 강제 삭제</button>
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// 관리자가 특정 유저를 내전에서 강제 퇴장(취소)시키는 함수
+async function adminForceKickUser(scrimId, userId) {
+  if (!currentProfile?.is_admin) return;
+  if (!confirm('정말 해당 유저를 이 내전에서 강제 퇴장시키겠습니까?')) return;
+
+  const { error } = await supabaseClient.from('scrim_participants').delete().eq('scrim_id', scrimId).eq('user_id', userId);
+  if (error) {
+    alert('강제 퇴장 실패: ' + error.message);
+    return;
+  }
+
+  // 남은 인원 수 갱신
+  const { data: rem } = await supabaseClient.from('scrim_participants').select('id').eq('scrim_id', scrimId);
+  await supabaseClient.from('scrims').update({ current_players: rem ? rem.length : 0 }).eq('id', scrimId);
+
+  alert('성공적으로 강제 퇴장시켰습니다.');
+  loadAdminScrimManager();
+  fetchScrims();
+}
+
+// 관리자 탭 진입 시 자동 로드 연결
+const originalShowTabForAdmin = window.showTab;
+window.showTab = function(tabId) {
+  if (typeof originalShowTabForAdmin === 'function') originalShowTabForAdmin(tabId);
+  if (tabId === 'adminTab') {
+    loadAdminScrimManager();
+  }
+};
