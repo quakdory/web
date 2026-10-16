@@ -985,24 +985,26 @@ function renderScrims(scrims) {
     participantsHtml += '</div>';
 
     const card = document.createElement('div');
-  card.className = 'scrim-card';
-  const displayGameBadge = scrim.game === 'valo' ? 'VAL' : scrim.game.toUpperCase();
+    card.className = 'scrim-card';
+    const displayGameBadge = scrim.game === 'valo' ? 'VAL' : scrim.game.toUpperCase();
 
-  card.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-      <span class="game-badge ${scrim.game}">${displayGameBadge}</span>
-      ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `<button class="btn-danger-sm" onclick="deleteScrim('${scrim.id}')">삭제</button>` : ''}
-    </div>
-    <h3>${scrim.title}</h3>
-    <p style="margin: 6px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
-    
-    ${participantsHtml}
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span class="game-badge ${scrim.game}">${displayGameBadge}</span>
+        ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `<button class="btn-danger-sm" onclick="deleteScrim('${scrim.id}')">삭제</button>` : ''}
+      </div>
+      <h3>${scrim.title}</h3>
+      <p style="margin: 6px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
+      
+      ${participantsHtml}
 
-    <div style="margin-top: 12px;">
-      ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}
-    </div>
-  `;
-  list.appendChild(card);
+      <div style="margin-top: 12px;">
+        ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}
+      </div>
+    `;
+    list.appendChild(card);
+  }); // <-- 이 부분이 누락되어 있던 foreach 닫는 괄호입니다!
+}
 
 function filterGame(gameType) {
   currentFilter = gameType;
