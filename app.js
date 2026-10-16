@@ -1288,6 +1288,9 @@ function onMapVoteScrimChange() {
   renderMapVoteCards(selectedScrim);
 }
 
+// 현재 선택된 오버워치 맵 모드 필터 (기본값: 'all')
+let currentOwMapMode = 'all';
+
 function renderMapVoteCards(scrim) {
   const container = document.getElementById('mapVoteContainer');
   if (!container) return;
@@ -1305,44 +1308,86 @@ function renderMapVoteCards(scrim) {
     return;
   }
 
-  const maps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
+  const allMaps = GAME_MAPS[gameType] || GAME_MAPS['valo'];
   const votes = scrim.map_votes || {};
   const userNick = currentProfile?.nickname || currentUser.email.split('@')[0];
+
+  // 오버워치(ow)인 경우 모드별 필터 탭 생성
+  let modeTabsHtml = '';
+  if (gameType === 'ow') {
+    const modes = ['all', '호위', '쟁탈', '혼합', '밀기', '플래시포인트'];
+    const modeLabels = { 'all': '전체 보기', '호위': '호위', '쟁탈': '쟁탈', '혼합': '혼합', '밀기': '밀기', '플래시포인트': '플래시포인트' };
+    
+    modeTabsHtml = `
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+        ${modes.map(mode => `
+          <button type="button" class="filter-btn ${currentOwMapMode === mode ? 'active' : ''}" style="padding: 8px 16px; font-size: 0.9rem;" onclick="setOwMapModeFilter('${scrim.id}', '${mode}')">
+            ${modeLabels[mode]}
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // 필터링 적용 (오버워치의 경우 모드가 일치하는 것만 추출)
+  const maps = allMaps.filter(map => {
+    if (gameType === 'ow' && currentOwMapMode !== 'all') {
+      return map.mode === currentOwMapMode;
+    }
+    return true;
+  });
 
   let html = `
     <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
       <span style="font-size: 1rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}] ${scrim.title} 맵 투표 현황</span>
       <span style="font-size: 0.85rem; color: var(--text-secondary);">참가자 인증 완료 ✔️ (1인 1표)</span>
     </div>
+    ${modeTabsHtml}
     <div class="map-card-grid">
   `;
 
-  maps.forEach(map => {
-    const mapVoters = votes[map.name] || [];
-    const count = mapVoters.length;
-    const hasVotedThisMap = mapVoters.includes(userNick);
+  if (maps.length === 0) {
+    html += `<div class="placeholder-info" style="grid-column: 1/-1;">해당 모드에 속한 맵이 없습니다.</div>`;
+  } else {
+    maps.forEach(map => {
+      const mapVoters = votes[map.name] || [];
+      const count = mapVoters.length;
+      const hasVotedThisMap = mapVoters.includes(userNick);
+      const modeBadgeText = map.mode ? `<span style="background: rgba(249,115,22,0.2); color: #f97316; padding: 2px 6px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; margin-left: 6px;">${map.mode}</span>` : '';
 
-    html += `
-      <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')">
-        <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
-        <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
-        <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; z-index: 2;">
-          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px;">
-            <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">${map.name}</h3>
-            <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
-              🔥 ${count}표
+      html += `
+        <div class="map-vote-card ${hasVotedThisMap ? 'voted' : ''}" onclick="submitScrimMapVote('${scrim.id}', '${map.name}')">
+          <div class="map-card-bg" style="background-image: url('${map.img}');"></div>
+          <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
+          <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; z-index: 2;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px;">
+              <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
+                ${map.name} ${modeBadgeText}
+              </h3>
+              <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
+                🔥 ${count}표
+              </span>
+            </div>
+            <span class="map-vote-btn" style="font-size: 0.75rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#d1d5db'}; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px;">
+              ${hasVotedThisMap ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}
             </span>
           </div>
-          <span class="map-vote-btn" style="font-size: 0.75rem; font-weight: bold; color: ${hasVotedThisMap ? '#34d399' : '#d1d5db'}; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px;">
-            ${hasVotedThisMap ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}
-          </span>
         </div>
-      </div>
-    `;
-  });
+      `;
+    });
+  }
 
   html += `</div>`;
   container.innerHTML = html;
+}
+
+// 오버워치 맵 모드 필터 변경 함수
+function setOwMapModeFilter(scrimId, mode) {
+  currentOwMapMode = mode;
+  const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
+  if (selectedScrim) {
+    renderMapVoteCards(selectedScrim);
+  }
 }
 
 // 4. 투표 실행 및 내전 데이터(map_votes 컬럼) 실시간 업데이트 처리
