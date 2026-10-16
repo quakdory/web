@@ -1,19 +1,5 @@
-/* 라이트모드 변수 (밝고 깔끔한 화이트/연회색 톤) */
+/* 라이트모드 & 다크모드 통틀어 기존에 사용하시던 시그니처 네온 컬러 고정 */
 :root {
-  --bg-color: #f8fafc;
-  --card-bg: rgba(255, 255, 255, 0.9);
-  --text-color: #0f172a;
-  --text-muted: #64748b;
-  --primary-color: #0284c7;
-  --primary-hover: #0369a1;
-  --accent-color: #e11d48;
-  --border-color: rgba(2, 132, 199, 0.2);
-  --shadow-glow: 0 0 25px rgba(2, 132, 199, 0.15);
-  --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
-}
-
-/* 다크모드 변수 (기존에 사용하시던 어두운 배경과 네온 블루 계열 복원) */
-body.dark-mode {
   --bg-color: #070913;
   --card-bg: rgba(17, 24, 39, 0.75);
   --text-color: #f3f4f6;
@@ -24,6 +10,19 @@ body.dark-mode {
   --border-color: rgba(56, 189, 248, 0.2);
   --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.15);
   --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode {
+  --bg-color: #030712;
+  --card-bg: rgba(15, 23, 42, 0.85);
+  --text-color: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary-color: #818cf8;
+  --primary-hover: #6366f1;
+  --accent-color: #f43f5e;
+  --border-color: rgba(129, 140, 248, 0.25);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+  --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
 }
 
 * { box-sizing: border-box; }
@@ -103,7 +102,7 @@ body {
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.2);
   color: var(--text-color);
   font-size: 0.95rem;
   transition: all 0.25s ease;
@@ -197,14 +196,14 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 3rem;
-  background-color: var(--card-bg);
+  background-color: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .nav-links { display: flex; gap: 10px; }
