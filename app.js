@@ -537,7 +537,7 @@ function updateOwAgentSelection(type) {
   });
 }
 
-  if (!container) return;
+  if (!container)return;
   container.innerHTML = '';
   tempOwSelectedAgents[type] = [];
 
