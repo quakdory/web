@@ -1063,6 +1063,9 @@ function switchGameTab(gameType) {
 // =============================================================
 // 맵 투표 기능 로직 (실시간 DB 연동 및 투표 집계형)
 // =============================================================
+// =============================================================
+// 게임별 맵 정보 및 고화질 배경 이미지 데이터
+// =============================================================
 const GAME_MAPS = {
   valo: [
     { name: "어센트", img: "https://media.valorant-api.com/maps/7edd9e53-491b-270f-bc23-a6a645701d9d/splash.png" },
@@ -1072,18 +1075,22 @@ const GAME_MAPS = {
     { name: "로터스", img: "https://media.valorant-api.com/maps/2fe4ed3a-450a-948b-6d6b-e89a78e680a9/splash.png" },
     { name: "선셋", img: "https://media.valorant-api.com/maps/925477f4-48e3-522b-b115-738275228633/splash.png" },
     { name: "아이스박스", img: "https://media.valorant-api.com/maps/e2ad5c54-4114-a870-9641-8f21b95080a2/splash.png" },
-    { name: "브리즈", img: "https://media.valorant-api.com/maps/2fb432be-437a-a13d-d14f-23a46e0b350a/splash.png" }
+    { name: "브리즈", img: "https://media.valorant-api.com/maps/2fb432be-437a-a13d-d14f-23a46e0b350a/splash.png" },
+    { name: "펄", img: "https://media.valorant-api.com/maps/fd2673d6-4f2d-881b-8690-e186a9d600d8/splash.png" },
+    { name: "어비스", img: "https://media.valorant-api.com/maps/22403790-4d74-3269-57a4-848e02d8f766/splash.png" }
   ],
   ow: [
-    { name: "일리오스", img: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&auto=format&fit=crop" },
-    { name: "리알토", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=600&auto=format&fit=crop" },
-    { name: "왕의 길", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&auto=format&fit=crop" },
-    { name: "네팔", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop" },
-    { name: "아이헨발데", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop" }
+    { name: "일리오스", img: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&auto=format&fit=crop" },
+    { name: "리알토", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop" },
+    { name: "왕의 길", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&auto=format&fit=crop" },
+    { name: "네팔", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&auto=format&fit=crop" },
+    { name: "아이헨발데", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" },
+    { name: "콜로세오", img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&auto=format&fit=crop" },
+    { name: "서킷 로얄", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&auto=format&fit=crop" }
   ],
   lol: [
-    { name: "소환사의 협곡", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop" },
-    { name: "칼바람 나락", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop" }
+    { name: "소환사의 협곡", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop" },
+    { name: "칼바람 나락", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop" }
   ]
 };
 
