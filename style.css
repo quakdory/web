@@ -355,7 +355,7 @@ body {
 /* 티어 선택기 스타일 (크기 확대) */
 .tier-image-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
 .tier-btn { background: var(--card-bg); border: 2px solid var(--border-color); padding: 12px 8px; cursor: pointer; border-radius: 14px; display: flex; flex-direction: column; align-items: center; transition: all 0.2s; }
-.tier-btn img { width: 44px; height: 44px; object-fit: contain; }
+.tier-btn img { width: 56px; height: 56px; object-fit: contain; }
 .tier-name { font-size: 12px; font-weight: 800; margin-top: 8px; color: var(--text-muted); }
 .tier-btn.selected { border-color: var(--primary-color); background: rgba(99, 102, 241, 0.15); box-shadow: 0 0 15px rgba(99, 102, 241, 0.35); }
 .tier-btn.selected .tier-name { color: var(--primary-color); font-weight: 900; }
