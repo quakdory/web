@@ -1105,10 +1105,19 @@ function renderTeamList(elementId, teamMembers) {
   });
 }
 
+// 프로필 모달 내 게임별 서브 탭 전환 함수
 function switchGameTab(gameType) {
-  document.querySelectorAll('.game-profile-view').forEach(view => view.classList.remove('active'));
-  document.querySelectorAll('.game-subtab-btn').forEach(btn => btn.classList.remove('active'));
+  // 모든 게임별 프로필 뷰를 숨김 처리
+  document.querySelectorAll('.game-profile-view').forEach(view => {
+    view.classList.remove('active');
+  });
+  
+  // 모든 게임 서브 탭 버튼의 active 클래스 제거
+  document.querySelectorAll('.game-subtab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
 
+  // 선택한 게임의 뷰와 버튼만 활성화
   const targetView = document.getElementById('gameView' + gameType.charAt(0).toUpperCase() + gameType.slice(1));
   const targetBtn = document.getElementById('gameTab' + gameType.charAt(0).toUpperCase() + gameType.slice(1) + 'Btn');
 
