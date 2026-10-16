@@ -730,3 +730,40 @@ select option:checked {
   background-color: #6366f1 !important; /* 강조 포인트 컬러 (보라/파랑) */
   color: #ffffff !important;
 }
+
+/* --- 팀 구성 탭 내 서브 탭 버튼 (자동 팀 나누기, 드래프트, 경매) 전용 스타일 --- */
+.team-subtabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.team-subtabs .subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 12px;
+  color: var(--text-muted, #a1a1aa);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.team-subtabs .subtab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.team-subtabs .subtab-btn.active {
+  background: var(--primary-color, #6366f1) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-color, #6366f1) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  font-weight: 700;
+}
