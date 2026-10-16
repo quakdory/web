@@ -1489,10 +1489,11 @@ function showPlayerProfileModal(player, gameType = 'valo') {
         imgUrl = `https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/img/champion/${enId}.png`;
       }
 
+      const rankNum = idx + 1;
       html += `
-        <div style="position: relative; width: 36px; height: 36px;" title="${name} (${idx + 1순위})">
+        <div style="position: relative; width: 36px; height: 36px;" title="${name} (${rankNum}순위)">
           <img src="${imgUrl}" alt="${name}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);" onerror="this.src='https://via.placeholder.com/36?text=?'" />
-          <span style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-color); color: #fff; font-size: 10px; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">${idx + 1}</span>
+          <span style="position: absolute; bottom: -4px; right: -4px; background: var(--primary-color); color: #fff; font-size: 10px; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">${rankNum}</span>
         </div>
       `;
     });
