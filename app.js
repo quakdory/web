@@ -1139,7 +1139,7 @@ async function loadMapVoteView(gameType = 'valo') {
           <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 4px;">
             <h3 class="map-title" style="margin: 0;">${map.name}</h3>
             <span style="background: ${isMyVote ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">
-              🔥 ${count표 || count + '표'}
+              🔥 ${count}표
             </span>
           </div>
           <span class="map-vote-btn">${isMyVote ? '✔️ 내 투표 완료' : '클릭하여 투표하기'}</span>
