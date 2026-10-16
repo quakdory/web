@@ -769,16 +769,22 @@ function showTab(tabId) {
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab-btn'));
   
   const targetTab = document.getElementById(tabId);
-  if (targetTab) targetTab.classList.add('active');
+  if (targetTab) {
+    targetTab.classList.add('active');
+  }
   
   const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn');
-  if (targetBtn) targetBtn.classList.add('active-tab-btn');
+  if (targetBtn) {
+    targetBtn.classList.add('active-tab-btn');
+  }
 
   if (tabId === 'team') showTeamSubtab('auto');
   
-  // 💡 '맵 투표' 탭을 누르면 발로란트 맵 투표 화면을 즉시 렌더링
+  // 💡 맵 투표 탭을 누를 때 맵 목록 그리기가 확실하게 실행되도록 설정
   if (tabId === 'mapVote') {
-    loadMapVoteView('valo');
+    setTimeout(() => {
+      loadMapVoteView('valo');
+    }, 50);
   }
 }
 
