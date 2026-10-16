@@ -1224,4 +1224,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 앱이 켜질 때 맵 투표 컨테이너도 미리 채워두기
   loadMapVoteView('valo');
+
+  // 💡 [실시간 구독 설정] 다른 사람이 투표하거나 변경했을 때 화면 자동 갱신
+  supabaseClient
+    .channel('public:map_votes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'map_votes' }, (payload) => {
+      // 현재 열려있는 게임 타입 기준으로 화면 새로고침
+      const activeFilterBtn = document.querySelector('#mapVoteContainer .filter-btn.active');
+      let currentGame = 'valo';
+      if (activeFilterBtn) {
+        const text = activeFilterBtn.textContent;
+        if (text.includes('오버워치')) currentGame = 'ow';
+        else if (text.includes('롤')) currentGame = 'lol';
+      }
+      loadMapVoteView(currentGame);
+    })
+    .subscribe();
 });
