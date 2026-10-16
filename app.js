@@ -1272,7 +1272,6 @@ async function loadMapVoteView(gameType = 'valo', owMode = 'all') {
     <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
       <button class="filter-btn ${gameType === 'valo' ? 'active' : ''}" onclick="loadMapVoteView('valo')">발로란트</button>
       <button class="filter-btn ${gameType === 'ow' ? 'active' : ''}" onclick="loadMapVoteView('ow', 'all')">오버워치</button>
-      <button class="filter-btn ${gameType === 'lol' ? 'active' : ''}" onclick="loadMapVoteView('lol')">롤</button>
     </div>
   `;
 
@@ -1414,7 +1413,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (activeFilterBtn) {
         const text = activeFilterBtn.textContent;
         if (text.includes('오버워치')) currentGame = 'ow';
-        else if (text.includes('롤')) currentGame = 'lol';
       }
       loadMapVoteView(currentGame);
     })
