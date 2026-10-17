@@ -2194,3 +2194,38 @@ function initRealtimeSubscriptions() {
     })
     .subscribe();
 }
+
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB';
+
+async function sendDiscordWebhook(message) {
+  if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('여기에')) return;
+
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: message, // 디스코드 채널에 전송될 텍스트 내용
+      })
+    });
+  } catch (err) {
+    console.error('디스코드 웹훅 전송 실패:', err);
+  }
+}
+
+async function createScrim(e) {
+  e.preventDefault();
+  const game = document.getElementById('scrimGame').value;
+  const title = document.getElementById('scrimTitle').value;
+  const max_players = parseInt(document.getElementById('scrimMax').value, 10);
+
+  const { error } = await supabaseClient.from('scrims').insert([{ game, title, current_players: 1, max_players, status: '모집 중', host_id: currentUser.id }]);
+
+  if (!error) { 
+    closeModal(); 
+    fetchScrims(); 
+
+    // 🚀 디스코드 웹훅 알림 발송!
+    await sendDiscordWebhook(`📢 **새로운 내전이 개설되었습니다!**\n> **[${game.toUpperCase()}]** ${title} (최대 ${max_players}명)\n플랫폼에서 지금 바로 참가해 보세요!`);
+  }
+}
