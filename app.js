@@ -397,7 +397,7 @@ async function checkAuthState() {
       console.error("프로필 조회 에러:", profileError);
     }
 
-    currentProfile = profileData; // 전역 변수에 저장
+    currentProfile = profileData;
 
     const authContainer = document.getElementById('authContainer');
     const appContainer = document.getElementById('appContainer');
@@ -420,7 +420,6 @@ async function checkAuthState() {
       }
     }
 
-    // 👑 관리자 권한에 따른 UI 노출 처리 (currentProfile 사용)
     const newScrimBtn = document.querySelector('button[onclick="openModal()"]');
     const adminTabBtn = document.getElementById('navAdminTabBtn');
 
@@ -428,7 +427,7 @@ async function checkAuthState() {
       if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
       if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
     } else {
-      if (newScrimBtn) newScrimBtn.style.display = 'none'; // 일반 로스터는 내전 생성 버튼 숨김
+      if (newScrimBtn) newScrimBtn.style.display = 'none';
       if (adminTabBtn) adminTabBtn.style.display = 'none';
     }
 
@@ -666,7 +665,6 @@ function openProfileModal() {
   document.getElementById('currentPassword').value = '';
   document.getElementById('editPassword').value = '';
 
-  // 1. 발로란트 정보 로드
   const valo = currentProfile.valo_info || {};
   document.getElementById('valoId').value = valo.game_id || '';
   renderTierPicker(valo.tier || 'Unranked');
@@ -691,7 +689,6 @@ function openProfileModal() {
     updateAgentSelection('sub');
   }
 
-  // 2. 오버워치 2 정보 로드
   const ow = currentProfile.ow_info || {};
   document.getElementById('owId').value = ow.game_id || '';
   renderOwTierPicker(ow.tier || '브론즈');
@@ -716,7 +713,6 @@ function openProfileModal() {
     updateOwAgentSelection('sub');
   }
 
-  // 3. 롤 정보 로드
   const lol = currentProfile.lol_info || {};
   document.getElementById('lolId').value = lol.game_id || '';
   document.getElementById('lolTier').value = lol.tier || 'Unranked';
@@ -845,13 +841,19 @@ function showTab(tabId) {
     targetBtn.classList.add('active-tab-btn');
   }
 
-  if (tabId === 'team') showTeamSubtab('auto');
+  if (tabId === 'team') {
+    showTeamSubtab('auto');
+  }
   
-  // 맵 투표 탭을 누를 때 참가 중인 내전 목록 자동 로드
   if (tabId === 'mapVote') {
     setTimeout(() => {
       loadMapVoteScrims();
     }, 50);
+  }
+
+  if (tabId === 'adminTab') {
+    loadAdminScrimManager();
+    loadAdminUserManager();
   }
 }
 
@@ -864,7 +866,11 @@ function showTeamSubtab(subtabId) {
   const targetBtn = document.getElementById('sub' + subtabId.charAt(0).toUpperCase() + subtabId.slice(1) + 'Btn');
   if (targetBtn) targetBtn.classList.add('active');
 
-  if (subtabId === 'auto') loadScrimOptionsForTeamTab();
+  if (subtabId === 'auto') {
+    loadTeamScrimSelect();
+  } else if (subtabId === 'draft') {
+    initDraftTab();
+  }
 }
 
 function goToMain() {
@@ -893,7 +899,6 @@ async function fetchScrims() {
     )
   `).order('created_at', { ascending: false });
 
-  // 💡 필터 조건 적용 (발로란트의 경우 'valo', 'val' 모두 호환되도록 처리)
   if (currentFilter !== 'all') {
     if (currentFilter === 'val' || currentFilter === 'valo') {
       query = query.in('game', ['valo', 'val', 'VALORANT', 'valorant']);
@@ -1023,7 +1028,7 @@ function renderScrims(scrims) {
       </div>
     `;
     list.appendChild(card);
-  }); // <-- 이 부분이 누락되어 있던 foreach 닫는 괄호입니다!
+  });
 }
 
 function filterGame(gameType) {
@@ -1063,35 +1068,39 @@ async function deleteScrim(scrimId) {
   fetchScrims();
 }
 
-async function loadScrimOptionsForTeamTab() {
+// =============================================================
+// 🎲 팀 구성 탭 전용 내전 선택 목록 로드 함수 (통합 보완)
+// =============================================================
+async function loadTeamScrimSelect() {
   const selectEl = document.getElementById('teamScrimSelect');
   if (!selectEl) return;
-  selectEl.innerHTML = '<option value="">내전 로딩 중...</option>';
 
-  // map_votes 컬럼을 제외하고 순수 내전 기본 정보만 안전하게 조회
+  selectEl.innerHTML = '<option value="">내전 목록을 불러오는 중...</option>';
+
   const { data: scrims, error } = await supabaseClient
     .from('scrims')
     .select('id, title, game, current_players, max_players')
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('팀 구성 내전 로딩 에러:', error);
+    console.error('팀 구성 내전 목록 로딩 에러:', error);
     selectEl.innerHTML = '<option value="">내전 목록 로딩 실패</option>';
     return;
   }
 
   if (!scrims || scrims.length === 0) {
-    selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
+    selectEl.innerHTML = '<option value="">등록된 내전이 없습니다.</option>';
     return;
   }
 
-  selectEl.innerHTML = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
+  let html = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
   scrims.forEach(scrim => {
-    const opt = document.createElement('option');
-    opt.value = scrim.id;
-    opt.textContent = `[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)`;
-    selectEl.appendChild(opt);
+    const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
+    const currentCount = scrim.current_players || 0;
+    html += `<option value="${scrim.id}">[${gameLabel}] ${scrim.title} (${currentCount}/${scrim.max_players}명)</option>`;
   });
+
+  selectEl.innerHTML = html;
 }
 
 async function generateBalancedTeamsFromMMR() {
@@ -1102,12 +1111,10 @@ async function generateBalancedTeamsFromMMR() {
     return; 
   }
 
-  // 1. 선택된 내전 정보 조회 (종목 파악)
   const { data: scrim } = await supabaseClient.from('scrims').select('game, title').eq('id', scrimId).single();
   const gameType = scrim ? scrim.game : 'valo';
   const mmrKey = `${gameType}_mmr`;
 
-  // 2. 참가자 목록 및 프로필 내 MMR 정보 조회
   const { data: participants } = await supabaseClient
     .from('scrim_participants')
     .select(`
@@ -1125,7 +1132,6 @@ async function generateBalancedTeamsFromMMR() {
     return; 
   }
 
-  // 3. 각 플레이어별 해당 종목 MMR 추출 및 객체 매핑
   const players = participants.map(m => {
     const p = m.profiles || {};
     let tier = 'Unranked';
@@ -1133,7 +1139,6 @@ async function generateBalancedTeamsFromMMR() {
     else if (gameType === 'ow') tier = p.ow_info?.tier || 'Unranked';
     else if (gameType === 'lol') tier = p.lol_info?.tier || 'Unranked';
 
-    // DB에 저장된 MMR이 없으면 티어 기반 기본 환산값 적용
     const mmr = p[mmrKey] || convertTierToMMR(gameType, tier);
 
     return {
@@ -1143,7 +1148,6 @@ async function generateBalancedTeamsFromMMR() {
     };
   });
 
-  // 4. MMR 내림차순 정렬 후 지그재그(Snake) 방식으로 팀 분배 (총 MMR 합 오차 최소화)
   players.sort((a, b) => b.mmr - a.mmr);
 
   const teamA = [];
@@ -1151,8 +1155,7 @@ async function generateBalancedTeamsFromMMR() {
   let sumA = 0;
   let sumB = 0;
 
-  players.forEach((player, index) => {
-    // 지그재그 방식으로 균등하게 분배
+  players.forEach((player) => {
     if (sumA <= sumB) {
       teamA.push(player);
       sumA += player.mmr;
@@ -1244,8 +1247,6 @@ const GAME_MAPS = {
 // =============================================================
 // 🗺️ 내전 참가자 전용 맵 투표 시스템
 // =============================================================
-
-// 1. 맵 투표 탭 진입 시 로그인 유저가 '참가 중인 내전' 목록 불러오기
 async function loadMapVoteScrims() {
   const selectEl = document.getElementById('mapVoteScrimSelect');
   const container = document.getElementById('mapVoteContainer');
@@ -1259,7 +1260,6 @@ async function loadMapVoteScrims() {
 
   selectEl.innerHTML = '<option value="">참가 중인 내전을 불러오는 중...</option>';
 
-  // scrim_participants 및 scrims 테이블에서 참가 중인 내전 조회 (map_votes 제외)
   const { data: myParticipations, error } = await supabaseClient
     .from('scrim_participants')
     .select(`
@@ -1304,7 +1304,6 @@ async function loadMapVoteScrims() {
   if (container) container.innerHTML = '<div class="placeholder-box">위에서 참가 중인 내전을 선택해 주세요.</div>';
 }
 
-// 2. 내전 드롭다운 변경 시 권한 검증 및 해당 내전 종목 맵 UI 렌더링
 function onMapVoteScrimChange() {
   const selectEl = document.getElementById('mapVoteScrimSelect');
   const container = document.getElementById('mapVoteContainer');
@@ -1319,7 +1318,6 @@ function onMapVoteScrimChange() {
   const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
   if (!selectedScrim) return;
 
-  // 권한 검증: 현재 사용자가 해당 내전의 참가자인지 재확인
   const participants = selectedScrim.scrim_participants || [];
   const isParticipant = participants.some(p => p.user_id === currentUser.id);
 
@@ -1331,7 +1329,6 @@ function onMapVoteScrimChange() {
   renderMapVoteCards(selectedScrim);
 }
 
-// 현재 선택된 오버워치 맵 모드 필터 (기본값: 'all')
 let currentOwMapMode = 'all';
 
 function renderMapVoteCards(scrim) {
@@ -1340,7 +1337,6 @@ function renderMapVoteCards(scrim) {
 
   const gameType = scrim.game;
 
-  // 리그 오브 레전드(lol)는 맵 투표 제외
   if (gameType === 'lol') {
     container.innerHTML = `
       <div class="placeholder-box" style="padding: 30px; text-align: center; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px;">
@@ -1355,7 +1351,6 @@ function renderMapVoteCards(scrim) {
   const votes = scrim.map_votes || {};
   const userNick = currentProfile?.nickname || currentUser.email.split('@')[0];
 
-  // 오버워치(ow)인 경우 모드별 필터 탭 생성
   let modeTabsHtml = '';
   if (gameType === 'ow') {
     const modes = ['all', '호위', '쟁탈', '혼합', '밀기', '플래시포인트'];
@@ -1372,7 +1367,6 @@ function renderMapVoteCards(scrim) {
     `;
   }
 
-  // 필터링 적용
   const maps = allMaps.filter(map => {
     if (gameType === 'ow' && currentOwMapMode !== 'all') {
       return map.mode === currentOwMapMode;
@@ -1380,7 +1374,6 @@ function renderMapVoteCards(scrim) {
     return true;
   });
 
-  // 👑 관리자 전용: 맵 투표 전체 초기화 버튼
   const adminResetBtnHtml = currentProfile?.is_admin ? `
     <button class="btn-danger-sm" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminResetMapVotes('${scrim.id}')">
       💥 [관리자] 맵 투표 전체 초기화
@@ -1414,14 +1407,12 @@ function renderMapVoteCards(scrim) {
           <div class="map-card-overlay" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
           <div class="map-card-content" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; z-index: 2;">
             
-            <!-- 맵 이름 및 모드 뱃지 -->
             <div style="width: 100%; margin-bottom: 6px;">
               <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
                 ${map.name} ${modeBadgeText}
               </h3>
             </div>
 
-            <!-- 하단부: [🔥 X표 뱃지]가 [투표하기 버튼] 왼쪽에 오도록 가로 정렬 -->
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
               <span style="background: ${hasVotedThisMap ? '#10b981' : 'rgba(0,0,0,0.6)'}; color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
                 🔥 ${count}표
@@ -1441,7 +1432,6 @@ function renderMapVoteCards(scrim) {
   container.innerHTML = html;
 }
 
-// 오버워치 맵 모드 필터 변경 함수
 function setOwMapModeFilter(scrimId, mode) {
   currentOwMapMode = mode;
   const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
@@ -1450,7 +1440,6 @@ function setOwMapModeFilter(scrimId, mode) {
   }
 }
 
-// 4. 투표 실행 및 내전 데이터(map_votes 컬럼) 실시간 업데이트 처리
 async function submitScrimMapVote(scrimId, mapName) {
   if (!currentUser || !currentProfile) {
     alert('로그인 후 투표할 수 있습니다.');
@@ -1466,7 +1455,6 @@ async function submitScrimMapVote(scrimId, mapName) {
 
   const userNick = currentProfile.nickname || currentUser.email.split('@')[0];
 
-  // 1인 1표 원칙: 다른 맵에 투표한 기록이 있다면 먼저 제거
   Object.keys(selectedScrim.map_votes).forEach(m => {
     selectedScrim.map_votes[m] = (selectedScrim.map_votes[m] || []).filter(nick => nick !== userNick);
     if (selectedScrim.map_votes[m].length === 0) {
@@ -1503,17 +1491,114 @@ async function submitScrimMapVote(scrimId, mapName) {
   renderMapVoteCards(selectedScrim);
 }
 
-// 5. 탭 전환 시 'mapVote' 탭이면 참가 중인 내전 자동 로드
-const originalShowTab = window.showTab;
-window.showTab = function(tabId) {
-  if (typeof originalShowTab === 'function') originalShowTab(tabId);
-  if (tabId === 'mapVote') {
-    loadMapVoteScrims();
+// 👑 관리자 전용: 해당 내전의 맵 투표 전체 초기화
+async function adminResetMapVotes(scrimId) {
+  if (!currentProfile?.is_admin) {
+    alert('관리자 권한이 없습니다.');
+    return;
   }
-};
+
+  if (!confirm('정말 이 내전의 모든 맵 투표 기록을 전체 취소(초기화)하시겠습니까?')) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('scrims')
+    .update({ map_votes: {} })
+    .eq('id', scrimId);
+
+  if (error) {
+    alert('맵 투표 초기화 실패: ' + error.message);
+    return;
+  }
+
+  alert('모든 맵 투표 내역이 성공적으로 초기화되었습니다!');
+
+  const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
+  if (selectedScrim) {
+    selectedScrim.map_votes = {};
+    renderMapVoteCards(selectedScrim);
+  }
+}
 
 // =============================================================
-// 앱 실행 시 초기화 이벤트 리스너
+// 📈 MMR 시스템 및 ELO 계산 유틸리티
+// =============================================================
+function convertTierToMMR(gameType, tierName) {
+  if (!tierName) return 1200;
+  const lower = tierName.toLowerCase();
+
+  if (gameType === 'valo') {
+    if (lower.includes('iron') || lower.includes('아이언')) return 800;
+    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
+    if (lower.includes('silver') || lower.includes('실버')) return 1200;
+    if (lower.includes('gold') || lower.includes('골드')) return 1400;
+    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
+    if (lower.includes('diamond') || lower.includes('다이아')) return 1800;
+    if (lower.includes('ascendant') || lower.includes('초월자')) return 2000;
+    if (lower.includes('immortal') || lower.includes('불멸')) return 2200;
+    if (lower.includes('radiant') || lower.includes('레디언트')) return 2400;
+  } else if (gameType === 'ow') {
+    if (lower.includes('브론즈')) return 900;
+    if (lower.includes('실버')) return 1100;
+    if (lower.includes('골드')) return 1300;
+    if (lower.includes('플래티넘')) return 1500;
+    if (lower.includes('다이아몬드')) return 1700;
+    if (lower.includes('마스터')) return 1900;
+    if (lower.includes('그랜드마스터')) return 2100;
+    if (lower.includes('챔피언') || lower.includes('챌린저')) return 2300;
+  } else if (gameType === 'lol') {
+    if (lower.includes('iron') || lower.includes('아이언')) return 800;
+    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
+    if (lower.includes('silver') || lower.includes('실버')) return 1200;
+    if (lower.includes('gold') || lower.includes('골드')) return 1400;
+    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
+    if (lower.includes('emerald') || lower.includes('에메랄드')) return 1750;
+    if (lower.includes('diamond') || lower.includes('다이아')) return 1900;
+    if (lower.includes('master') || lower.includes('마스터')) return 2100;
+    if (lower.includes('grandmaster') || lower.includes('그랜드마스터')) return 2300;
+    if (lower.includes('challenger') || lower.includes('챌린저')) return 2500;
+  }
+
+  return 1200;
+}
+
+async function adminPromptChangeMMR(userId, currentNickname, gameType) {
+  if (!currentProfile?.is_admin) return;
+
+  const targetUser = cachedAdminUsers.find(u => u.id === userId);
+  const mmrKey = `${gameType}_mmr`;
+  const currentMMR = targetUser ? (targetUser[mmrKey] || 1200) : 1200;
+  const gameName = gameType === 'valo' ? '발로란트' : gameType === 'ow' ? '오버워치' : '롤';
+
+  const newMMRStr = prompt(`[${currentNickname}] 선수의 ${gameName} MMR 점수를 입력하세요 (현재: ${currentMMR}점):`, currentMMR);
+  if (newMMRStr === null) return;
+
+  const newMMR = parseInt(newMMRStr, 10);
+  if (isNaN(newMMR)) {
+    alert('올바른 숫자 점수를 입력해 주세요.');
+    return;
+  }
+
+  const updateData = {};
+  updateData[mmrKey] = newMMR;
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update(updateData)
+    .eq('id', userId);
+
+  if (error) {
+    alert('MMR 수정 실패: ' + error.message);
+    return;
+  }
+
+  alert(`${gameName} MMR이 ${newMMR}점으로 성공적으로 수정되었습니다!`);
+  loadAdminUserManager();
+}
+
+// =============================================================
+// 앱 실행 시 초기화 이벤트 리스너 및 탭 통합 제어
 // =============================================================
 document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('theme');
@@ -1528,7 +1613,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkAuthState();
 });
 
-// --- 기존 팀 구성 서브 탭 전환 및 드래프트 연동 ---
+// 전역 탭 전환 통합 제어
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab-btn'));
+  
+  const targetTab = document.getElementById(tabId);
+  if (targetTab) {
+    targetTab.classList.add('active');
+  }
+  
+  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn');
+  if (targetBtn) {
+    targetBtn.classList.add('active-tab-btn');
+  }
+
+  if (tabId === 'team') {
+    showTeamSubtab('auto');
+  }
+  
+  if (tabId === 'mapVote') {
+    setTimeout(() => {
+      loadMapVoteScrims();
+    }, 50);
+  }
+
+  if (tabId === 'adminTab') {
+    loadAdminScrimManager();
+    loadAdminUserManager();
+  }
+}
+
 function showTeamSubtab(subtabName) {
   document.querySelectorAll('.team-view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
@@ -1536,6 +1651,7 @@ function showTeamSubtab(subtabName) {
   if (subtabName === 'auto') {
     document.getElementById('autoView').classList.add('active');
     document.getElementById('subAutoBtn').classList.add('active');
+    loadTeamScrimSelect(); // 팀 구성 자동 탭 진입 시 내전 목록 즉시 로드
   } else if (subtabName === 'draft') {
     document.getElementById('draftView').classList.add('active');
     document.getElementById('subDraftBtn').classList.add('active');
@@ -1946,12 +2062,11 @@ function resetDraft() {
   initDraftTab();
 }
 
-// 관리자 전용 내전 및 참가자 강제 관리 기능
+// =============================================================
+// 관리자 센터 관련 기능
+// =============================================================
 async function loadAdminScrimManager() {
-  if (!currentProfile?.is_admin) {
-    alert('관리자 권한이 없습니다.');
-    return;
-  }
+  if (!currentProfile?.is_admin) return;
 
   const container = document.getElementById('adminScrimManagerList');
   if (!container) return;
@@ -1997,7 +2112,6 @@ async function loadAdminScrimManager() {
   container.innerHTML = html;
 }
 
-// 관리자가 특정 유저를 내전에서 강제 퇴장(취소)시키는 함수
 async function adminForceKickUser(scrimId, userId) {
   if (!currentProfile?.is_admin) return;
   if (!confirm('정말 해당 유저를 이 내전에서 강제 퇴장시키겠습니까?')) return;
@@ -2008,7 +2122,6 @@ async function adminForceKickUser(scrimId, userId) {
     return;
   }
 
-  // 남은 인원 수 갱신
   const { data: rem } = await supabaseClient.from('scrim_participants').select('id').eq('scrim_id', scrimId);
   await supabaseClient.from('scrims').update({ current_players: rem ? rem.length : 0 }).eq('id', scrimId);
 
@@ -2017,32 +2130,15 @@ async function adminForceKickUser(scrimId, userId) {
   fetchScrims();
 }
 
-// 관리자 탭 진입 시 자동 로드 연결
-const originalShowTabForAdmin = window.showTab;
-window.showTab = function(tabId) {
-  if (typeof originalShowTabForAdmin === 'function') originalShowTabForAdmin(tabId);
-  if (tabId === 'adminTab') {
-    loadAdminScrimManager();
-  }
-};
-
-// 전역 변수로 유저 목록 원본 저장
 let cachedAdminUsers = [];
 
-// =============================================================
-// 👑 관리자 전용: 서버 로스터(유저) 목록 조회 및 검색, 강제 닉네임 변경, 권한 토글 기능
-// =============================================================
 async function loadAdminUserManager() {
-  if (!currentProfile?.is_admin) {
-    alert('관리자 권한이 없습니다.');
-    return;
-  }
+  if (!currentProfile?.is_admin) return;
 
   const container = document.getElementById('adminUserListContainer');
   if (!container) return;
   container.innerHTML = '<p class="placeholder-info">유저 목록을 불러오는 중...</p>';
 
-  // profiles 테이블에서 전체 유저 조회
   const { data: users, error } = await supabaseClient
     .from('profiles')
     .select('*')
@@ -2053,18 +2149,16 @@ async function loadAdminUserManager() {
     return;
   }
 
-  cachedAdminUsers = users; // 원본 데이터 캐싱
+  cachedAdminUsers = users;
   renderAdminUserList(cachedAdminUsers);
 }
 
-// 유저 목록 렌더링 (검색 필터 적용 가능)
 function renderAdminUserList(users) {
   const container = document.getElementById('adminUserListContainer');
   if (!container) return;
 
   const query = window._lastAdminSearchQuery || '';
 
-  // 1. 컨테이너 전체에 검색창이 없다면 처음 한 번만 검색창 뼈대 생성
   let searchBarWrapper = document.getElementById('adminUserSearchWrapper');
   if (!searchBarWrapper) {
     searchBarWrapper = document.createElement('div');
@@ -2076,13 +2170,11 @@ function renderAdminUserList(users) {
     container.prepend(searchBarWrapper);
   }
 
-  // 검색창 입력값 유지
   const searchInput = document.getElementById('adminUserSearchInput');
   if (searchInput && searchInput.value !== query) {
     searchInput.value = query;
   }
 
-  // 2. 유저 카드들이 들어갈 리스트 영역을 따로 관리
   let listWrapper = document.getElementById('adminUserCardListWrapper');
   if (!listWrapper) {
     listWrapper = document.createElement('div');
@@ -2101,91 +2193,32 @@ function renderAdminUserList(users) {
     const nickname = user.nickname || '닉네임 없음';
     const userId = user.id;
 
+    const valoMMR = user.valo_mmr || convertTierToMMR('valo', user.valo_info?.tier);
+    const owMMR = user.ow_mmr || convertTierToMMR('ow', user.ow_info?.tier);
+    const lolMMR = user.lol_mmr || convertTierToMMR('lol', user.lol_info?.tier);
+
     html += `
       <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-          <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-color);">${nickname}</span>
-          <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '로스터'}</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminPromptChangeNickname('${userId}', '${nickname}')">
-            닉네임 변경
-          </button>
-          
-          ${userId === currentUser?.id ? 
-            '<span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; margin-left: 6px;">(본인 계정)</span>' : 
-            `<button class="${isAdmin ? 'btn-secondary' : 'btn-primary'}" style="padding: 6px 14px; font-size: 0.85rem;" onclick="toggleAdminRole('${userId}',${isAdmin})">
-              ${isAdmin ? '권한 회수' : '관리자 부여'}
-            </button>`
-          }
-        </div>
-      </div>
-    `;
-  });
-  html += '</div>';
-  listWrapper.innerHTML = html;
-
-  // 유저 카드 반복문 내부(renderAdminUserList 안쪽)에 추가할 MMR 영역 예시
-const valoMMR = user.valo_mmr || convertTierToMMR('valo', user.valo_info?.tier);
-const owMMR = user.ow_mmr || convertTierToMMR('ow', user.ow_info?.tier);
-const lolMMR = user.lol_mmr || convertTierToMMR('lol', user.lol_info?.tier);
-
-// HTML 템플릿 내부에 아래 항목 삽입:
-/*
-  <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
-    📊 MMR — 발로: <strong style="color:#ff4757;">${valoMMR}</strong> | 오버: <strong style="color:#f97316;">${owMMR}</strong> | 롤: <strong style="color:#3b82f6;">${lolMMR}</strong>
-  </div>
-  <div style="display: flex; gap: 4px; margin-top: 6px;">
-    <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'valo')">VAL MMR</button>
-    <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'ow')">OW MMR</button>
-    <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'lol')">LoL MMR</button>
-  </div>
-*/
-}
-
-// 🔍 유저 검색 필터 함수 (검색창 포커스가 풀리지 않도록 분리)
-function filterAdminUserList() {
-  const searchInput = document.getElementById('adminUserSearchInput');
-  if (!searchInput) return;
-  const query = searchInput.value.trim().toLowerCase();
-  window._lastAdminSearchQuery = query;
-
-  const filtered = cachedAdminUsers.filter(user => {
-    const nick = (user.nickname || '').toLowerCase();
-    const uid = (user.id || '').toLowerCase();
-    return nick.includes(query) || uid.includes(query);
-  });
-
-  // 검색창은 그대로 두고 카드 리스트만 갱신
-  const listWrapper = document.getElementById('adminUserCardListWrapper');
-  if (!listWrapper) {
-    renderAdminUserList(filtered);
-    return;
-  }
-
-  // 카드 목록 영역만 다시 그리기
-  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
-  if (filtered.length === 0) {
-    html = '<p class="placeholder-info">검색된 유저가 없습니다.</p>';
-  } else {
-    filtered.forEach(user => {
-      const isAdmin = user.is_admin;
-      const nickname = user.nickname || '닉네임 없음';
-      const userId = user.id;
-
-      html += `
-        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-color);">${nickname}</span>
             <span class="badge ${isAdmin ? 'admin' : ''}" style="font-size: 0.75rem;">${isAdmin ? '👑 관리자' : '로스터'}</span>
             <span style="font-size: 0.8rem; color: var(--text-muted);">UUID: ${userId}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            📊 MMR — 발로: <strong style="color:#ff4757;">${valoMMR}</strong> | 오버: <strong style="color:#f97316;">${owMMR}</strong> | 롤: <strong style="color:#3b82f6;">${lolMMR}</strong>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+          <div style="display: flex; gap: 4px;">
+            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'valo')">VAL MMR</button>
+            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'ow')">OW MMR</button>
+            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'lol')">LoL MMR</button>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <button class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="adminPromptChangeNickname('${userId}', '${nickname}')">
               닉네임 변경
             </button>
-            
             ${userId === currentUser?.id ? 
               '<span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; margin-left: 6px;">(본인 계정)</span>' : 
               `<button class="${isAdmin ? 'btn-secondary' : 'btn-primary'}" style="padding: 6px 14px; font-size: 0.85rem;" onclick="toggleAdminRole('${userId}',${isAdmin})">
@@ -2194,14 +2227,13 @@ function filterAdminUserList() {
             }
           </div>
         </div>
-      `;
-    });
-    html += '</div>';
-  }
+      </div>
+    `;
+  });
+  html += '</div>';
   listWrapper.innerHTML = html;
 }
 
-// 🔍 유저 검색 필터 함수
 function filterAdminUserList() {
   const searchInput = document.getElementById('adminUserSearchInput');
   if (!searchInput) return;
@@ -2214,20 +2246,14 @@ function filterAdminUserList() {
     return nick.includes(query) || uid.includes(query);
   });
 
-  // 입력창을 제외한 리스트 부분만 리렌더링하거나 전체 목록 갱신
-  const container = document.getElementById('adminUserListContainer');
-  if (!container) return;
-
-  // 인풋 포커스 유지를 위해 DOM 전체를 통째로 바꾸지 않고 리스트 영역만 갱신
   renderAdminUserList(filtered);
 }
 
-// ✏️ 관리자가 특정 유저의 닉네임을 강제로 변경하는 함수
 async function adminPromptChangeNickname(userId, currentNickname) {
   if (!currentProfile?.is_admin) return;
 
   const newNickname = prompt(`[${currentNickname}] 유저의 새로운 닉네임을 입력하세요:`, currentNickname);
-  if (newNickname === null) return; // 취소 버튼 누름
+  if (newNickname === null) return;
   if (!newNickname.trim()) {
     alert('변경할 닉네임을 올바르게 입력해 주세요.');
     return;
@@ -2244,162 +2270,25 @@ async function adminPromptChangeNickname(userId, currentNickname) {
   }
 
   alert('닉네임이 성공적으로 변경되었습니다!');
-  loadAdminUserManager(); // 목록 새로고침
+  loadAdminUserManager();
 }
 
-// 관리자 탭 진입 시 자동 로드 함수 확장
-const originalShowTabForAdminCenter = window.showTab;
-window.showTab = function(tabId) {
-  if (typeof originalShowTabForAdminCenter === 'function') originalShowTabForAdminCenter(tabId);
-  if (tabId === 'adminTab') {
-    loadAdminScrimManager();
-    loadAdminUserManager(); // 관리자 탭 열릴 때 유저 목록도 자동 로드
-  }
-};
-
-// 👑 관리자 전용: 해당 내전의 맵 투표 전체 초기화
-async function adminResetMapVotes(scrimId) {
-  if (!currentProfile?.is_admin) {
-    alert('관리자 권한이 없습니다.');
-    return;
-  }
-
-  if (!confirm('정말 이 내전의 모든 맵 투표 기록을 전체 취소(초기화)하시겠습니까?')) {
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from('scrims')
-    .update({ map_votes: {} })
-    .eq('id', scrimId);
-
-  if (error) {
-    alert('맵 투표 초기화 실패: ' + error.message);
-    return;
-  }
-
-  alert('모든 맵 투표 내역이 성공적으로 초기화되었습니다!');
-
-  // 메모리 상의 내전 객체 갱신 및 화면 재렌더링
-  const selectedScrim = window.myActiveScrims?.find(s => s.id == scrimId);
-  if (selectedScrim) {
-    selectedScrim.map_votes = {};
-    renderMapVoteCards(selectedScrim);
-  }
-}
-
-// =============================================================
-// 📈 MMR 시스템 및 ELO 계산 유틸리티
-// =============================================================
-
-// 티어명을 기본 MMR 점수로 환산하는 함수
-function convertTierToMMR(gameType, tierName) {
-  if (!tierName) return 1200;
-  const lower = tierName.toLowerCase();
-
-  if (gameType === 'valo') {
-    if (lower.includes('iron') || lower.includes('아이언')) return 800;
-    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
-    if (lower.includes('silver') || lower.includes('실버')) return 1200;
-    if (lower.includes('gold') || lower.includes('골드')) return 1400;
-    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
-    if (lower.includes('diamond') || lower.includes('다이아')) return 1800;
-    if (lower.includes('ascendant') || lower.includes('초월자')) return 2000;
-    if (lower.includes('immortal') || lower.includes('불멸')) return 2200;
-    if (lower.includes('radiant') || lower.includes('레디언트')) return 2400;
-  } else if (gameType === 'ow') {
-    if (lower.includes('브론즈')) return 900;
-    if (lower.includes('실버')) return 1100;
-    if (lower.includes('골드')) return 1300;
-    if (lower.includes('플래티넘')) return 1500;
-    if (lower.includes('다이아몬드')) return 1700;
-    if (lower.includes('마스터')) return 1900;
-    if (lower.includes('그랜드마스터')) return 2100;
-    if (lower.includes('챔피언') || lower.includes('챌린저')) return 2300;
-  } else if (gameType === 'lol') {
-    if (lower.includes('iron') || lower.includes('아이언')) return 800;
-    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
-    if (lower.includes('silver') || lower.includes('실버')) return 1200;
-    if (lower.includes('gold') || lower.includes('골드')) return 1400;
-    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
-    if (lower.includes('emerald') || lower.includes('에메랄드')) return 1750;
-    if (lower.includes('diamond') || lower.includes('다이아')) return 1900;
-    if (lower.includes('master') || lower.includes('마스터')) return 2100;
-    if (lower.includes('grandmaster') || lower.includes('그랜드마스터')) return 2300;
-    if (lower.includes('challenger') || lower.includes('챌린저')) return 2500;
-  }
-
-  return 1200;
-}
-
-// 👑 관리자가 특정 유저의 종목별 MMR을 수동 수정하는 함수
-async function adminPromptChangeMMR(userId, currentNickname, gameType) {
+async function toggleAdminRole(userId, currentIsAdmin) {
   if (!currentProfile?.is_admin) return;
 
-  const targetUser = cachedAdminUsers.find(u => u.id === userId);
-  const mmrKey = `${gameType}_mmr`;
-  const currentMMR = targetUser ? (targetUser[mmrKey] || 1200) : 1200;
-  const gameName = gameType === 'valo' ? '발로란트' : gameType === 'ow' ? '오버워치' : '롤';
-
-  const newMMRStr = prompt(`[${currentNickname}] 선수의 ${gameName} MMR 점수를 입력하세요 (현재: ${currentMMR}점):`, currentMMR);
-  if (newMMRStr === null) return;
-
-  const newMMR = parseInt(newMMRStr, 10);
-  if (isNaN(newMMR)) {
-    alert('올바른 숫자 점수를 입력해 주세요.');
-    return;
-  }
-
-  const updateData = {};
-  updateData[mmrKey] = newMMR;
+  const actionText = currentIsAdmin ? '관리자 권한을 회수하시겠습니까?' : '관리자 권한을 부여하시겠습니까?';
+  if (!confirm(actionText)) return;
 
   const { error } = await supabaseClient
     .from('profiles')
-    .update(updateData)
+    .update({ is_admin: !currentIsAdmin })
     .eq('id', userId);
 
   if (error) {
-    alert('MMR 수정 실패: ' + error.message);
+    alert('권한 변경 실패: ' + error.message);
     return;
   }
 
-  alert(`${gameName} MMR이 ${newMMR}점으로 성공적으로 수정되었습니다!`);
-  loadAdminUserManager(); // 유저 관리 목록 새로고침
-}
-
-// 팀 구성 탭의 내전 선택 드롭다운(select) 목록 채우기
-async function loadTeamScrimSelect() {
-  const selectEl = document.getElementById('teamScrimSelect');
-  if (!selectEl) return;
-
-  selectEl.innerHTML = '<option value="">내전 목록을 불러오는 중...</option>';
-
-  // 모집 중(recruiting) 또는 진행 중(in_progress)인 내전 가져오기
-  const { data: scrims, error } = await supabaseClient
-    .from('scrims')
-    .select('id, title, game, created_at')
-    .order('created_at', { ascending: false });
-
-  if (error || !scrims || scrims.length === 0) {
-    console.error('팀 구성 내전 목록 로딩 에러:', error);
-    selectEl.innerHTML = '<option value="">등록되거나 모집 중인 내전이 없습니다.</option>';
-    return;
-  }
-
-  let html = '<option value="">-- 내전을 선택해 주세요 --</option>';
-  scrims.forEach(scrim => {
-    const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
-    html += `<option value="${scrim.id}">[${gameLabel}] ${scrim.title}</option>`;
-  });
-
-  selectEl.innerHTML = html;
-}
-
-// 예시: 탭 전환 함수 내부에 추가
-function switchTab(tabName) {
-  // ... 기존 탭 숨기기/보이기 로직 ...
-
-  if (tabName === 'team' || tabName === 'teamTab') {
-    loadTeamScrimSelect(); // 팀 구성 탭 클릭 시 목록 자동 불러오기
-  }
+  alert('권한이 성공적으로 변경되었습니다!');
+  loadAdminUserManager();
 }
