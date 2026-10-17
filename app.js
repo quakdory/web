@@ -977,9 +977,22 @@ async function cancelScrim(scrimId) {
 }
 
 async function deleteScrim(scrimId) {
-  if (!confirm('정말 삭제하시겠습니까?')) return;
-  await supabaseClient.from('scrims').delete().eq('id', scrimId);
+  if (!confirm('정말 이 내전을 삭제하시겠습니까?')) return;
+
+  const { error } = await supabaseClient.from('scrims').delete().eq('id', scrimId);
+  
+  if (error) {
+    alert('내전 삭제 실패: ' + error.message);
+    return;
+  }
+
+  alert('내전이 성공적으로 삭제되었습니다.');
+  
+  // 🔄 내전 목록 및 관리자 화면 갱신
   fetchScrims();
+  if (typeof loadAdminScrimManager === 'function' && currentProfile?.is_admin) {
+    loadAdminScrimManager();
+  }
 }
 
 async function loadTeamScrimSelect() {
