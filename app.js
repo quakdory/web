@@ -2185,3 +2185,25 @@ async function toggleAdminRole(userId, currentIsAdmin) {
   alert('권한이 성공적으로 변경되었습니다!');
   loadAdminUserManager();
 }
+// =============================================================
+// ⚡ Supabase 실시간(Realtime) 구독 설정
+// =============================================================
+function initRealtimeSubscriptions() {
+  // 1. 내전 참가자 및 목록 실시간 감지
+  supabaseClient
+    .channel('public:scrims_and_participants')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'scrims' }, () => {
+      // 내전 정보가 변경되면 목록 새로고침
+      if (typeof fetchScrims === 'function') fetchScrims();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'scrim_participants' }, () => {
+      // 참가자 변동 시 내전 목록 새로고침
+      if (typeof fetchScrims === 'function') fetchScrims();
+    })
+    .subscribe();
+}
+
+// 앱 초기화 시 실시간 구독 실행 (DOMContentLoaded 내부 맨 아래에 추가하거나 호출)
+document.addEventListener('DOMContentLoaded', () => {
+  initRealtimeSubscriptions();
+});
