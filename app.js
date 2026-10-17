@@ -657,7 +657,7 @@ function openProfileModal() {
   document.getElementById('lolSubRole').value = lol.sub_role || '';
   
   tempLolSelectedChampions.main = lol.main_champs || [];
-  tempLolSelectedChampions.sub = lol.sub_champs || [];
+  tempLolSelectedChampions.sub = lol.main_champs || [];
   renderSelectedLolChampionsView();
 
   switchGameTab('valo');
@@ -1083,6 +1083,11 @@ async function generateBalancedTeamsFromMMR() {
     }
   });
 
+  // DB에 자동 팀 나누기 결과 저장 (실시간 동기화용)
+  await supabaseClient.from('scrims').update({
+    balanced_teams: { teamA, teamB }
+  }).eq('id', scrimId);
+
   renderMMRTeamList('teamAList', teamA, sumA);
   renderMMRTeamList('teamBList', teamB, sumB);
 }
@@ -1183,7 +1188,7 @@ async function loadMapVoteScrims() {
     .select(`
       scrim_id,
       scrims (
-        id, title, game, max_players, current_players,
+        id, title, game, max_players, current_players, map_votes,
         scrim_participants (
           user_id,
           profiles ( nickname )
@@ -1560,6 +1565,15 @@ async function initDraftTab() {
 
   const isAdmin = currentProfile?.is_admin || false;
 
+  // 선택된 내전의 최신 DB 드래프트 상태 동기화 확인
+  const selectEl = document.getElementById('draftScrimSelect');
+  if (selectEl && selectEl.value) {
+    const { data: scrimData } = await supabaseClient.from('scrims').select('draft_state').eq('id', selectEl.value).single();
+    if (scrimData && scrimData.draft_state && scrimData.draft_state.active) {
+      draftState = scrimData.draft_state;
+    }
+  }
+
   if (!draftState.active) {
     if (!isAdmin) {
       // 🛡️ 로스터 권한 차단: 드래프트 방 생성 제어 차단 및 관전 안내 메시지 출력
@@ -1616,7 +1630,7 @@ async function loadScrimsForDraftSelect() {
     const { data, error } = await supabaseClient
       .from('scrims')
       .select(`
-        id, title, game, max_players, current_players,
+        id, title, game, max_players, current_players, draft_state,
         scrim_participants ( user_id )
       `)
       .order('created_at', { ascending: false });
@@ -1647,6 +1661,15 @@ async function onDraftScrimSelected() {
   }
 
   const scrimId = selectEl.value;
+  
+  // 이미 진행 중인 드래프트 세션이 있는지 확인
+  const { data: scrimCheck } = await supabaseClient.from('scrims').select('draft_state').eq('id', scrimId).single();
+  if (scrimCheck && scrimCheck.draft_state && scrimCheck.draft_state.active) {
+    draftState = scrimCheck.draft_state;
+    renderDraftBoard();
+    return;
+  }
+
   const { data: participantsData } = await supabaseClient
     .from('scrim_participants')
     .select(`user_id, profiles ( nickname )`)
@@ -1803,16 +1826,21 @@ async function startDraftSession() {
     else remainingPlayers.push(formatted);
   });
 
-  draftState.active = true;
-  draftState.scrimId = scrimId;
-  draftState.scrimGame = scrimGame;
-  draftState.leaderA = leaderA;
-  draftState.leaderB = leaderB;
-  draftState.teamA = [leaderAObj];
-  draftState.teamB = [leaderBObj];
-  draftState.availablePlayers = remainingPlayers;
-  draftState.turn = 'A';
-  draftState.round = 1;
+  draftState = {
+    active: true,
+    scrimId: scrimId,
+    scrimGame: scrimGame,
+    leaderA: leaderA,
+    leaderB: leaderB,
+    teamA: [leaderAObj],
+    teamB: [leaderBObj],
+    availablePlayers: remainingPlayers,
+    turn: 'A',
+    round: 1
+  };
+
+  // DB에 드래프트 상태 저장 (실시간 동기화용)
+  await supabaseClient.from('scrims').update({ draft_state: draftState }).eq('id', scrimId);
 
   renderDraftBoard();
 }
@@ -1927,7 +1955,7 @@ function renderDraftBoard() {
   `;
 }
 
-function selectDraftPlayer(index) {
+async function selectDraftPlayer(index) {
   if (!currentUser) {
     alert('로그인 후 이용 가능합니다.');
     return;
@@ -1953,12 +1981,20 @@ function selectDraftPlayer(index) {
     draftState.round++;
   }
 
+  // DB에 갱신된 드래프트 상태 즉시 저장 (실시간 동기화 트리거)
+  await supabaseClient.from('scrims').update({ draft_state: draftState }).eq('id', draftState.scrimId);
+
   renderDraftBoard();
 }
 
-function resetDraft() {
+async function resetDraft() {
   if (!currentProfile?.is_admin) return;
   if (!confirm('드래프트를 초기화하시겠습니까?')) return;
+  
+  if (draftState.scrimId) {
+    await supabaseClient.from('scrims').update({ draft_state: { active: false } }).eq('id', draftState.scrimId);
+  }
+
   draftState.active = false;
   initDraftTab();
 }
@@ -2185,25 +2221,53 @@ async function toggleAdminRole(userId, currentIsAdmin) {
   alert('권한이 성공적으로 변경되었습니다!');
   loadAdminUserManager();
 }
+
 // =============================================================
-// ⚡ Supabase 실시간(Realtime) 구독 설정
+// ⚡ Supabase 실시간(Realtime) 구독 설정 (전체 상태 동기화)
 // =============================================================
 function initRealtimeSubscriptions() {
-  // 1. 내전 참가자 및 목록 실시간 감지
   supabaseClient
-    .channel('public:scrims_and_participants')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'scrims' }, () => {
-      // 내전 정보가 변경되면 목록 새로고침
+    .channel('public:scrims_all_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'scrims' }, (payload) => {
+      const updatedScrim = payload.new;
+
+      // 1. 내전 목록 및 참가자 변동 시 갱신
       if (typeof fetchScrims === 'function') fetchScrims();
+
+      // 2. 현재 자동 팀 나누기 뷰에서 보고 있는 내전 데이터가 업데이트된 경우
+      const teamSelectEl = document.getElementById('teamScrimSelect');
+      if (teamSelectEl && teamSelectEl.value == updatedScrim.id && updatedScrim.balanced_teams) {
+        renderMMRTeamList('teamAList', updatedScrim.balanced_teams.teamA, updatedScrim.balanced_teams.teamA.reduce((acc, cur) => acc + cur.mmr, 0));
+        renderMMRTeamList('teamBList', updatedScrim.balanced_teams.teamB, updatedScrim.balanced_teams.teamB.reduce((acc, cur) => acc + cur.mmr, 0));
+      }
+
+      // 3. 드래프트 상태 실시간 동기화
+      if (updatedScrim.draft_state) {
+        draftState = updatedScrim.draft_state;
+        const draftViewActive = document.getElementById('draftView')?.classList.contains('active');
+        if (draftViewActive) {
+          renderDraftBoard();
+        }
+      }
+
+      // 4. 맵 투표 실시간 동기화
+      const mapVoteSelectEl = document.getElementById('mapVoteScrimSelect');
+      if (mapVoteSelectEl && mapVoteSelectEl.value == updatedScrim.id) {
+        if (window.myActiveScrims) {
+          const target = window.myActiveScrims.find(s => s.id == updatedScrim.id);
+          if (target) {
+            target.map_votes = updatedScrim.map_votes;
+            renderMapVoteCards(target);
+          }
+        }
+      }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'scrim_participants' }, () => {
-      // 참가자 변동 시 내전 목록 새로고침
       if (typeof fetchScrims === 'function') fetchScrims();
     })
     .subscribe();
 }
 
-// 앱 초기화 시 실시간 구독 실행 (DOMContentLoaded 내부 맨 아래에 추가하거나 호출)
 document.addEventListener('DOMContentLoaded', () => {
   initRealtimeSubscriptions();
 });
