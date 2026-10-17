@@ -434,36 +434,43 @@
   </div>
 
   <!-- 새 내전 생성 모달 -->
-  <div id="scrimModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>새 내전 만들기</h3>
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-      </div>
-      <form id="scrimForm" onsubmit="createScrim(event)">
-        <div class="form-group">
-          <label>종목 선택</label>
-          <select id="scrimGame" required>
-            <option value="valo">VALORANT</option>
-            <option value="ow">Overwatch 2</option>
-            <option value="lol">League of Legends</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>내전 제목</label>
-          <input type="text" id="scrimTitle" placeholder="예: [실버~플레] 즐겜 10인 내전" required />
-        </div>
-        <div class="form-group">
-          <label>최대 모집 인원</label>
-          <input type="number" id="scrimMax" value="10" min="2" max="20" required />
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
-          <button type="submit" class="btn-primary">내전 개설</button>
-        </div>
-      </form>
+<div id="scrimModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>새 내전 만들기</h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
     </div>
+    <form id="scrimForm" onsubmit="createScrim(event)">
+      <div class="form-group">
+        <label>종목 선택</label>
+        <select id="scrimGame" required>
+          <option value="valo">VALORANT</option>
+          <option value="ow">Overwatch 2</option>
+          <option value="lol">League of Legends</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>내전 제목</label>
+        <input type="text" id="scrimTitle" placeholder="예: [실버~플레] 즐겜 10인 내전" required />
+      </div>
+
+      <!-- 🕒 추가: 진행 일시 입력 필드 -->
+      <div class="form-group">
+        <label>진행 일시</label>
+        <input type="datetime-local" id="scrimTime" required />
+      </div>
+
+      <div class="form-group">
+        <label>최대 모집 인원</label>
+        <input type="number" id="scrimMax" value="10" min="2" max="20" required />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
+        <button type="submit" class="btn-primary">내전 개설</button>
+      </div>
+    </form>
   </div>
+</div>
 
   <script src="./app.js"></script>
   <!-- 오른쪽 하단 고정 디스코드 플로팅 버튼 -->

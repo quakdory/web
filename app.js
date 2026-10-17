@@ -849,8 +849,18 @@ function renderScrims(scrims) {
     const isFull = currentCount >= scrim.max_players;
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
 
-    let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
-    participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
+    // 날짜 포맷팅
+    const timeDisplay = scrim.scrim_time ? new Date(scrim.scrim_time).toLocaleString('ko-KR', {
+      month: 'numeric',
+      day: 'numeric',
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : '일시 미정';
+
+    // 💡 박스 높이 고정 및 스크롤 처리 (max-height: 160px; overflow-y: auto;)
+    let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1); max-height: 160px; overflow-y: auto; padding-right: 4px;">';
+    participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary); position: sticky; top: 0; background: var(--card-bg, #fff); z-index: 1;">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
     
     if (participants.length === 0) {
       participantsHtml += '<p style="font-size: 0.8rem; color: #888;">아직 참여한 인원이 없습니다.</p>';
@@ -935,7 +945,8 @@ function renderScrims(scrims) {
         ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `<button class="btn-danger-sm" onclick="deleteScrim('${scrim.id}')">삭제</button>` : ''}
       </div>
       <h3>${scrim.title}</h3>
-      <p style="margin: 6px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
+      <p style="margin: 4px 0; font-size: 0.85rem; color: var(--primary-color); font-weight: bold;">⏰ 일시: ${timeDisplay}</p>
+      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
       ${participantsHtml}
       <div style="margin-top: 12px;">
         ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}
@@ -2208,7 +2219,7 @@ function initRealtimeSubscriptions() {
     .subscribe();
 }
 
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB';
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1561153087945703477/eTBbjMzPmAi--48NwwClNA2X4Xnk7q1vcTR_TCWb49ZJtkJhJY-Avb4jvbFO8JBFvB3l';
 
 async function sendDiscordWebhook(message) {
   if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('여기에')) return;
@@ -2230,15 +2241,35 @@ async function createScrim(e) {
   e.preventDefault();
   const game = document.getElementById('scrimGame').value;
   const title = document.getElementById('scrimTitle').value;
+  const scrimTimeVal = document.getElementById('scrimTime').value; // 일시 값 가져오기
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
-  const { error } = await supabaseClient.from('scrims').insert([{ game, title, current_players: 1, max_players, status: '모집 중', host_id: currentUser.id }]);
+  // 날짜/시간 예쁘게 포맷팅 (예: 10월 20일(화) 21:00)
+  const formattedTime = scrimTimeVal ? new Date(scrimTimeVal).toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  }) : '일시 미정';
+
+  const { error } = await supabaseClient.from('scrims').insert([{ 
+    game, 
+    title, 
+    scrim_time: scrimTimeVal, // DB 컬럼 저장 (Supabase에 scrim_time 컬럼 추가 권장)
+    current_players: 1, 
+    max_players, 
+    status: '모집 중', 
+    host_id: currentUser.id 
+  }]);
 
   if (!error) { 
     closeModal(); 
     fetchScrims(); 
 
-    // 🚀 디스코드 웹훅 알림 발송!
-    await sendDiscordWebhook(`📢 **새로운 내전이 개설되었습니다!**\n> **[${game.toUpperCase()}]** ${title} (최대 ${max_players}명)\n플랫폼에서 지금 바로 참가해 보세요!`);
+    // 🚀 디스코드 웹훅 알림에 일자 및 시간 정보 추가!
+    await sendDiscordWebhook(`📢 **새로운 내전이 개설되었습니다!**\n> **[${game.toUpperCase()}]** ${title}\n> ⏰ **일시:** ${formattedTime}\n> 👥 **모집 인원:** 최대 ${max_players}명\n플랫폼에서 지금 바로 참가해 보세요!`);
+  } else {
+    alert('내전 생성 실패: ' + error.message);
   }
 }
