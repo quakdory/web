@@ -2366,3 +2366,40 @@ async function adminPromptChangeMMR(userId, currentNickname, gameType) {
   alert(`${gameName} MMR이 ${newMMR}점으로 성공적으로 수정되었습니다!`);
   loadAdminUserManager(); // 유저 관리 목록 새로고침
 }
+
+// 팀 구성 탭의 내전 선택 드롭다운(select) 목록 채우기
+async function loadTeamScrimSelect() {
+  const selectEl = document.getElementById('teamScrimSelect');
+  if (!selectEl) return;
+
+  selectEl.innerHTML = '<option value="">내전 목록을 불러오는 중...</option>';
+
+  // 모집 중(recruiting) 또는 진행 중(in_progress)인 내전 가져오기
+  const { data: scrims, error } = await supabaseClient
+    .from('scrims')
+    .select('id, title, game, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error || !scrims || scrims.length === 0) {
+    console.error('팀 구성 내전 목록 로딩 에러:', error);
+    selectEl.innerHTML = '<option value="">등록되거나 모집 중인 내전이 없습니다.</option>';
+    return;
+  }
+
+  let html = '<option value="">-- 내전을 선택해 주세요 --</option>';
+  scrims.forEach(scrim => {
+    const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
+    html += `<option value="${scrim.id}">[${gameLabel}] ${scrim.title}</option>`;
+  });
+
+  selectEl.innerHTML = html;
+}
+
+// 예시: 탭 전환 함수 내부에 추가
+function switchTab(tabName) {
+  // ... 기존 탭 숨기기/보이기 로직 ...
+
+  if (tabName === 'team' || tabName === 'teamTab') {
+    loadTeamScrimSelect(); // 팀 구성 탭 클릭 시 목록 자동 불러오기
+  }
+}
