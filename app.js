@@ -571,6 +571,18 @@ function closeProfileModal() {
   document.getElementById('profileModal')?.classList.remove('active');
 }
 
+// 🛡️ 누락되어 있던 게임 탭 전환 함수 추가
+function switchGameTab(gameType) {
+  document.querySelectorAll('.game-tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.game-tab-btn').forEach(el => el.classList.remove('active'));
+
+  const targetContent = document.getElementById(`${gameType}ProfileTab`);
+  const targetBtn = document.getElementById(`${gameType}TabBtn`);
+
+  if (targetContent) targetContent.classList.add('active');
+  if (targetBtn) targetBtn.classList.add('active');
+}
+
 function openProfileModal() {
   if (!currentUser || !currentProfile) return;
 
@@ -969,9 +981,6 @@ async function deleteScrim(scrimId) {
   fetchScrims();
 }
 
-// =============================================================
-// 🎲 팀 구성 탭: 자동 팀 나누기 (로스터는 MMR 점수 미노출 제어)
-// =============================================================
 async function loadTeamScrimSelect() {
   const selectEl = document.getElementById('teamScrimSelect');
   if (!selectEl) return;
@@ -1084,7 +1093,6 @@ function renderMMRTeamList(elementId, teamMembers, totalMMR) {
   const isAdmin = currentProfile?.is_admin || false;
   const avgMMR = Math.round(totalMMR / (teamMembers.length || 1));
 
-  // 🛡️ 로스터는 MMR 확인 불가능하도록 조건부 렌더링 적용
   let headerHtml = '';
   if (isAdmin) {
     headerHtml = `<div style="margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; color: var(--primary-color);">📊 팀 총 MMR: ${totalMMR}점 (평균: ${avgMMR}점)</div>`;
@@ -1109,9 +1117,6 @@ function renderMMRTeamList(elementId, teamMembers, totalMMR) {
   listEl.innerHTML = html;
 }
 
-// =============================================================
-// 게임별 맵 정보 데이터
-// =============================================================
 const GAME_MAPS = {
   valo: [
     { name: "스플릿", img: "images/maps/val/스플릿.webp" },
@@ -1163,9 +1168,6 @@ const GAME_MAPS = {
   ],
 };
 
-// =============================================================
-// 🗺️ 맵 투표 시스템
-// =============================================================
 async function loadMapVoteScrims() {
   const selectEl = document.getElementById('mapVoteScrimSelect');
   const container = document.getElementById('mapVoteContainer');
@@ -1410,9 +1412,6 @@ async function adminResetMapVotes(scrimId) {
   }
 }
 
-// =============================================================
-// 📈 MMR 시스템 유틸리티
-// =============================================================
 function convertTierToMMR(gameType, tierName) {
   if (!tierName) return 1200;
   const lower = tierName.toLowerCase();
@@ -1482,9 +1481,6 @@ async function adminPromptChangeMMR(userId, currentNickname, gameType) {
   loadAdminUserManager();
 }
 
-// =============================================================
-// 앱 실행 및 탭 제어
-// =============================================================
 document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') {
@@ -1499,9 +1495,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initRealtimeSubscriptions();
 });
 
-// =============================================================
-// 📋 드래프트 시스템
-// =============================================================
 let draftState = {
   active: false,
   scrimId: null,
@@ -1942,9 +1935,6 @@ async function resetDraft() {
   initDraftTab();
 }
 
-// =============================================================
-// 관리자 센터 관련 기능
-// =============================================================
 async function loadAdminScrimManager() {
   if (!currentProfile?.is_admin) return;
 
@@ -2165,9 +2155,6 @@ async function toggleAdminRole(userId, currentIsAdmin) {
   loadAdminUserManager();
 }
 
-// =============================================================
-// ⚡ 실시간(Realtime) 구독 설정
-// =============================================================
 function initRealtimeSubscriptions() {
   supabaseClient
     .channel('public:scrims_realtime_channel')
