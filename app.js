@@ -355,8 +355,99 @@ async function checkAuthState() {
       }
     }
 
-    const newScrimBtn = document.querySelector('button[onclick="openModal()"]');
-    const adminTabBtn = document.getElementById('navAdminTabBtn');
+    // 새 내전 생성 모달 열기 (생성 모드)
+function openModal() {
+  document.getElementById('editingScrimId').value = '';
+  document.getElementById('scrimModalTitle').textContent = '새 내전 만들기';
+  document.getElementById('scrimSubmitBtn').textContent = '내전 개설';
+  document.getElementById('scrimForm').reset();
+  document.getElementById('scrimModal')?.classList.add('active');
+}
+
+// 내전 수정 모달 열기 (수정 모드)
+function openEditScrimModal(id, game, title, scrimTime, maxPlayers) {
+  document.getElementById('editingScrimId').value = id;
+  document.getElementById('scrimModalTitle').textContent = '내전 정보 수정';
+  document.getElementById('scrimSubmitBtn').textContent = '수정 완료';
+  
+  document.getElementById('scrimGame').value = game;
+  document.getElementById('scrimTitle').value = title;
+  
+  if (scrimTime) {
+    const dateObj = new Date(scrimTime);
+    const localIsoTime = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    document.getElementById('scrimTime').value = localIsoTime;
+  } else {
+    document.getElementById('scrimTime').value = '';
+  }
+  
+  document.getElementById('scrimMax').value = maxPlayers;
+  document.getElementById('scrimModal')?.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('scrimModal')?.classList.remove('active');
+  document.getElementById('scrimForm')?.reset();
+  document.getElementById('editingScrimId').value = '';
+}
+
+// 생성 및 수정 공통 처리 함수
+async function saveScrim(e) {
+  e.preventDefault();
+  const editingId = document.getElementById('editingScrimId').value;
+  const game = document.getElementById('scrimGame').value;
+  const title = document.getElementById('scrimTitle').value;
+  const scrimTimeVal = document.getElementById('scrimTime').value;
+  const max_players = parseInt(document.getElementById('scrimMax').value, 10);
+
+  const formattedTime = scrimTimeVal ? new Date(scrimTimeVal).toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  }) : '일시 미정';
+
+  if (editingId) {
+    // 🛠️ 수정 모드
+    const { error } = await supabaseClient.from('scrims').update({
+      game,
+      title,
+      scrim_time: scrimTimeVal,
+      max_players
+    }).eq('id', editingId);
+
+    if (error) {
+      alert('내전 수정 실패: ' + error.message);
+      return;
+    }
+
+    closeModal();
+    fetchScrims();
+    alert('내전 정보가 성공적으로 수정되었습니다.');
+
+  } else {
+    // ➕ 생성 모드
+    const { error } = await supabaseClient.from('scrims').insert([{ 
+      game, 
+      title, 
+      scrim_time: scrimTimeVal, 
+      current_players: 1, 
+      max_players, 
+      status: '모집 중', 
+      host_id: currentUser.id 
+    }]);
+
+    if (!error) { 
+      closeModal(); 
+      fetchScrims(); 
+
+      await sendDiscordWebhook(`📢 **새로운 내전이 개설되었습니다!**\n> **[${game.toUpperCase()}]** ${title}\n> ⏰ **일시:** ${formattedTime}\n> 👥 **모집 인원:** 최대 ${max_players}명\n플랫폼에서 지금 바로 참가해 보세요!`);
+    } else {
+      alert('내전 생성 실패: ' + error.message);
+    }
+  }
+}
 
     if (currentProfile?.is_admin) {
       if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
@@ -796,7 +887,13 @@ function goToMain() {
   filterGame('all');
 }
 
-function openModal() { document.getElementById('scrimModal')?.classList.add('active'); }
+function openModal() {
+  document.getElementById('editingScrimId').value = '';
+  document.getElementById('scrimModalTitle').textContent = '새 내전 만들기';
+  document.getElementById('scrimSubmitBtn').textContent = '내전 개설';
+  document.getElementById('scrimForm').reset();
+  document.getElementById('scrimModal')?.classList.add('active');
+}
 function closeModal() { document.getElementById('scrimModal')?.classList.remove('active'); document.getElementById('scrimForm')?.reset(); }
 
 async function fetchScrims() {
@@ -858,9 +955,9 @@ function renderScrims(scrims) {
       minute: '2-digit'
     }) : '일시 미정';
 
-    // 💡 박스 높이 고정 및 스크롤 처리 (max-height: 160px; overflow-y: auto;)
-    let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1); max-height: 160px; overflow-y: auto; padding-right: 4px;">';
-    participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary); position: sticky; top: 0; background: var(--card-bg, #fff); z-index: 1;">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
+    // 💡 스크롤을 제거하여 전체가 한눈에 다 보이도록 수정
+    let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
+    participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
     
     if (participants.length === 0) {
       participantsHtml += '<p style="font-size: 0.8rem; color: #888;">아직 참여한 인원이 없습니다.</p>';
@@ -942,7 +1039,12 @@ function renderScrims(scrims) {
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <span class="game-badge ${scrim.game}">${displayGameBadge}</span>
-        ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `<button class="btn-danger-sm" onclick="deleteScrim('${scrim.id}')">삭제</button>` : ''}
+        <div style="display: flex; gap: 4px;">
+          ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `
+            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openEditScrimModal('${scrim.id}', '${scrim.game}', '${scrim.title.replace(/'/g, "\\'")}', '${scrim.scrim_time \vert{}\vert{} ''}',${scrim.max_players})">수정</button>
+            <button class="btn-danger-sm" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteScrim('${scrim.id}')">삭제</button>
+          ` : ''}
+        </div>
       </div>
       <h3>${scrim.title}</h3>
       <p style="margin: 4px 0; font-size: 0.85rem; color: var(--primary-color); font-weight: bold;">⏰ 일시: ${timeDisplay}</p>
