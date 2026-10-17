@@ -1094,55 +1094,97 @@ async function loadScrimOptionsForTeamTab() {
   });
 }
 
-async function generateRandomTeamsFromTab() {
+async function generateBalancedTeamsFromMMR() {
   const selectEl = document.getElementById('teamScrimSelect');
   const scrimId = selectEl ? selectEl.value : null;
-  if (!scrimId) { alert('내전을 먼저 선택해 주세요.'); return; }
+  if (!scrimId) { 
+    alert('내전을 먼저 선택해 주세요.'); 
+    return; 
+  }
 
-  const { data: participants } = await supabaseClient.from('scrim_participants').select(`user_id, profiles ( nickname, valo_info )`).eq('scrim_id', scrimId);
-  if (!participants || participants.length === 0) { alert('참가자가 없습니다.'); return; }
+  // 1. 선택된 내전 정보 조회 (종목 파악)
+  const { data: scrim } = await supabaseClient.from('scrims').select('game, title').eq('id', scrimId).single();
+  const gameType = scrim ? scrim.game : 'valo';
+  const mmrKey = `${gameType}_mmr`;
 
-  const shuffled = [...participants].sort(() => Math.random() - 0.5);
-  const half = Math.ceil(shuffled.length / 2);
-  renderTeamList('teamAList', shuffled.slice(0, half));
-  renderTeamList('teamBList', shuffled.slice(half));
+  // 2. 참가자 목록 및 프로필 내 MMR 정보 조회
+  const { data: participants } = await supabaseClient
+    .from('scrim_participants')
+    .select(`
+      user_id, 
+      profiles ( 
+        nickname, 
+        valo_info, ow_info, lol_info, 
+        valo_mmr, ow_mmr, lol_mmr 
+      )
+    `)
+    .eq('scrim_id', scrimId);
+
+  if (!participants || participants.length < 2) { 
+    alert('팀을 나누려면 최소 2명 이상의 참가자가 필요합니다.'); 
+    return; 
+  }
+
+  // 3. 각 플레이어별 해당 종목 MMR 추출 및 객체 매핑
+  const players = participants.map(m => {
+    const p = m.profiles || {};
+    let tier = 'Unranked';
+    if (gameType === 'valo') tier = p.valo_info?.tier || 'Unranked';
+    else if (gameType === 'ow') tier = p.ow_info?.tier || 'Unranked';
+    else if (gameType === 'lol') tier = p.lol_info?.tier || 'Unranked';
+
+    // DB에 저장된 MMR이 없으면 티어 기반 기본 환산값 적용
+    const mmr = p[mmrKey] || convertTierToMMR(gameType, tier);
+
+    return {
+      nickname: p.nickname || '알 수 없음',
+      tier: tier,
+      mmr: mmr
+    };
+  });
+
+  // 4. MMR 내림차순 정렬 후 지그재그(Snake) 방식으로 팀 분배 (총 MMR 합 오차 최소화)
+  players.sort((a, b) => b.mmr - a.mmr);
+
+  const teamA = [];
+  const teamB = [];
+  let sumA = 0;
+  let sumB = 0;
+
+  players.forEach((player, index) => {
+    // 지그재그 방식으로 균등하게 분배
+    if (sumA <= sumB) {
+      teamA.push(player);
+      sumA += player.mmr;
+    } else {
+      teamB.push(player);
+      sumB += player.mmr;
+    }
+  });
+
+  renderMMRTeamList('teamAList', teamA, sumA);
+  renderMMRTeamList('teamBList', teamB, sumB);
 }
 
-function renderTeamList(elementId, teamMembers) {
+function renderMMRTeamList(elementId, teamMembers, totalMMR) {
   const listEl = document.getElementById(elementId);
   if (!listEl) return;
-  listEl.innerHTML = '';
-  teamMembers.forEach(m => {
-    const p = m.profiles || {};
-    const v = p.valo_info || {};
-    const li = document.createElement('li');
-    li.style.padding = '8px 12px';
-    li.style.margin = '4px 0';
-    li.style.background = 'rgba(0,0,0,0.03)';
-    li.style.borderRadius = '6px';
-    li.innerHTML = `<strong>${p.nickname || '알 수 없음'}</strong> <span style="font-size:0.8rem; color:#666; float:right;">[${v.tier || 'Unranked'}] ${v.main_role ? '(' + v.main_role + ')' : ''}</span>`;
-    listEl.appendChild(li);
-  });
-}
-
-// 프로필 모달 내 게임별 서브 탭 전환 함수
-function switchGameTab(gameType) {
-  // 모든 게임별 프로필 뷰를 숨김 처리
-  document.querySelectorAll('.game-profile-view').forEach(view => {
-    view.classList.remove('active');
-  });
   
-  // 모든 게임 서브 탭 버튼의 active 클래스 제거
-  document.querySelectorAll('.game-subtab-btn').forEach(btn => {
-    btn.classList.remove('active');
+  const avgMMR = Math.round(totalMMR / (teamMembers.length || 1));
+  let html = `<div style="margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; color: var(--primary-color);">📊 팀 총 MMR: ${totalMMR}점 (평균: ${avgMMR}점)</div>`;
+
+  teamMembers.forEach(m => {
+    html += `
+      <li style="padding: 8px 12px; margin: 4px 0; background: rgba(0,0,0,0.03); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong>${m.nickname}</strong> <span style="font-size:0.8rem; color:var(--text-muted);">[${m.tier}]</span>
+        </div>
+        <span style="font-size: 0.85rem; font-weight: bold; color: var(--primary-color);">${m.mmr} pts</span>
+      </li>
+    `;
   });
 
-  // 선택한 게임의 뷰와 버튼만 활성화
-  const targetView = document.getElementById('gameView' + gameType.charAt(0).toUpperCase() + gameType.slice(1));
-  const targetBtn = document.getElementById('gameTab' + gameType.charAt(0).toUpperCase() + gameType.slice(1) + 'Btn');
-
-  if (targetView) targetView.classList.add('active');
-  if (targetBtn) targetBtn.classList.add('active');
+  listEl.innerHTML = html;
 }
 
 // =============================================================
@@ -2083,6 +2125,23 @@ function renderAdminUserList(users) {
   });
   html += '</div>';
   listWrapper.innerHTML = html;
+
+  // 유저 카드 반복문 내부(renderAdminUserList 안쪽)에 추가할 MMR 영역 예시
+const valoMMR = user.valo_mmr || convertTierToMMR('valo', user.valo_info?.tier);
+const owMMR = user.ow_mmr || convertTierToMMR('ow', user.ow_info?.tier);
+const lolMMR = user.lol_mmr || convertTierToMMR('lol', user.lol_info?.tier);
+
+// HTML 템플릿 내부에 아래 항목 삽입:
+/*
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+    📊 MMR — 발로: <strong style="color:#ff4757;">${valoMMR}</strong> | 오버: <strong style="color:#f97316;">${owMMR}</strong> | 롤: <strong style="color:#3b82f6;">${lolMMR}</strong>
+  </div>
+  <div style="display: flex; gap: 4px; margin-top: 6px;">
+    <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'valo')">VAL MMR</button>
+    <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'ow')">OW MMR</button>
+    <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adminPromptChangeMMR('${userId}', '${nickname}', 'lol')">LoL MMR</button>
+  </div>
+*/
 }
 
 // 🔍 유저 검색 필터 함수 (검색창 포커스가 풀리지 않도록 분리)
@@ -2227,4 +2286,83 @@ async function adminResetMapVotes(scrimId) {
     selectedScrim.map_votes = {};
     renderMapVoteCards(selectedScrim);
   }
+}
+
+// =============================================================
+// 📈 MMR 시스템 및 ELO 계산 유틸리티
+// =============================================================
+
+// 티어명을 기본 MMR 점수로 환산하는 함수
+function convertTierToMMR(gameType, tierName) {
+  if (!tierName) return 1200;
+  const lower = tierName.toLowerCase();
+
+  if (gameType === 'valo') {
+    if (lower.includes('iron') || lower.includes('아이언')) return 800;
+    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
+    if (lower.includes('silver') || lower.includes('실버')) return 1200;
+    if (lower.includes('gold') || lower.includes('골드')) return 1400;
+    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
+    if (lower.includes('diamond') || lower.includes('다이아')) return 1800;
+    if (lower.includes('ascendant') || lower.includes('초월자')) return 2000;
+    if (lower.includes('immortal') || lower.includes('불멸')) return 2200;
+    if (lower.includes('radiant') || lower.includes('레디언트')) return 2400;
+  } else if (gameType === 'ow') {
+    if (lower.includes('브론즈')) return 900;
+    if (lower.includes('실버')) return 1100;
+    if (lower.includes('골드')) return 1300;
+    if (lower.includes('플래티넘')) return 1500;
+    if (lower.includes('다이아몬드')) return 1700;
+    if (lower.includes('마스터')) return 1900;
+    if (lower.includes('그랜드마스터')) return 2100;
+    if (lower.includes('챔피언') || lower.includes('챌린저')) return 2300;
+  } else if (gameType === 'lol') {
+    if (lower.includes('iron') || lower.includes('아이언')) return 800;
+    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
+    if (lower.includes('silver') || lower.includes('실버')) return 1200;
+    if (lower.includes('gold') || lower.includes('골드')) return 1400;
+    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
+    if (lower.includes('emerald') || lower.includes('에메랄드')) return 1750;
+    if (lower.includes('diamond') || lower.includes('다이아')) return 1900;
+    if (lower.includes('master') || lower.includes('마스터')) return 2100;
+    if (lower.includes('grandmaster') || lower.includes('그랜드마스터')) return 2300;
+    if (lower.includes('challenger') || lower.includes('챌린저')) return 2500;
+  }
+
+  return 1200;
+}
+
+// 👑 관리자가 특정 유저의 종목별 MMR을 수동 수정하는 함수
+async function adminPromptChangeMMR(userId, currentNickname, gameType) {
+  if (!currentProfile?.is_admin) return;
+
+  const targetUser = cachedAdminUsers.find(u => u.id === userId);
+  const mmrKey = `${gameType}_mmr`;
+  const currentMMR = targetUser ? (targetUser[mmrKey] || 1200) : 1200;
+  const gameName = gameType === 'valo' ? '발로란트' : gameType === 'ow' ? '오버워치' : '롤';
+
+  const newMMRStr = prompt(`[${currentNickname}] 선수의 ${gameName} MMR 점수를 입력하세요 (현재: ${currentMMR}점):`, currentMMR);
+  if (newMMRStr === null) return;
+
+  const newMMR = parseInt(newMMRStr, 10);
+  if (isNaN(newMMR)) {
+    alert('올바른 숫자 점수를 입력해 주세요.');
+    return;
+  }
+
+  const updateData = {};
+  updateData[mmrKey] = newMMR;
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update(updateData)
+    .eq('id', userId);
+
+  if (error) {
+    alert('MMR 수정 실패: ' + error.message);
+    return;
+  }
+
+  alert(`${gameName} MMR이 ${newMMR}점으로 성공적으로 수정되었습니다!`);
+  loadAdminUserManager(); // 유저 관리 목록 새로고침
 }
