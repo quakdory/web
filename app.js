@@ -7,15 +7,8 @@ let currentUser = null;
 let currentProfile = null;
 let currentFilter = 'all';
 
-let tempSelectedAgents = {
-  main: [],
-  sub: []
-};
-
-let tempOwSelectedAgents = {
-  main: [],
-  sub: []
-};
+let tempSelectedAgents = { main: [], sub: [] };
+let tempOwSelectedAgents = { main: [], sub: [] };
 
 const OW_HEROES = {
   "돌격": [
@@ -33,12 +26,7 @@ const OW_HEROES = {
   ] 
 };
 
-let VALO_AGENT_DATA = {
-  '타격대': [],
-  '척후대': [],
-  '감시자': [],
-  '전략가': []
-};
+let VALO_AGENT_DATA = { '타격대': [], '척후대': [], '감시자': [], '전략가': [] };
 
 const ROLE_MAPPING = {
   'Duelist': '타격대',
@@ -102,21 +90,13 @@ let currentLolTargetType = 'main';
 let tempLolSelectedChampions = { main: [], sub: [] };
 let LOL_LATEST_VERSION = '14.24.1';
 
-let LOL_CHAMPIONS = {
-  "탑": [],
-  "정글": [],
-  "미드": [],
-  "원딜": [],
-  "서폿": []
-};
+let LOL_CHAMPIONS = { "탑": [], "정글": [], "미드": [], "원딜": [], "서폿": [] };
 
 async function fetchAllLolChampions() {
   try {
     const verRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
     const versions = await verRes.json();
-    if (versions && versions.length > 0) {
-      LOL_LATEST_VERSION = versions[0];
-    }
+    if (versions && versions.length > 0) LOL_LATEST_VERSION = versions[0];
 
     const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${LOL_LATEST_VERSION}/data/ko_KR/champion.json`);
     const champJson = await champRes.json();
@@ -126,9 +106,7 @@ async function fetchAllLolChampions() {
 
     championsArray.forEach(champ => {
       const champData = { ko: champ.name, en: champ.id };
-      Object.keys(LOL_CHAMPIONS).forEach(pos => {
-        LOL_CHAMPIONS[pos].push(champData);
-      });
+      Object.keys(LOL_CHAMPIONS).forEach(pos => { LOL_CHAMPIONS[pos].push(champData); });
     });
   } catch (err) {
     console.error('롤 전체 챔피언 로딩 실패:', err);
@@ -657,7 +635,7 @@ function openProfileModal() {
   document.getElementById('lolSubRole').value = lol.sub_role || '';
   
   tempLolSelectedChampions.main = lol.main_champs || [];
-  tempLolSelectedChampions.sub = lol.main_champs || [];
+  tempLolSelectedChampions.sub = lol.sub_champs || [];
   renderSelectedLolChampionsView();
 
   switchGameTab('valo');
@@ -993,7 +971,7 @@ async function deleteScrim(scrimId) {
 }
 
 // =============================================================
-// 🎲 팀 구성 탭: 자동 팀 나누기 (관리자 전용 제어 적용)
+// 🎲 팀 구성 탭: 자동 팀 나누기 (DB 동기화 지원)
 // =============================================================
 async function loadTeamScrimSelect() {
   const selectEl = document.getElementById('teamScrimSelect');
@@ -1003,7 +981,7 @@ async function loadTeamScrimSelect() {
 
   const { data: scrims, error } = await supabaseClient
     .from('scrims')
-    .select('id, title, game, current_players, max_players')
+    .select('id, title, game, current_players, max_players, balanced_teams')
     .order('created_at', { ascending: false });
 
   if (error || !scrims || scrims.length === 0) {
@@ -1018,10 +996,20 @@ async function loadTeamScrimSelect() {
   });
 
   selectEl.innerHTML = html;
+
+  // 셀렉트 변경 시 저장된 최신 밸런스 팀 불러오기
+  selectEl.onchange = async () => {
+    const scrimId = selectEl.value;
+    if (!scrimId) return;
+    const { data: scrimData } = await supabaseClient.from('scrims').select('balanced_teams').eq('id', scrimId).single();
+    if (scrimData && scrimData.balanced_teams) {
+      renderMMRTeamList('teamAList', scrimData.balanced_teams.teamA, scrimData.balanced_teams.teamA.reduce((acc, c) => acc + c.mmr, 0));
+      renderMMRTeamList('teamBList', scrimData.balanced_teams.teamB, scrimData.balanced_teams.teamB.reduce((acc, c) => acc + c.mmr, 0));
+    }
+  };
 }
 
 async function generateBalancedTeamsFromMMR() {
-  // 🛡️ 권한 검증: 관리자만 팀 섞기 실행 가능
   if (!currentProfile?.is_admin) {
     alert('팀 섞기(자동 팀 나누기) 권한은 관리자에게만 있습니다. (로스터는 결과 확인만 가능합니다)');
     return;
@@ -1083,7 +1071,7 @@ async function generateBalancedTeamsFromMMR() {
     }
   });
 
-  // DB에 자동 팀 나누기 결과 저장 (실시간 동기화용)
+  // DB에 결과 업데이트 ➔ 실시간(Realtime) 트리거 전송
   await supabaseClient.from('scrims').update({
     balanced_teams: { teamA, teamB }
   }).eq('id', scrimId);
@@ -1415,7 +1403,7 @@ async function adminResetMapVotes(scrimId) {
 }
 
 // =============================================================
-// 📈 MMR 시스템 및 ELO 계산 유틸리티
+// 📈 MMR 시스템 유틸리티
 // =============================================================
 function convertTierToMMR(gameType, tierName) {
   if (!tierName) return 1200;
@@ -1500,52 +1488,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchValorantAgents();
   await fetchAllLolChampions(); 
   checkAuthState();
+  initRealtimeSubscriptions();
 });
 
-function showTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab-btn'));
-  
-  const targetTab = document.getElementById(tabId);
-  if (targetTab) targetTab.classList.add('active');
-  
-  const targetBtn = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1) + 'Btn');
-  if (targetBtn) targetBtn.classList.add('active-tab-btn');
-
-  if (tabId === 'team') {
-    showTeamSubtab('auto');
-  }
-  
-  if (tabId === 'mapVote') {
-    setTimeout(() => { loadMapVoteScrims(); }, 50);
-  }
-
-  if (tabId === 'adminTab') {
-    loadAdminScrimManager();
-    loadAdminUserManager();
-  }
-}
-
-function showTeamSubtab(subtabName) {
-  document.querySelectorAll('.team-view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
-
-  if (subtabName === 'auto') {
-    document.getElementById('autoView').classList.add('active');
-    document.getElementById('subAutoBtn').classList.add('active');
-    loadTeamScrimSelect();
-  } else if (subtabName === 'draft') {
-    document.getElementById('draftView').classList.add('active');
-    document.getElementById('subDraftBtn').classList.add('active');
-    initDraftTab();
-  } else if (subtabName === 'auction') {
-    document.getElementById('auctionView').classList.add('active');
-    document.getElementById('subAuctionBtn').classList.add('active');
-  }
-}
-
 // =============================================================
-// 📋 드래프트 시스템 (관리자만 방 생성, 팀장 및 관리자만 지명 가능)
+// 📋 드래프트 시스템 (안정적인 조회 로직 적용)
 // =============================================================
 let draftState = {
   active: false,
@@ -1565,7 +1512,6 @@ async function initDraftTab() {
 
   const isAdmin = currentProfile?.is_admin || false;
 
-  // 선택된 내전의 최신 DB 드래프트 상태 동기화 확인
   const selectEl = document.getElementById('draftScrimSelect');
   if (selectEl && selectEl.value) {
     const { data: scrimData } = await supabaseClient.from('scrims').select('draft_state').eq('id', selectEl.value).single();
@@ -1576,7 +1522,6 @@ async function initDraftTab() {
 
   if (!draftState.active) {
     if (!isAdmin) {
-      // 🛡️ 로스터 권한 차단: 드래프트 방 생성 제어 차단 및 관전 안내 메시지 출력
       draftView.innerHTML = `
         <h3>📋 스네이크 드래프트 턴제 지명 (관전 모드)</h3>
         <p style="color: var(--text-muted); margin-top: 10px;">현재 드래프트 방이 생성되지 않았거나, 방 생성 권한은 관리자에게만 있습니다.</p>
@@ -1587,7 +1532,6 @@ async function initDraftTab() {
       return;
     }
 
-    // 관리자 전용 드래프트 설정 화면
     draftView.innerHTML = `
       <h3>📋 스네이크 드래프트 턴제 지명 (관리자 제어 센터)</h3>
       <p>관리자 권한으로 팀장을 지정하고 드래프트 세션을 개설할 수 있습니다.</p>
@@ -1626,17 +1570,14 @@ async function initDraftTab() {
 }
 
 async function loadScrimsForDraftSelect() {
+  const selectEl = document.getElementById('draftScrimSelect');
+  if (!selectEl) return;
+
   try {
     const { data, error } = await supabaseClient
       .from('scrims')
-      .select(`
-        id, title, game, max_players, current_players, draft_state,
-        scrim_participants ( user_id )
-      `)
+      .select('id, title, game, max_players, current_players')
       .order('created_at', { ascending: false });
-
-    const selectEl = document.getElementById('draftScrimSelect');
-    if (!selectEl) return;
 
     if (error || !data || data.length === 0) {
       selectEl.innerHTML = '<option value="">진행 중인 내전이 없습니다.</option>';
@@ -1644,11 +1585,11 @@ async function loadScrimsForDraftSelect() {
     }
 
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
-      const count = scrim.scrim_participants ? scrim.scrim_participants.length : (scrim.current_players || 0);
-      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${count}/${scrim.max_players}명)</option>`;
+      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
+    selectEl.innerHTML = '<option value="">내전 목록을 불러오는 중 오류 발생</option>';
   }
 }
 
@@ -1662,7 +1603,6 @@ async function onDraftScrimSelected() {
 
   const scrimId = selectEl.value;
   
-  // 이미 진행 중인 드래프트 세션이 있는지 확인
   const { data: scrimCheck } = await supabaseClient.from('scrims').select('draft_state').eq('id', scrimId).single();
   if (scrimCheck && scrimCheck.draft_state && scrimCheck.draft_state.active) {
     draftState = scrimCheck.draft_state;
@@ -1839,9 +1779,7 @@ async function startDraftSession() {
     round: 1
   };
 
-  // DB에 드래프트 상태 저장 (실시간 동기화용)
   await supabaseClient.from('scrims').update({ draft_state: draftState }).eq('id', scrimId);
-
   renderDraftBoard();
 }
 
@@ -1964,7 +1902,6 @@ async function selectDraftPlayer(index) {
   const currentTurnLeader = draftState.turn === 'A' ? draftState.leaderA : draftState.leaderB;
   const isAdmin = currentProfile?.is_admin || false;
 
-  // 🛡️ 권한 검증: 현재 차례인 팀장 또는 관리자만 지명 가능 (로스터 차단)
   if (currentUser.id !== currentTurnLeader && !isAdmin) {
     alert(`현재 지명 권한이 없습니다! (${draftState.turn === 'A' ? 'A팀장' : 'B팀장'}만 지명할 수 있습니다)`);
     return;
@@ -1981,16 +1918,14 @@ async function selectDraftPlayer(index) {
     draftState.round++;
   }
 
-  // DB에 갱신된 드래프트 상태 즉시 저장 (실시간 동기화 트리거)
   await supabaseClient.from('scrims').update({ draft_state: draftState }).eq('id', draftState.scrimId);
-
   renderDraftBoard();
 }
 
 async function resetDraft() {
   if (!currentProfile?.is_admin) return;
   if (!confirm('드래프트를 초기화하시겠습니까?')) return;
-  
+
   if (draftState.scrimId) {
     await supabaseClient.from('scrims').update({ draft_state: { active: false } }).eq('id', draftState.scrimId);
   }
@@ -2223,40 +2158,40 @@ async function toggleAdminRole(userId, currentIsAdmin) {
 }
 
 // =============================================================
-// ⚡ Supabase 실시간(Realtime) 구독 설정 (전체 상태 동기화)
+// ⚡ Supabase 실시간(Realtime) 구독 설정 (화면 렌더링 포함)
 // =============================================================
 function initRealtimeSubscriptions() {
   supabaseClient
-    .channel('public:scrims_all_changes')
+    .channel('public:scrims_realtime_channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'scrims' }, (payload) => {
-      const updatedScrim = payload.new;
+      const updated = payload.new;
 
-      // 1. 내전 목록 및 참가자 변동 시 갱신
+      // 1. 내전 목록 업데이트
       if (typeof fetchScrims === 'function') fetchScrims();
 
-      // 2. 현재 자동 팀 나누기 뷰에서 보고 있는 내전 데이터가 업데이트된 경우
+      // 2. 자동 팀 나누기 실시간 화면 갱신
       const teamSelectEl = document.getElementById('teamScrimSelect');
-      if (teamSelectEl && teamSelectEl.value == updatedScrim.id && updatedScrim.balanced_teams) {
-        renderMMRTeamList('teamAList', updatedScrim.balanced_teams.teamA, updatedScrim.balanced_teams.teamA.reduce((acc, cur) => acc + cur.mmr, 0));
-        renderMMRTeamList('teamBList', updatedScrim.balanced_teams.teamB, updatedScrim.balanced_teams.teamB.reduce((acc, cur) => acc + cur.mmr, 0));
+      if (teamSelectEl && updated && teamSelectEl.value == updated.id && updated.balanced_teams) {
+        renderMMRTeamList('teamAList', updated.balanced_teams.teamA, updated.balanced_teams.teamA.reduce((acc, c) => acc + c.mmr, 0));
+        renderMMRTeamList('teamBList', updated.balanced_teams.teamB, updated.balanced_teams.teamB.reduce((acc, c) => acc + c.mmr, 0));
       }
 
-      // 3. 드래프트 상태 실시간 동기화
-      if (updatedScrim.draft_state) {
-        draftState = updatedScrim.draft_state;
-        const draftViewActive = document.getElementById('draftView')?.classList.contains('active');
-        if (draftViewActive) {
+      // 3. 드래프트 실시간 화면 갱신
+      if (updated && updated.draft_state) {
+        draftState = updated.draft_state;
+        const isDraftTabActive = document.getElementById('draftView')?.classList.contains('active');
+        if (isDraftTabActive) {
           renderDraftBoard();
         }
       }
 
-      // 4. 맵 투표 실시간 동기화
+      // 4. 맵 투표 실시간 화면 갱신
       const mapVoteSelectEl = document.getElementById('mapVoteScrimSelect');
-      if (mapVoteSelectEl && mapVoteSelectEl.value == updatedScrim.id) {
+      if (mapVoteSelectEl && updated && mapVoteSelectEl.value == updated.id) {
         if (window.myActiveScrims) {
-          const target = window.myActiveScrims.find(s => s.id == updatedScrim.id);
+          const target = window.myActiveScrims.find(s => s.id == updated.id);
           if (target) {
-            target.map_votes = updatedScrim.map_votes;
+            target.map_votes = updated.map_votes;
             renderMapVoteCards(target);
           }
         }
@@ -2267,7 +2202,3 @@ function initRealtimeSubscriptions() {
     })
     .subscribe();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  initRealtimeSubscriptions();
-});
