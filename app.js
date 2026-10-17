@@ -571,11 +571,12 @@ function closeProfileModal() {
   document.getElementById('profileModal')?.classList.remove('active');
 }
 
-// 🛡️ 누락되어 있던 게임 탭 전환 함수 추가
 function switchGameTab(gameType) {
-  document.querySelectorAll('.game-tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.game-tab-btn').forEach(el => el.classList.remove('active'));
+  // 모든 탭 컨텐츠와 버튼의 active 클래스 제거
+  document.querySelectorAll('.game-profile-view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.game-sub-tabs button').forEach(el => el.classList.remove('active'));
 
+  // 선택한 게임의 탭과 내용에 active 클래스 부여
   const targetContent = document.getElementById(`${gameType}ProfileTab`);
   const targetBtn = document.getElementById(`${gameType}TabBtn`);
 
