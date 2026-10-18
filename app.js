@@ -2331,6 +2331,7 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
     hour: '2-digit',
     minute: '2-digit'
   }) : '일시 미정';
+
   const buttonUrl = 'https://dddddong.vercel.app';
 
   try {
@@ -2360,6 +2361,20 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
               text: '플랫폼에서 지금 바로 참가해 보세요!'
             },
             timestamp: new Date().toISOString() // 메시지 전송 시간 표시
+          }
+        ],
+        // 🚀 하단부에 웹사이트로 바로 이동하는 버튼 추가
+        components: [
+          {
+            type: 1, // Action Row
+            components: [
+              {
+                type: 2, // Button
+                style: 5, // Link Button (URL 링크 버튼은 style이 반드시 5여야 합니다)
+                label: '🌐 내전 웹사이트 바로가기',
+                url: buttonUrl
+              }
+            ]
           }
         ]
       })
