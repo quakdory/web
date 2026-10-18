@@ -2331,13 +2331,14 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
     hour: '2-digit',
     minute: '2-digit'
   }) : '일시 미정';
+  const buttonUrl = 'https://dddddong.vercel.app';
 
   try {
     await fetch(DISCORD_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: '내전 알리미 봇', // 디스코드 채널에 표시될 봇 이름
+        username: '도동이', // 디스코드 채널에 표시될 봇 이름
         embeds: [
           {
             title: `📢 새로운 내전이 개설되었습니다!`,
