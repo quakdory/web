@@ -955,7 +955,6 @@ function renderScrims(scrims) {
       minute: '2-digit'
     }) : '일시 미정';
 
-    // 💡 스크롤을 제거하여 전체가 한눈에 다 보이도록 수정
     let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
     participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
     
@@ -1035,23 +1034,30 @@ function renderScrims(scrims) {
     const card = document.createElement('div');
     card.className = 'scrim-card';
     const displayGameBadge = scrim.game === 'valo' ? 'VAL' : scrim.game.toUpperCase();
+    
+    // 안전한 파라미터 전달을 위한 변수 분리
+    const scrimId = scrim.id;
+    const scrimGame = scrim.game;
+    const scrimTitle = (scrim.title || '').replace(/'/g, "\\'");
+    const scrimTimeRaw = scrim.scrim_time || '';
+    const maxPlayers = scrim.max_players;
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span class="game-badge ${scrim.game}">${displayGameBadge}</span>
+        <span class="game-badge ${scrimGame}">${displayGameBadge}</span>
         <div style="display: flex; gap: 4px;">
           ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `
-            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openEditScrimModal('${scrim.id}', '${scrim.game}', '${scrim.title.replace(/'/g, "\\'")}', '${scrim.scrim_time \vert{}\vert{} ''}',${scrim.max_players})">수정</button>
-            <button class="btn-danger-sm" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteScrim('${scrim.id}')">삭제</button>
+            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openEditScrimModal('${scrimId}', '${scrimGame}', '${scrimTitle}', '${scrimTimeRaw}',${maxPlayers})">수정</button>
+            <button class="btn-danger-sm" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteScrim('${scrimId}')">삭제</button>
           ` : ''}
         </div>
       </div>
       <h3>${scrim.title}</h3>
       <p style="margin: 4px 0; font-size: 0.85rem; color: var(--primary-color); font-weight: bold;">⏰ 일시: ${timeDisplay}</p>
-      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${scrim.max_players} 명</p>
+      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${maxPlayers} 명</p>
       ${participantsHtml}
       <div style="margin-top: 12px;">
-        ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrim.id}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrim.id}', ${currentCount},${scrim.max_players})">참가 신청</button>`}
+        ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrimId}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrimId}', ${currentCount},${maxPlayers})">참가 신청</button>`}
       </div>
     `;
     list.appendChild(card);
