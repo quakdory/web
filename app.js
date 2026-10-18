@@ -2582,3 +2582,63 @@ if (currentProfile?.is_admin) {
     </div>
   `;
 }
+
+// 전체 동의 체크박스 토글 함수
+function toggleAllTerms(isChecked) {
+  const checkboxes = document.querySelectorAll('.term-checkbox');
+  checkboxes.forEach(cb => {
+    cb.checked = isChecked;
+  });
+}
+
+// 개별 체크박스 상태에 따른 전체 동의 동기화
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('term-checkbox')) {
+    const checkboxes = Array.from(document.querySelectorAll('.term-checkbox'));
+    const allChecked = checkboxes.every(cb => cb.checked);
+    const agreeAllCb = document.getElementById('agreeAll');
+    if (agreeAllCb) agreeAllCb.checked = allChecked;
+  }
+});
+
+// 기존 handleSignUp 함수 업데이트 (4개 필수 약관 검증 추가)
+async function handleSignUp(e) {
+  e.preventDefault();
+
+  const term1 = document.getElementById('term1')?.checked;
+  const term2 = document.getElementById('term2')?.checked;
+  const term3 = document.getElementById('term3')?.checked;
+  const term4 = document.getElementById('term4')?.checked;
+
+  if (!term1 || !term2 || !term3 || !term4) {
+    alert('모든 필수 이용약관 및 동의 항목에 체크해 주셔야 회원가입이 가능합니다.');
+    return;
+  }
+
+  const username = document.getElementById('signupUsername').value;
+  const password = document.getElementById('signupPassword').value;
+  const nickname = document.getElementById('signupNickname').value;
+  
+  const email = makeEmailFromUsername(username);
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  
+  if (error) {
+    alert('회원가입 실패: ' + error.message);
+    return;
+  }
+
+  if (data.user) {
+    await supabaseClient
+      .from('profiles')
+      .upsert([{ 
+        id: data.user.id, 
+        nickname: nickname, 
+        is_admin: false,
+        terms_agreed: true // DB에 동의 여부 기록
+      }]);
+  }
+
+  await supabaseClient.auth.signOut();
+  alert('회원가입이 완료되었습니다! 가입하신 아이디와 비밀번호로 로그인해 주세요.');
+  document.getElementById('signupForm').reset();
+}

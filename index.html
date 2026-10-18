@@ -53,6 +53,52 @@
           <label for="signupNickname">닉네임</label>
           <input type="text" id="signupNickname" placeholder="사용할 닉네임" required />
         </div>
+
+        <!-- 📜 [추가된 약관 동의 영역] 회원가입 완료 버튼 바로 위에 배치 -->
+        <div class="terms-container" style="margin-top: 15px; margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.1); border: 1px solid var(--border-color); border-radius: 12px; text-align: left;">
+          <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: var(--text-color); font-weight: bold;">📜 플랫폼 이용약관 및 개인정보 수집·활용 동의</h4>
+          
+          <div class="terms-scroll-box" style="max-height: 120px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+            <strong>[제 1 조: 게임 정보 수집 및 공개]</strong><br>
+            본 플랫폼은 팀 구성, 자동 밸런스 셔플 및 전적 관리를 위해 유저가 입력한 닉네임, 게임 ID(라이엇 ID/배틀태그/소환사명), 티어 및 선호 포지션·캐릭터 정보를 수집하고 타 회원에게 공개합니다.<br><br>
+            <strong>[제 2 조: 노쇼 및 비매너 패널티]</strong><br>
+            내전 참가 신청 후 무단 불참(No-Show), 지각, 고의 트롤링 및 과도한 비매너 언행 적발 시 관리자 권한으로 내전 퇴장 및 로스터 자격 박탈 조치가 취해질 수 있습니다.<br><br>
+            <strong>[제 3 조: 전적 및 MMR 시스템]</strong><br>
+            경기 결과에 따라 개인의 승/패 전적과 MMR 점수(승리 시 상승 / 패배 시 하강)가 실시간으로 변동되며, 리더보드 및 전적 목록에 연동되어 반영됩니다.<br><br>
+            <strong>[제 4 조: 디스코드 커뮤니티 연동]</strong><br>
+            내전 개설, 시작 전 참가자 멘션 및 공지사항 안내를 위해 디스코드 웹훅 알림이 활용될 수 있습니다.
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: var(--text-color);">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="agreeAll" style="width: 16px; height: 16px;" onchange="toggleAllTerms(this.checked)" />
+              <strong>[전체 동의] 약관 및 아래 4개 필수 항목에 모두 동의합니다.</strong>
+            </label>
+            <hr style="border: none; border-top: 1px dashed var(--border-color); margin: 4px 0;" />
+            
+            <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="term-checkbox" id="term1" required style="margin-top: 2px;" />
+              <span><strong>[필수 1]</strong> 닉네임, 게임 ID, 티어 및 선호 캐릭터 정보 수집·공개 동의</span>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="term-checkbox" id="term2" required style="margin-top: 2px;" />
+              <span><strong>[필수 2]</strong> 내전 무단 불참(노쇼) 및 비매너 행위 시 패널티 규정 동의</span>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="term-checkbox" id="term3" required style="margin-top: 2px;" />
+              <span><strong>[필수 3]</strong> 경기 승패 결과에 따른 MMR 자동 변동 및 전적 기록 동의</span>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+              <input type="checkbox" class="term-checkbox" id="term4" required style="margin-top: 2px;" />
+              <span><strong>[필수 4]</strong> 디스코드 커뮤니티 알림 및 역할 멘션 수신 동의</span>
+            </label>
+          </div>
+        </div>
+        <!-- 📜 [추가 완료] -->
+
         <button type="submit" class="btn-primary full-width">회원가입 완료</button>
       </form>
     </div>
