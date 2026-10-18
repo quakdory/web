@@ -2514,8 +2514,3 @@ if (currentProfile?.is_admin) {
     </div>
   `;
 }
-
-// showPlayerProfileModal 내 종목별 카드 예시
-const valoWins = player.valo_wins || 0;
-const valoLosses = player.valo_losses || 0;
-const valoWinRate = calculateWinRate(valoWins, valoLosses);
