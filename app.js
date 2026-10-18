@@ -2668,3 +2668,114 @@ function calculateWinRate(wins = 0, losses = 0) {
   const rate = Math.round((wins / total) * 100);
   return `${rate}% (${total}전 ${wins}승 ${losses}패)`;
 }
+
+async function completeMatch(scrimId, winningTeam) {
+  if (!currentProfile?.is_admin) {
+    alert('경기 결과 기록 권한은 관리자에게만 있습니다.');
+    return;
+  }
+
+  const { data: scrim, error: scrimErr } = await supabaseClient
+    .from('scrims')
+    .select('*')
+    .eq('id', scrimId)
+    .single();
+
+  if (scrimErr || !scrim || !scrim.balanced_teams) {
+    alert('팀이 구성되지 않은 내전은 경기를 종료할 수 없습니다.');
+    return;
+  }
+
+  const { data: existingMatches } = await supabaseClient
+    .from('match_history')
+    .select('id')
+    .eq('scrim_id', scrimId);
+
+  const setNumber = (existingMatches ? existingMatches.length : 0) + 1;
+  const teamName = winningTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
+  
+  if (!confirm(`[${setNumber}세트] ${teamName}의 승리로 기록하고 승패 및 MMR을 반영하시겠습니까?`)) {
+    return;
+  }
+
+  const { teamA, teamB } = scrim.balanced_teams;
+  const gameType = scrim.game;
+
+  const { error: matchErr } = await supabaseClient.from('match_history').insert([{
+    scrim_id: scrimId,
+    game: gameType,
+    title: `${scrim.title} (${setNumber}세트)`,
+    winner_team: winningTeam,
+    team_a: teamA,
+    team_b: teamB
+  }]);
+
+  if (matchErr) {
+    alert('전적 기록 저장 실패: ' + matchErr.message);
+    return;
+  }
+
+  const winningPlayers = winningTeam === 'A' ? teamA : teamB;
+  const losingPlayers = winningTeam === 'A' ? teamB : teamA;
+
+  const winCol = `${gameType}_wins`;
+  const lossCol = `${gameType}_losses`;
+  const mmrCol = `${gameType}_mmr`;
+  const MMR_CHANGE_AMOUNT = 15;
+
+  for (const player of winningPlayers) {
+    if (!player.user_id) continue;
+    const { data: pData } = await supabaseClient.from('profiles').select(`${winCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
+    
+    const currentWins = pData ? (pData[winCol] || 0) : 0;
+    
+    let currentMMR = pData ? pData[mmrCol] : null;
+    if (currentMMR === null || currentMMR === undefined) {
+      let tier = 'Unranked';
+      if (gameType === 'valo') tier = pData?.valo_info?.tier || 'Unranked';
+      else if (gameType === 'ow') tier = pData?.ow_info?.tier || 'Unranked';
+      else if (gameType === 'lol') tier = pData?.lol_info?.tier || 'Unranked';
+      currentMMR = convertTierToMMR(gameType, tier);
+    }
+
+    const updateObj = {};
+    updateObj[winCol] = currentWins + 1;
+    updateObj[mmrCol] = currentMMR + MMR_CHANGE_AMOUNT;
+
+    await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
+  }
+
+  for (const player of losingPlayers) {
+    if (!player.user_id) continue;
+    const { data: pData } = await supabaseClient.from('profiles').select(`${lossCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
+    
+    const currentLosses = pData ? (pData[lossCol] || 0) : 0;
+
+    let currentMMR = pData ? pData[mmrCol] : null;
+    if (currentMMR === null || currentMMR === undefined) {
+      let tier = 'Unranked';
+      if (gameType === 'valo') tier = pData?.valo_info?.tier || 'Unranked';
+      else if (gameType === 'ow') tier = pData?.ow_info?.tier || 'Unranked';
+      else if (gameType === 'lol') tier = pData?.lol_info?.tier || 'Unranked';
+      currentMMR = convertTierToMMR(gameType, tier);
+    }
+
+    const updateObj = {};
+    updateObj[lossCol] = currentLosses + 1;
+    updateObj[mmrCol] = Math.max(100, currentMMR - MMR_CHANGE_AMOUNT);
+
+    await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
+  }
+
+  const isContinue = confirm(`🏆 ${setNumber}세트 결과와 MMR(±15점)이 반영되었습니다!\n\n다음 세트/경기를 계속 진행하시겠습니까?\n[확인] : 내전 유지\n[취소] : 내전 최종 종료`);
+
+  if (!isContinue) {
+    await supabaseClient.from('scrims').update({ status: '종료됨' }).eq('id', scrimId);
+    alert('내전이 최종 종료되었습니다.');
+  } else {
+    alert(`다음 세트를 진행합니다. (현재 기록된 총 세트: ${setNumber}경기)`);
+  }
+
+  fetchScrims();
+  if (typeof loadAdminScrimManager === 'function') loadAdminScrimManager();
+}
