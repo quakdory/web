@@ -2419,14 +2419,10 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// 관리자가 팀을 구성한 후 경기 결과를 기록하고 승/패 처리
+// 관리자가 팀을 구성한 후 세트/경기 결과를 기록하고 승/패 처리 (다전제/multi-match 지원)
 async function completeMatch(scrimId, winningTeam) {
   if (!currentProfile?.is_admin) {
     alert('경기 결과 기록 권한은 관리자에게만 있습니다.');
-    return;
-  }
-
-  if (!confirm(`${winningTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)'}의 승리로 경기를 종료하시겠습니까?`)) {
     return;
   }
 
@@ -2442,14 +2438,27 @@ async function completeMatch(scrimId, winningTeam) {
     return;
   }
 
+  // 기존 기록된 세트 수를 확인하여 세트 번호 자동 부여
+  const { data: existingMatches } = await supabaseClient
+    .from('match_history')
+    .select('id')
+    .eq('scrim_id', scrimId);
+
+  const setNumber = (existingMatches ? existingMatches.length : 0) + 1;
+
+  const teamName = winningTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
+  if (!confirm(`[${setNumber}세트 / 매치 ${setNumber}] ${teamName}의 승리로 승패를 기록하시겠습니까?`)) {
+    return;
+  }
+
   const { teamA, teamB } = scrim.balanced_teams;
   const gameType = scrim.game; // 'valo', 'ow', 'lol'
 
-  // 2. match_history에 매치 기록 저장
+  // 2. match_history에 매치 기록 저장 (세트 타이틀 포함)
   const { error: matchErr } = await supabaseClient.from('match_history').insert([{
     scrim_id: scrimId,
     game: gameType,
-    title: scrim.title,
+    title: `${scrim.title} (${setNumber}세트)`,
     winner_team: winningTeam,
     team_a: teamA,
     team_b: teamB
@@ -2489,14 +2498,19 @@ async function completeMatch(scrimId, winningTeam) {
     await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
   }
 
-  // 4. 종료된 내전 상태 변경 또는 삭제
-  await supabaseClient.from('scrims').update({ status: '종료됨' }).eq('id', scrimId);
+  // 4. 추가 매치 진행 여부 확인
+  const isContinue = confirm(`🏆 ${setNumber}세트 결과가 전적에 반영되었습니다!\n\n다음 세트/경기를 계속 진행하시겠습니까?\n[확인] : 내전 유지 (다음 경기 계속 기록 가능)\n[취소] : 내전 최종 종료`);
 
-  alert('🏆 경기 결과가 성공적으로 반영되고 전적이 업데이트되었습니다!');
+  if (!isContinue) {
+    await supabaseClient.from('scrims').update({ status: '종료됨' }).eq('id', scrimId);
+    alert('내전이 최종 종료되었습니다.');
+  } else {
+    alert(`다음 세트를 진행합니다. (현재 기록된 총 세트: ${setNumber}경기)`);
+  }
+
   fetchScrims();
   if (typeof loadAdminScrimManager === 'function') loadAdminScrimManager();
 }
-
 // 승/패를 기준으로 승률(%) 계산
 function calculateWinRate(wins = 0, losses = 0) {
   const total = wins + losses;
