@@ -2332,7 +2332,7 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
   }) : '일시 미정';
 
   // 🌐 연결할 웹사이트 주소
-  const websiteUrl = 'https://dddddong.vercel.app'; 
+  const websiteUrl = 'https://ddddong.vercel.app/'; 
 
   try {
     await fetch(DISCORD_WEBHOOK_URL, {
