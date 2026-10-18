@@ -2328,13 +2328,32 @@ function initRealtimeSubscriptions() {
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB';
 
 async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTime) {
-  if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('여기에')) return;
+  if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB')) return;
 
-  let embedColor = 0x4f46e5; // 기본 보라색
-  if (game === 'valo') embedColor = 0xff4757;
-  else if (game === 'ow') embedColor = 0xf97316;
-  else if (game === 'lol') embedColor = 0x3b82f6;
+  // 🎮 게임별 고유 색상 및 명칭, 아이콘 설정
+  const gameConfig = {
+    valo: {
+      name: 'VALORANT',
+      color: 0xff4655, // 발로란트 레드
+      icon: '🔴',
+      roleId: '1547272196102029322' // 👈 본인의 발로란트 역할 ID 입력
+    },
+    ow: {
+      name: 'Overwatch 2',
+      color: 0xfa9c1e, // 오버워치 오렌지
+      icon: '🟠',
+      roleId: '1547272248082047007' // 👈 본인의 오버워치 역할 ID 입력
+    },
+    lol: {
+      name: 'League of Legends',
+      color: 0x1e88e5, // 롤 블루
+      icon: '🔵',
+      roleId: '1547272339056627763' // 👈 본인의 롤 역할 ID 입력
+    }
+  };
 
+  const currentConfig = gameConfig[game] || { name: game.toUpperCase(), color: 0x4f46e5, icon: '🎮', roleId: '' };
+  
   const formattedTime = scrimTime ? new Date(scrimTime).toLocaleString('ko-KR', {
     month: 'long',
     day: 'numeric',
@@ -2343,8 +2362,8 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
     minute: '2-digit'
   }) : '일시 미정';
 
-  // 🌐 연결할 웹사이트 주소
   const websiteUrl = 'https://ddddong.vercel.app/'; 
+  const mentionText = currentConfig.roleId ? `<@&${currentConfig.roleId}> ` : '';
 
   try {
     await fetch(DISCORD_WEBHOOK_URL, {
@@ -2352,11 +2371,12 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: '도동이',
+        content: `${mentionText}📢 새로운 **[${currentConfig.name}]** 내전이 매칭되었습니다!`,
         embeds: [
           {
-            title: `📢 새로운 내전이 개설되었습니다!`,
-            description: `**[${game.toUpperCase()}]** ${title}\n\n👉 [🌐 내전 웹사이트 바로가기 및 참가하기](${websiteUrl})`,
-            color: embedColor,
+            title: `${currentConfig.icon} [${currentConfig.name}]${title}`,
+            description: `웹에서 팀원 구성, 맵 투표 및 상세 대진표를 확인하실 수 있습니다.\n\n👉 **[웹사이트에서 내전 확인 및 참가하기](${websiteUrl})**`,
+            color: currentConfig.color,
             fields: [
               {
                 name: '⏰ 진행 일시',
@@ -2364,13 +2384,19 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
                 inline: true
               },
               {
-                name: '👥 모집 인원',
+                name: '👥 모집 정원',
                 value: `\`최대 ${maxPlayers}명\``,
+                inline: true
+              },
+              {
+                name: '🛡️ 진행 종목',
+                value: `\`${currentConfig.name}\``,
                 inline: true
               }
             ],
             footer: {
-              text: '플랫폼에서 지금 바로 참가해 보세요!'
+              text: '도도도동 내전 & 팀 구성 플랫폼',
+              icon_url: 'https://cdn-icons-png.flaticon.com/512/906/906349.png'
             },
             timestamp: new Date().toISOString()
           }
