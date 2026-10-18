@@ -1035,10 +1035,9 @@ function renderScrims(scrims) {
     card.className = 'scrim-card';
     const displayGameBadge = scrim.game === 'valo' ? 'VAL' : scrim.game.toUpperCase();
     
-    // 안전한 파라미터 전달을 위한 변수 분리
     const scrimId = scrim.id;
     const scrimGame = scrim.game;
-    const scrimTitle = (scrim.title || '').replace(/'/g, "\\'");
+    const scrimTitle = scrim.title || '';
     const scrimTimeRaw = scrim.scrim_time || '';
     const maxPlayers = scrim.max_players;
 
@@ -1047,8 +1046,13 @@ function renderScrims(scrims) {
         <span class="game-badge ${scrimGame}">${displayGameBadge}</span>
         <div style="display: flex; gap: 4px;">
           ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `
-            <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openEditScrimModal('${scrimId}', '${scrimGame}', '${scrimTitle}', '${scrimTimeRaw}',${maxPlayers})">수정</button>
-            <button class="btn-danger-sm" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteScrim('${scrimId}')">삭제</button>
+            <button class="btn-secondary edit-scrim-btn" style="padding: 4px 8px; font-size: 0.75rem;" 
+              data-id="${scrimId}" 
+              data-game="${scrimGame}" 
+              data-title="${escapeHtml(scrimTitle)}" 
+              data-time="${scrimTimeRaw}" 
+              data-max="${maxPlayers}">수정</button>
+            <button class="btn-danger-sm delete-scrim-btn" style="padding: 4px 8px; font-size: 0.75rem;" data-id="${scrimId}">삭제</button>
           ` : ''}
         </div>
       </div>
@@ -1057,11 +1061,16 @@ function renderScrims(scrims) {
       <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${maxPlayers} 명</p>
       ${participantsHtml}
       <div style="margin-top: 12px;">
-        ${isJoined ? `<button class="btn-secondary full-width" onclick="cancelScrim('${scrimId}')">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width" onclick="applyScrim('${scrimId}', ${currentCount},${maxPlayers})">참가 신청</button>`}
+        ${isJoined ? `<button class="btn-secondary full-width cancel-scrim-btn" data-id="${scrimId}">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width apply-scrim-btn" data-id="${scrimId}" data-count="${currentCount}" data-max="${maxPlayers}">참가 신청</button>`}
       </div>
     `;
     list.appendChild(card);
   });
+}
+
+// HTML 특수문자 깨짐 방지용 헬퍼 함수
+function escapeHtml(str) {
+  return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function filterGame(gameType) {
@@ -2381,3 +2390,40 @@ async function createScrim(e) {
     alert('내전 생성 실패: ' + error.message);
   }
 }
+
+// 카드 내부 버튼들의 클릭 이벤트를 일괄 관리 (이벤트 위임)
+document.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('.edit-scrim-btn');
+  if (editBtn) {
+    const id = editBtn.getAttribute('data-id');
+    const game = editBtn.getAttribute('data-game');
+    const title = editBtn.getAttribute('data-title');
+    const time = editBtn.getAttribute('data-time');
+    const max = parseInt(editBtn.getAttribute('data-max'), 10);
+    openEditScrimModal(id, game, title, time, max);
+    return;
+  }
+
+  const deleteBtn = e.target.closest('.delete-scrim-btn');
+  if (deleteBtn) {
+    const id = deleteBtn.getAttribute('data-id');
+    deleteScrim(id);
+    return;
+  }
+
+  const applyBtn = e.target.closest('.apply-scrim-btn');
+  if (applyBtn) {
+    const id = applyBtn.getAttribute('data-id');
+    const count = parseInt(applyBtn.getAttribute('data-count'), 10);
+    const max = parseInt(applyBtn.getAttribute('data-max'), 10);
+    applyScrim(id, count, max);
+    return;
+  }
+
+  const cancelBtn = e.target.closest('.cancel-scrim-btn');
+  if (cancelBtn) {
+    const id = cancelBtn.getAttribute('data-id');
+    cancelScrim(id);
+    return;
+  }
+});
