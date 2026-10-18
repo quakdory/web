@@ -2406,3 +2406,107 @@ document.addEventListener('click', (e) => {
     return;
   }
 });
+
+// 관리자가 팀을 구성한 후 경기 결과를 기록하고 승/패 처리
+async function completeMatch(scrimId, winningTeam) {
+  if (!currentProfile?.is_admin) {
+    alert('경기 결과 기록 권한은 관리자에게만 있습니다.');
+    return;
+  }
+
+  if (!confirm(`${winningTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)'}의 승리로 경기를 종료하시겠습니까?`)) {
+    return;
+  }
+
+  // 1. 내전 정보 및 팀 데이터 불러오기
+  const { data: scrim, error: scrimErr } = await supabaseClient
+    .from('scrims')
+    .select('*')
+    .eq('id', scrimId)
+    .single();
+
+  if (scrimErr || !scrim || !scrim.balanced_teams) {
+    alert('팀이 구성되지 않은 내전은 경기를 종료할 수 없습니다. 먼저 자동 팀 나누기나 드래프트를 완료해 주세요.');
+    return;
+  }
+
+  const { teamA, teamB } = scrim.balanced_teams;
+  const gameType = scrim.game; // 'valo', 'ow', 'lol'
+
+  // 2. match_history에 매치 기록 저장
+  const { error: matchErr } = await supabaseClient.from('match_history').insert([{
+    scrim_id: scrimId,
+    game: gameType,
+    title: scrim.title,
+    winner_team: winningTeam,
+    team_a: teamA,
+    team_b: teamB
+  }]);
+
+  if (matchErr) {
+    alert('전적 기록 저장 실패: ' + matchErr.message);
+    return;
+  }
+
+  // 3. 참가 선수들의 승/패 데이터 업데이트
+  const winningPlayers = winningTeam === 'A' ? teamA : teamB;
+  const losingPlayers = winningTeam === 'A' ? teamB : teamA;
+
+  const winCol = `${gameType}_wins`;
+  const lossCol = `${gameType}_losses`;
+
+  // 승리 유저 처리
+  for (const player of winningPlayers) {
+    if (!player.user_id) continue;
+    const { data: pData } = await supabaseClient.from('profiles').select(winCol).eq('id', player.user_id).single();
+    const currentWins = pData ? (pData[winCol] || 0) : 0;
+    
+    const updateObj = {};
+    updateObj[winCol] = currentWins + 1;
+    await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
+  }
+
+  // 패배 유저 처리
+  for (const player of losingPlayers) {
+    if (!player.user_id) continue;
+    const { data: pData } = await supabaseClient.from('profiles').select(lossCol).eq('id', player.user_id).single();
+    const currentLosses = pData ? (pData[lossCol] || 0) : 0;
+
+    const updateObj = {};
+    updateObj[lossCol] = currentLosses + 1;
+    await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
+  }
+
+  // 4. 종료된 내전 상태 변경 또는 삭제
+  await supabaseClient.from('scrims').update({ status: '종료됨' }).eq('id', scrimId);
+
+  alert('🏆 경기 결과가 성공적으로 반영되고 전적이 업데이트되었습니다!');
+  fetchScrims();
+  if (typeof loadAdminScrimManager === 'function') loadAdminScrimManager();
+}
+
+// 승/패를 기준으로 승률(%) 계산
+function calculateWinRate(wins = 0, losses = 0) {
+  const total = wins + losses;
+  if (total === 0) return '0% (0전)';
+  const rate = Math.round((wins / total) * 100);
+  return `${rate}% (${total}전 ${wins}승 ${losses}패)`;
+}
+
+// loadAdminScrimManager 내 카드 액션 영역 예시
+if (currentProfile?.is_admin) {
+  adminActionsHtml = `
+    <div style="display: flex; gap: 6px; margin-top: 8px;">
+      <button class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="completeMatch('${scrim.id}', 'A')">🏆 A팀 승리 처리</button>
+      <button class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem; background: #f43f5e;" onclick="completeMatch('${scrim.id}', 'B')">🏆 B팀 승리 처리</button>
+    </div>
+  `;
+}
+
+// showPlayerProfileModal 내 종목별 카드 예시
+const valoWins = player.valo_wins || 0;
+const valoLosses = player.valo_losses || 0;
+const valoWinRate = calculateWinRate(valoWins, valoLosses);
+
+// 프로필 HTML 내 추가:
+// <p style="margin: 4px 0; font-size: 0.9rem;">전적/승률: <strong style="color: #10b981;">${valoWinRate}</strong></p>
