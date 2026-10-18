@@ -302,7 +302,7 @@ async function handleSignUp(e) {
   }
 
   if (data.user) {
-    await supabaseClient
+    const { error: profileError } = await supabaseClient
       .from('profiles')
       .upsert([{ 
         id: data.user.id, 
@@ -310,11 +310,16 @@ async function handleSignUp(e) {
         is_admin: false,
         terms_agreed: true 
       }]);
+
+    if (profileError) {
+      console.error('프로필 닉네임 저장 오류:', profileError.message);
+    }
   }
 
   await supabaseClient.auth.signOut();
   alert('회원가입이 완료되었습니다! 가입하신 아이디와 비밀번호로 로그인해 주세요.');
   document.getElementById('signupForm').reset();
+  switchAuthTab('login');
 }
 
 function toggleAllTerms(isChecked) {
@@ -358,13 +363,16 @@ async function checkAuthState() {
 
   if (session) {
     currentUser = session.user;
-    const { data: profileData } = await supabaseClient
+    
+    const { data: profileData, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
       .eq('id', currentUser.id)
       .maybeSingle();
 
-    currentProfile = profileData;
+    if (!profileError) {
+      currentProfile = profileData;
+    }
 
     const authContainer = document.getElementById('authContainer');
     const appContainer = document.getElementById('appContainer');
@@ -466,14 +474,6 @@ window.saveScrim = async function(e) {
   const title = document.getElementById('scrimTitle').value;
   const scrimTimeVal = document.getElementById('scrimTime').value;
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
-
-  const formattedTime = scrimTimeVal ? new Date(scrimTimeVal).toLocaleString('ko-KR', {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  }) : '일시 미정';
 
   if (editingId) {
     const { error } = await supabaseClient.from('scrims').update({
@@ -1163,7 +1163,7 @@ async function loadTeamScrimSelect() {
   let html = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
   scrims.forEach(scrim => {
     const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
-    html += `<option value="${scrim.id}">[${gameLabel}]${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
+    html += `<option value="${scrim.id}">[${gameLabel}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
   });
 
   selectEl.innerHTML = html;
@@ -1373,7 +1373,9 @@ async function loadMapVoteScrims() {
       window.myActiveScrims.push(scrim);
       const opt = document.createElement('option');
       opt.value = scrim.id;
-      opt.textContent = `[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)`;
+      const gameUpper = (scrim.game || '').toUpperCase();
+      const currentP = scrim.current_players || 0;
+      opt.textContent = `[${gameUpper}] ${scrim.title} (${currentP}/${scrim.max_players}명)`;
       selectEl.appendChild(opt);
     }
   });
@@ -1658,14 +1660,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   initRealtimeSubscriptions();
 });
 
+// -------------------------------------------------------------
+// [드래프트 관련 로직: 1 - 2 - 2 - 2 - 2 - 1 순서]
+// -------------------------------------------------------------
+const DRAFT_PICK_SEQUENCE = [
+  'A', 
+  'B', 'B', 
+  'A', 'A', 
+  'B', 'B', 
+  'A', 'A', 
+  'B', 'B', 
+  'A', 'A', 
+  'B', 'B', 
+  'A', 'A', 
+  'B', 'B', 
+  'A'
+];
+
 let draftState = {
   active: false,
   scrimId: null,
+  scrimGame: 'valo',
   leaderA: null,
   leaderB: null,
   teamA: [],
   teamB: [],
   availablePlayers: [],
+  pickIndex: 0,
   turn: 'A',
   round: 1
 };
@@ -1749,7 +1770,9 @@ async function loadScrimsForDraftSelect() {
     }
 
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
-      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
+      const gameUpper = ((scrim.game || '')).toUpperCase();
+      const currentP = scrim.current_players || 0;
+      return `<option value="${scrim.id}" data-game="${scrim.game}">[${gameUpper}] ${scrim.title} (${currentP}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
@@ -1837,6 +1860,22 @@ function showPlayerProfileModal(player, gameType = 'valo') {
     return html;
   };
 
+  const valoGameId = valo.game_id || '등록 안 함';
+  const valoTier = valo.tier || 'Unranked';
+  const valoMainRole = valo.main_role || '없음';
+
+  const owGameId = ow.game_id || '등록 안 함';
+  const owTier = ow.tier || 'Unranked';
+  const owMainRole = ow.main_role || '없음';
+
+  const lolGameId = lol.game_id || '등록 안 함';
+  const lolTier = lol.tier || 'Unranked';
+  const lolMainRole = lol.main_role || '없음';
+
+  const valoBorder = gameType === 'valo' ? 'border-left: 5px solid #ff4757;' : '';
+  const owBorder = gameType === 'ow' ? 'border-left: 5px solid #f97316;' : '';
+  const lolBorder = gameType === 'lol' ? 'border-left: 5px solid #3b82f6;' : '';
+
   const modalHtml = `
     <div id="playerDetailModal" class="modal active" style="z-index: 1050;">
       <div class="modal-content" style="max-width: 480px;">
@@ -1846,26 +1885,26 @@ function showPlayerProfileModal(player, gameType = 'valo') {
         </div>
         <div style="display: flex; flex-direction: column; gap: 14px; max-height: 65vh; overflow-y: auto; padding-right: 4px;">
           
-          <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'valo' ? 'border-left: 5px solid #ff4757;' : ''}">
+          <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${valoBorder}">
             <h4 style="margin: 0 0 8px 0; color: #ff4757;">🔴 발로란트</h4>
-            <p style="margin: 4px 0; font-size: 0.9rem;">아이디: <strong>${valo.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valo.tier || 'Unranked'}</strong> | 주포지션: <strong>${valo.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">아이디: <strong>${valoGameId}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valoTier}</strong> | 주포지션: <strong>${valoMainRole}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 요원:</div>
             ${renderAgentIcons(valo.main_agents, 'valo')}
           </div>
 
-          <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'ow' ? 'border-left: 5px solid #f97316;' : ''}">
+          <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${owBorder}">
             <h4 style="margin: 0 0 8px 0; color: #f97316;">🟠 오버워치 2</h4>
-            <p style="margin: 4px 0; font-size: 0.9rem;">배틀태그: <strong>${ow.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${ow.tier || 'Unranked'}</strong> | 주포지션: <strong>${ow.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">배틀태그: <strong>${owGameId}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${owTier}</strong> | 주포지션: <strong>${owMainRole}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 영웅:</div>
             ${renderAgentIcons(ow.main_agents, 'ow')}
           </div>
 
-          <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'lol' ? 'border-left: 5px solid #3b82f6;' : ''}">
+          <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${lolBorder}">
             <h4 style="margin: 0 0 8px 0; color: #3b82f6;">🔵 리그 오브 레전드</h4>
-            <p style="margin: 4px 0; font-size: 0.9rem;">소환사명: <strong>${lol.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lol.tier || 'Unranked'}</strong> | 주라인: <strong>${lol.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">소환사명: <strong>${lolGameId}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lolTier}</strong> | 주라인: <strong>${lolMainRole}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 챔피언:</div>
             ${renderAgentIcons(lol.main_champs, 'lol')}
           </div>
@@ -1939,7 +1978,8 @@ async function startDraftSession() {
     teamA: [leaderAObj],
     teamB: [leaderBObj],
     availablePlayers: remainingPlayers,
-    turn: 'A',
+    pickIndex: 0,
+    turn: DRAFT_PICK_SEQUENCE[0] || 'A',
     round: 1
   };
 
@@ -1951,11 +1991,13 @@ function renderDraftBoard() {
   const draftView = document.getElementById('draftView');
   if (!draftView) return;
 
-  const currentTeamName = draftState.turn === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
+  const currentTurnTeam = draftState.turn || DRAFT_PICK_SEQUENCE[draftState.pickIndex || 0] || 'A';
+  const currentTeamName = currentTurnTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
   const gameKey = draftState.scrimGame || 'valo';
   const isAdmin = currentProfile?.is_admin || false;
-  const currentTurnLeader = draftState.turn === 'A' ? draftState.leaderA : draftState.leaderB;
+  const currentTurnLeader = currentTurnTeam === 'A' ? draftState.leaderA : draftState.leaderB;
   const isMyTurnToPick = isAdmin || (currentUser && currentUser.id === currentTurnLeader);
+  const currentPickNo = (draftState.pickIndex || 0) + 1;
 
   const renderCardMiniIcons = (player) => {
     let list = [];
@@ -1995,24 +2037,27 @@ function renderDraftBoard() {
   };
 
   draftView.innerHTML = `
-    <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h3>📋 스네이크 드래프트 지명 중 [${gameKey.toUpperCase()}] (Round${draftState.round})</h3>
+    <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <h3 style="margin: 0;">📋 스네이크 드래프트 지명 중 [${gameKey.toUpperCase()}]</h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">지명 방식: 1 - 2 - 2 - 2 - 2 - 1 픽</span>
+      </div>
       <div style="display: flex; gap: 10px; align-items: center;">
-        <span class="badge" style="background: ${draftState.turn === 'A' ? '#6366f1' : '#f43f5e'}; color: white; padding: 6px 14px;">
-          🎯 지명 차례: ${currentTeamName}${isMyTurnToPick ? '(내 차례!)' : ''}
+        <span class="badge" style="background: ${currentTurnTeam === 'A' ? '#6366f1' : '#f43f5e'}; color: white; padding: 6px 14px; font-weight: bold;">
+          🎯 픽 #${currentPickNo} 차례: ${currentTeamName}${isMyTurnToPick ? '(내 차례!)' : ''}
         </span>
-        ${isAdmin ? `<button class="btn-danger-sm" onclick="resetDraft()">드래프트 초기화</button>` : ''}
+        ${isAdmin ? '<button class="btn-danger-sm" onclick="resetDraft()">드래프트 초기화</button>' : ''}
       </div>
     </div>
 
     <div class="team-result-grid" style="margin-bottom: 20px;">
-      <div class="team-card-box team-a" style="border-color: ${draftState.turn === 'A' ? '#6366f1' : 'var(--border-color)'};">
-        <h4 style="color: #6366f1;">👑 BLUE TEAM (A팀)</h4>
+      <div class="team-card-box team-a" style="border-color: ${currentTurnTeam === 'A' ? '#6366f1' : 'var(--border-color)'};">
+        <h4 style="color: #6366f1;">👑 BLUE TEAM (A팀) (${draftState.teamA.length}명)</h4>
         <ul class="team-member-list">
           ${draftState.teamA.map((p, i) => `
             <li class="profile-click-item" data-player='${JSON.stringify(p)}' data-game="${gameKey}" style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
               <div>
-                ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
+                ${i === 0 ? '👑 [팀장] ' : `<span style="font-size: 0.75rem; color: #6366f1; font-weight: bold;">[픽 ${i}] </span>`}<strong>${p.nickname}</strong>
                 <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
               </div>
               <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
@@ -2020,13 +2065,13 @@ function renderDraftBoard() {
           `).join('')}
         </ul>
       </div>
-      <div class="team-card-box team-b" style="border-color: ${draftState.turn === 'B' ? '#f43f5e' : 'var(--border-color)'};">
-        <h4 style="color: #f43f5e;">👑 RED TEAM (B팀)</h4>
+      <div class="team-card-box team-b" style="border-color: ${currentTurnTeam === 'B' ? '#f43f5e' : 'var(--border-color)'};">
+        <h4 style="color: #f43f5e;">👑 RED TEAM (B팀) (${draftState.teamB.length}명)</h4>
         <ul class="team-member-list">
           ${draftState.teamB.map((p, i) => `
             <li class="profile-click-item" data-player='${JSON.stringify(p)}' data-game="${gameKey}" style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
               <div>
-                ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
+                ${i === 0 ? '👑 [팀장] ' : `<span style="font-size: 0.75rem; color: #f43f5e; font-weight: bold;">[픽 ${i}] </span>`}<strong>${p.nickname}</strong>
                 <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
               </div>
               <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
@@ -2037,9 +2082,9 @@ function renderDraftBoard() {
     </div>
 
     <div class="team-control-box">
-      <h4>지명 대기 선수 목록</h4>
+      <h4>지명 대기 선수 목록 (${draftState.availablePlayers.length}명 남음)</h4>
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-        ${isMyTurnToPick ? '✨ 현재 귀하의 팀 지명 차례입니다! 선수를 선택하세요.' : '👀 현재 다른 팀의 지명 차례입니다. (로스터 관전 모드)'}
+        ${isMyTurnToPick ? '✨ 현재 귀하의 팀 지명 차례입니다! 선수를 선택하세요.' : '👀 현재 상대 팀의 지명 차례입니다. (로스터 관전 모드)'}
       </p>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 10px;">
@@ -2063,23 +2108,29 @@ async function selectDraftPlayer(index) {
     return;
   }
 
-  const currentTurnLeader = draftState.turn === 'A' ? draftState.leaderA : draftState.leaderB;
+  const currentTurnTeam = draftState.turn || DRAFT_PICK_SEQUENCE[draftState.pickIndex || 0] || 'A';
+  const currentTurnLeader = currentTurnTeam === 'A' ? draftState.leaderA : draftState.leaderB;
   const isAdmin = currentProfile?.is_admin || false;
 
   if (currentUser.id !== currentTurnLeader && !isAdmin) {
-    alert(`현재 지명 권한이 없습니다! (${draftState.turn === 'A' ? 'A팀장' : 'B팀장'}만 지명할 수 있습니다)`);
+    alert(`현재 지명 권한이 없습니다! (${currentTurnTeam === 'A' ? 'A팀장' : 'B팀장'}만 지명할 수 있습니다)`);
     return;
   }
 
   const selectedPlayer = draftState.availablePlayers.splice(index, 1)[0];
 
-  if (draftState.turn === 'A') {
+  if (currentTurnTeam === 'A') {
     draftState.teamA.push(selectedPlayer);
-    draftState.turn = 'B';
   } else {
     draftState.teamB.push(selectedPlayer);
-    draftState.turn = 'A';
-    draftState.round++;
+  }
+
+  draftState.pickIndex = (draftState.pickIndex || 0) + 1;
+  
+  if (draftState.pickIndex < DRAFT_PICK_SEQUENCE.length) {
+    draftState.turn = DRAFT_PICK_SEQUENCE[draftState.pickIndex];
+  } else {
+    draftState.turn = currentTurnTeam === 'A' ? 'B' : 'A';
   }
 
   await supabaseClient.from('scrims').update({ draft_state: draftState }).eq('id', draftState.scrimId);
@@ -2097,6 +2148,7 @@ async function resetDraft() {
   draftState.active = false;
   initDraftTab();
 }
+// -------------------------------------------------------------
 
 async function loadAdminScrimManager() {
   if (!currentProfile?.is_admin) return;
