@@ -355,17 +355,44 @@ async function checkAuthState() {
       }
     }
 
-    // 새 내전 생성 모달 열기 (생성 모드)
-function openModal() {
+    const newScrimBtn = document.getElementById('newScrimBtn');
+    const adminTabBtn = document.getElementById('adminTabBtn');
+
+    if (currentProfile?.is_admin) {
+      if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
+      if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
+    } else {
+      if (newScrimBtn) newScrimBtn.style.display = 'none';
+      if (adminTabBtn) adminTabBtn.style.display = 'none';
+    }
+
+    fetchScrims();
+  } else {
+    currentUser = null;
+    currentProfile = null;
+    
+    const authContainer = document.getElementById('authContainer');
+    const appContainer = document.getElementById('appContainer');
+
+    if (authContainer) authContainer.style.display = 'flex';
+    if (appContainer) appContainer.style.display = 'none';
+  }
+}
+
+supabaseClient.auth.onAuthStateChange(() => {
+  checkAuthState();
+});
+
+// 💡 모달 관련 함수 전역 등록
+window.openModal = function() {
   document.getElementById('editingScrimId').value = '';
   document.getElementById('scrimModalTitle').textContent = '새 내전 만들기';
   document.getElementById('scrimSubmitBtn').textContent = '내전 개설';
   document.getElementById('scrimForm').reset();
   document.getElementById('scrimModal')?.classList.add('active');
-}
+};
 
-// 내전 수정 모달 열기 (수정 모드)
-function openEditScrimModal(id, game, title, scrimTime, maxPlayers) {
+window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('editingScrimId').value = id;
   document.getElementById('scrimModalTitle').textContent = '내전 정보 수정';
   document.getElementById('scrimSubmitBtn').textContent = '수정 완료';
@@ -383,16 +410,16 @@ function openEditScrimModal(id, game, title, scrimTime, maxPlayers) {
   
   document.getElementById('scrimMax').value = maxPlayers;
   document.getElementById('scrimModal')?.classList.add('active');
-}
+};
 
-function closeModal() {
+window.closeModal = function() {
   document.getElementById('scrimModal')?.classList.remove('active');
   document.getElementById('scrimForm')?.reset();
   document.getElementById('editingScrimId').value = '';
-}
+};
 
 // 생성 및 수정 공통 처리 함수
-async function saveScrim(e) {
+window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
   const game = document.getElementById('scrimGame').value;
@@ -447,32 +474,7 @@ async function saveScrim(e) {
       alert('내전 생성 실패: ' + error.message);
     }
   }
-}
-
-    if (currentProfile?.is_admin) {
-      if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
-      if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
-    } else {
-      if (newScrimBtn) newScrimBtn.style.display = 'none';
-      if (adminTabBtn) adminTabBtn.style.display = 'none';
-    }
-
-    fetchScrims();
-  } else {
-    currentUser = null;
-    currentProfile = null;
-    
-    const authContainer = document.getElementById('authContainer');
-    const appContainer = document.getElementById('appContainer');
-
-    if (authContainer) authContainer.style.display = 'flex';
-    if (appContainer) appContainer.style.display = 'none';
-  }
-}
-
-supabaseClient.auth.onAuthStateChange(() => {
-  checkAuthState();
-});
+};
 
 function renderTierPicker(selectedTierName = 'Unranked') {
   const container = document.getElementById('valoTierContainer');
@@ -663,11 +665,9 @@ function closeProfileModal() {
 }
 
 function switchGameTab(gameType) {
-  // 모든 탭 컨텐츠와 버튼의 active 클래스 제거
   document.querySelectorAll('.game-profile-view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.game-sub-tabs button').forEach(el => el.classList.remove('active'));
 
-  // 선택한 게임의 탭과 내용에 active 클래스 부여
   const targetContent = document.getElementById(`${gameType}ProfileTab`);
   const targetBtn = document.getElementById(`${gameType}TabBtn`);
 
@@ -887,15 +887,6 @@ function goToMain() {
   filterGame('all');
 }
 
-function openModal() {
-  document.getElementById('editingScrimId').value = '';
-  document.getElementById('scrimModalTitle').textContent = '새 내전 만들기';
-  document.getElementById('scrimSubmitBtn').textContent = '내전 개설';
-  document.getElementById('scrimForm').reset();
-  document.getElementById('scrimModal')?.classList.add('active');
-}
-function closeModal() { document.getElementById('scrimModal')?.classList.remove('active'); document.getElementById('scrimForm')?.reset(); }
-
 async function fetchScrims() {
   const list = document.getElementById('scrimList');
   if (!list) return;
@@ -946,7 +937,6 @@ function renderScrims(scrims) {
     const isFull = currentCount >= scrim.max_players;
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
 
-    // 날짜 포맷팅
     const timeDisplay = scrim.scrim_time ? new Date(scrim.scrim_time).toLocaleString('ko-KR', {
       month: 'numeric',
       day: 'numeric',
@@ -1068,7 +1058,6 @@ function renderScrims(scrims) {
   });
 }
 
-// HTML 특수문자 깨짐 방지용 헬퍼 함수
 function escapeHtml(str) {
   return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
@@ -1078,16 +1067,6 @@ function filterGame(gameType) {
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelector(`.filter-btn[data-filter="${gameType}"]`)?.classList.add('active');
   fetchScrims();
-}
-
-async function createScrim(e) {
-  e.preventDefault();
-  const game = document.getElementById('scrimGame').value;
-  const title = document.getElementById('scrimTitle').value;
-  const max_players = parseInt(document.getElementById('scrimMax').value, 10);
-
-  const { error } = await supabaseClient.from('scrims').insert([{ game, title, current_players: 1, max_players, status: '모집 중', host_id: currentUser.id }]);
-  if (!error) { closeModal(); fetchScrims(); }
 }
 
 async function applyScrim(scrimId, currentCount, maxPlayers) {
@@ -1115,8 +1094,6 @@ async function deleteScrim(scrimId) {
   }
 
   alert('내전이 성공적으로 삭제되었습니다.');
-  
-  // 🔄 내전 목록 및 관리자 화면 갱신
   fetchScrims();
   if (typeof loadAdminScrimManager === 'function' && currentProfile?.is_admin) {
     loadAdminScrimManager();
@@ -2346,7 +2323,7 @@ async function sendDiscordWebhook(message) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        content: message, // 디스코드 채널에 전송될 텍스트 내용
+        content: message,
       })
     });
   } catch (err) {
@@ -2354,44 +2331,7 @@ async function sendDiscordWebhook(message) {
   }
 }
 
-async function createScrim(e) {
-  e.preventDefault();
-  const game = document.getElementById('scrimGame').value;
-  const title = document.getElementById('scrimTitle').value;
-  const scrimTimeVal = document.getElementById('scrimTime').value; // 일시 값 가져오기
-  const max_players = parseInt(document.getElementById('scrimMax').value, 10);
-
-  // 날짜/시간 예쁘게 포맷팅 (예: 10월 20일(화) 21:00)
-  const formattedTime = scrimTimeVal ? new Date(scrimTimeVal).toLocaleString('ko-KR', {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  }) : '일시 미정';
-
-  const { error } = await supabaseClient.from('scrims').insert([{ 
-    game, 
-    title, 
-    scrim_time: scrimTimeVal, // DB 컬럼 저장 (Supabase에 scrim_time 컬럼 추가 권장)
-    current_players: 1, 
-    max_players, 
-    status: '모집 중', 
-    host_id: currentUser.id 
-  }]);
-
-  if (!error) { 
-    closeModal(); 
-    fetchScrims(); 
-
-    // 🚀 디스코드 웹훅 알림에 일자 및 시간 정보 추가!
-    await sendDiscordWebhook(`📢 **새로운 내전이 개설되었습니다!**\n> **[${game.toUpperCase()}]** ${title}\n> ⏰ **일시:** ${formattedTime}\n> 👥 **모집 인원:** 최대 ${max_players}명\n플랫폼에서 지금 바로 참가해 보세요!`);
-  } else {
-    alert('내전 생성 실패: ' + error.message);
-  }
-}
-
-// 카드 내부 버튼들의 클릭 이벤트를 일괄 관리 (이벤트 위임)
+// 이벤트 위임 처리
 document.addEventListener('click', (e) => {
   const editBtn = e.target.closest('.edit-scrim-btn');
   if (editBtn) {
