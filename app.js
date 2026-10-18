@@ -2318,7 +2318,6 @@ const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/156115308794570347
 async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTime) {
   if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('여기에')) return;
 
-  // 게임별 테두리 색상 지정 (발로란트: 빨간색, 오버워치: 주황색, 롤: 파란색)
   let embedColor = 0x4f46e5; // 기본 보라색
   if (game === 'valo') embedColor = 0xff4757;
   else if (game === 'ow') embedColor = 0xf97316;
@@ -2332,19 +2331,20 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
     minute: '2-digit'
   }) : '일시 미정';
 
-  const buttonUrl = 'https://dddddong.vercel.app';
+  // 🌐 연결할 웹사이트 주소
+  const websiteUrl = 'https://dddddong.vercel.app'; 
 
   try {
     await fetch(DISCORD_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: '도동이', // 디스코드 채널에 표시될 봇 이름
+        username: '도동이',
         embeds: [
           {
             title: `📢 새로운 내전이 개설되었습니다!`,
-            description: `**[${game.toUpperCase()}]**${title}`,
-            color: embedColor, // 임베드 좌측 색상 바
+            description: `**[${game.toUpperCase()}]** ${title}\n\n👉 [🌐 내전 웹사이트 바로가기 및 참가하기](${websiteUrl})`,
+            color: embedColor,
             fields: [
               {
                 name: '⏰ 진행 일시',
@@ -2360,21 +2360,7 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
             footer: {
               text: '플랫폼에서 지금 바로 참가해 보세요!'
             },
-            timestamp: new Date().toISOString() // 메시지 전송 시간 표시
-          }
-        ],
-        // 🚀 하단부에 웹사이트로 바로 이동하는 버튼 추가
-        components: [
-          {
-            type: 1, // Action Row
-            components: [
-              {
-                type: 2, // Button
-                style: 5, // Link Button (URL 링크 버튼은 style이 반드시 5여야 합니다)
-                label: '🌐 내전 웹사이트 바로가기',
-                url: buttonUrl
-              }
-            ]
+            timestamp: new Date().toISOString()
           }
         ]
       })
