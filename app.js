@@ -469,7 +469,7 @@ window.saveScrim = async function(e) {
       closeModal(); 
       fetchScrims(); 
 
-      await sendDiscordWebhook(`📢 **새로운 내전이 개설되었습니다!**\n> **[${game.toUpperCase()}]** ${title}\n> ⏰ **일시:** ${formattedTime}\n> 👥 **모집 인원:** 최대 ${max_players}명\n플랫폼에서 지금 바로 참가해 보세요!`);
+      await sendDiscordWebhook(title, title, game, max_players, scrimTimeVal);
     } else {
       alert('내전 생성 실패: ' + error.message);
     }
@@ -2315,15 +2315,52 @@ function initRealtimeSubscriptions() {
 
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1561153087945703477/eTBbjMzPmAi--48NwwClNA2X4Xnk7q1vcTR_TCWb49ZJtkJhJY-Avb4jvbFO8JBFvB3l';
 
-async function sendDiscordWebhook(message) {
+async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTime) {
   if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('여기에')) return;
+
+  // 게임별 테두리 색상 지정 (발로란트: 빨간색, 오버워치: 주황색, 롤: 파란색)
+  let embedColor = 0x4f46e5; // 기본 보라색
+  if (game === 'valo') embedColor = 0xff4757;
+  else if (game === 'ow') embedColor = 0xf97316;
+  else if (game === 'lol') embedColor = 0x3b82f6;
+
+  const formattedTime = scrimTime ? new Date(scrimTime).toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  }) : '일시 미정';
 
   try {
     await fetch(DISCORD_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        content: message,
+        username: '내전 알리미 봇', // 디스코드 채널에 표시될 봇 이름
+        embeds: [
+          {
+            title: `📢 새로운 내전이 개설되었습니다!`,
+            description: `**[${game.toUpperCase()}]**${title}`,
+            color: embedColor, // 임베드 좌측 색상 바
+            fields: [
+              {
+                name: '⏰ 진행 일시',
+                value: `\`${formattedTime}\``,
+                inline: true
+              },
+              {
+                name: '👥 모집 인원',
+                value: `\`최대 ${maxPlayers}명\``,
+                inline: true
+              }
+            ],
+            footer: {
+              text: '플랫폼에서 지금 바로 참가해 보세요!'
+            },
+            timestamp: new Date().toISOString() // 메시지 전송 시간 표시
+          }
+        ]
       })
     });
   } catch (err) {
