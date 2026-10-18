@@ -2325,7 +2325,7 @@ function initRealtimeSubscriptions() {
     .subscribe();
 }
 
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1561153087945703477/eTBbjMzPmAi--48NwwClNA2X4Xnk7q1vcTR_TCWb49ZJtkJhJY-Avb4jvbFO8JBFvB3l';
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB';
 
 async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTime) {
   if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('여기에')) return;
@@ -2538,6 +2538,7 @@ async function completeMatch(scrimId, winningTeam) {
   fetchScrims();
   if (typeof loadAdminScrimManager === 'function') loadAdminScrimManager();
 }
+
 // 승/패를 기준으로 승률(%) 계산
 function calculateWinRate(wins = 0, losses = 0) {
   const total = wins + losses;
