@@ -2328,7 +2328,7 @@ function initRealtimeSubscriptions() {
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB';
 
 async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTime) {
-  if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes('https://discord.com/api/webhooks/1550785142790950914/435M9oyRAQTED2IvfR6ziE_xhGXnbQ6tE6-IUR-ppNbHQNY0z_TFRku2eT0gv8uN8pOB')) return;
+  if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.trim() === '') return;
 
   // 🎮 게임별 고유 색상 및 명칭, 아이콘 설정
   const gameConfig = {
@@ -2336,19 +2336,19 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
       name: 'VALORANT',
       color: 0xff4655, // 발로란트 레드
       icon: '🔴',
-      roleId: '1547272196102029322' // 👈 본인의 발로란트 역할 ID 입력
+      roleId: '1547272196102029322' // 발로란트 역할 ID
     },
     ow: {
       name: 'Overwatch 2',
       color: 0xfa9c1e, // 오버워치 오렌지
       icon: '🟠',
-      roleId: '1547272248082047007' // 👈 본인의 오버워치 역할 ID 입력
+      roleId: '1547272248082047007' // 오버워치 역할 ID
     },
     lol: {
       name: 'League of Legends',
       color: 0x1e88e5, // 롤 블루
       icon: '🔵',
-      roleId: '1547272339056627763' // 👈 본인의 롤 역할 ID 입력
+      roleId: '1547272339056627763' // 롤 역할 ID
     }
   };
 
