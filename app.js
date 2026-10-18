@@ -276,8 +276,20 @@ function switchAuthTab(type) {
   }
 }
 
+// 📜 필수 약관 동의 검증이 포함된 회원가입 처리 함수
 async function handleSignUp(e) {
   e.preventDefault();
+
+  const term1 = document.getElementById('term1')?.checked;
+  const term2 = document.getElementById('term2')?.checked;
+  const term3 = document.getElementById('term3')?.checked;
+  const term4 = document.getElementById('term4')?.checked;
+
+  if (!term1 || !term2 || !term3 || !term4) {
+    alert('모든 필수 이용약관 및 동의 항목에 체크해 주셔야 회원가입이 가능합니다.');
+    return;
+  }
+
   const username = document.getElementById('signupUsername').value;
   const password = document.getElementById('signupPassword').value;
   const nickname = document.getElementById('signupNickname').value;
@@ -293,13 +305,36 @@ async function handleSignUp(e) {
   if (data.user) {
     await supabaseClient
       .from('profiles')
-      .upsert([{ id: data.user.id, nickname: nickname, is_admin: false }]);
+      .upsert([{ 
+        id: data.user.id, 
+        nickname: nickname, 
+        is_admin: false,
+        terms_agreed: true 
+      }]);
   }
 
   await supabaseClient.auth.signOut();
   alert('회원가입이 완료되었습니다! 가입하신 아이디와 비밀번호로 로그인해 주세요.');
   document.getElementById('signupForm').reset();
 }
+
+// 전체 동의 체크박스 토글 함수
+function toggleAllTerms(isChecked) {
+  const checkboxes = document.querySelectorAll('.term-checkbox');
+  checkboxes.forEach(cb => {
+    cb.checked = isChecked;
+  });
+}
+
+// 개별 체크박스 상태에 따른 전체 동의 동기화
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('term-checkbox')) {
+    const checkboxes = Array.from(document.querySelectorAll('.term-checkbox'));
+    const allChecked = checkboxes.every(cb => cb.checked);
+    const agreeAllCb = document.getElementById('agreeAll');
+    if (agreeAllCb) agreeAllCb.checked = allChecked;
+  }
+});
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -358,6 +393,7 @@ async function checkAuthState() {
     const newScrimBtn = document.getElementById('newScrimBtn');
     const adminTabBtn = document.getElementById('adminTabBtn');
 
+    // 🔒 일반 로스터는 내전 생성 버튼과 관리자 탭이 보이지 않도록 엄격히 분기
     if (currentProfile?.is_admin) {
       if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
       if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
@@ -385,6 +421,10 @@ supabaseClient.auth.onAuthStateChange(() => {
 
 // 💡 모달 관련 함수 전역 등록
 window.openModal = function() {
+  if (!currentProfile?.is_admin) {
+    alert('내전 개설 권한은 관리자에게만 있습니다.');
+    return;
+  }
   document.getElementById('editingScrimId').value = '';
   document.getElementById('scrimModalTitle').textContent = '새 내전 만들기';
   document.getElementById('scrimSubmitBtn').textContent = '내전 개설';
@@ -393,6 +433,12 @@ window.openModal = function() {
 };
 
 window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
+  const isOwnerOrAdmin = currentProfile?.is_admin || false;
+  if (!isOwnerOrAdmin) {
+    alert('수정 권한이 없습니다.');
+    return;
+  }
+
   document.getElementById('editingScrimId').value = id;
   document.getElementById('scrimModalTitle').textContent = '내전 정보 수정';
   document.getElementById('scrimSubmitBtn').textContent = '수정 완료';
@@ -1031,11 +1077,14 @@ function renderScrims(scrims) {
     const scrimTimeRaw = scrim.scrim_time || '';
     const maxPlayers = scrim.max_players;
 
+    // 🔒 일반 로스터에게는 수정/삭제 버튼이 절대 보이지 않고, 오직 관리자이거나 본인이 만든 내전일 때만 보이도록 엄격히 제어
+    const isOwnerOrAdmin = currentProfile?.is_admin || (currentUser && scrim.host_id === currentUser.id);
+
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <span class="game-badge ${scrimGame}">${displayGameBadge}</span>
         <div style="display: flex; gap: 4px;">
-          ${(currentProfile?.is_admin || scrim.host_id === currentUser?.id) ? `
+          ${isOwnerOrAdmin ? `
             <button class="btn-secondary edit-scrim-btn" style="padding: 4px 8px; font-size: 0.75rem;" 
               data-id="${scrimId}" 
               data-game="${scrimGame}" 
@@ -1048,7 +1097,7 @@ function renderScrims(scrims) {
       </div>
       <h3>${scrim.title}</h3>
       <p style="margin: 4px 0; font-size: 0.85rem; color: var(--primary-color); font-weight: bold;">⏰ 일시: ${timeDisplay}</p>
-      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${maxPlayers} 명</p>
+      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> /${maxPlayers} 명</p>
       ${participantsHtml}
       <div style="margin-top: 12px;">
         ${isJoined ? `<button class="btn-secondary full-width cancel-scrim-btn" data-id="${scrimId}">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width apply-scrim-btn" data-id="${scrimId}" data-count="${currentCount}" data-max="${maxPlayers}">참가 신청</button>`}
@@ -1084,6 +1133,10 @@ async function cancelScrim(scrimId) {
 }
 
 async function deleteScrim(scrimId) {
+  if (!currentProfile?.is_admin) {
+    alert('내전 삭제 권한은 관리자에게만 있습니다.');
+    return;
+  }
   if (!confirm('정말 이 내전을 삭제하시겠습니까?')) return;
 
   const { error } = await supabaseClient.from('scrims').delete().eq('id', scrimId);
@@ -1095,7 +1148,7 @@ async function deleteScrim(scrimId) {
 
   alert('내전이 성공적으로 삭제되었습니다.');
   fetchScrims();
-  if (typeof loadAdminScrimManager === 'function' && currentProfile?.is_admin) {
+  if (typeof loadAdminScrimManager === 'function') {
     loadAdminScrimManager();
   }
 }
@@ -1119,7 +1172,7 @@ async function loadTeamScrimSelect() {
   let html = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
   scrims.forEach(scrim => {
     const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
-    html += `<option value="${scrim.id}">[${gameLabel}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
+    html += `<option value="${scrim.id}">[${gameLabel}]${scrim.title} (${scrim.current_players \vert{}\vert{} 0}/${scrim.max_players}명)</option>`;
   });
 
   selectEl.innerHTML = html;
@@ -1177,7 +1230,7 @@ async function generateBalancedTeamsFromMMR() {
     else if (gameType === 'lol') tier = p.lol_info?.tier || 'Unranked';
 
     const mmr = p[mmrKey] || convertTierToMMR(gameType, tier);
-    return { nickname: p.nickname || '알 수 없음', tier: tier, mmr: mmr };
+    return { user_id: m.user_id, nickname: p.nickname || '알 수 없음', tier: tier, mmr: mmr };
   });
 
   players.sort((a, b) => b.mmr - a.mmr);
@@ -1329,7 +1382,7 @@ async function loadMapVoteScrims() {
       window.myActiveScrims.push(scrim);
       const opt = document.createElement('option');
       opt.value = scrim.id;
-      opt.textContent = `[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)`;
+      opt.textContent = `[${(scrim.game \vert{}\vert{} '').toUpperCase()}]${scrim.title} (${scrim.current_players \vert{}\vert{} 0}/${scrim.max_players}명)`;
       selectEl.appendChild(opt);
     }
   });
@@ -1415,7 +1468,7 @@ function renderMapVoteCards(scrim) {
 
   let html = `
     <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-      <span style="font-size: 1rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}] ${scrim.title} 맵 투표 현황</span>
+      <span style="font-size: 1rem; font-weight: bold; color: var(--text-color);">🎯 [${gameType.toUpperCase()}]${scrim.title} 맵 투표 현황</span>
       <div style="display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 0.85rem; color: var(--text-secondary);">참가자 인증 완료 ✔️ (1인 1표)</span>
         ${adminResetBtnHtml}
@@ -1442,7 +1495,7 @@ function renderMapVoteCards(scrim) {
             
             <div style="width: 100%; margin-bottom: 6px;">
               <h3 class="map-title" style="margin: 0; color: #fff; font-size: 1.05rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
-                ${map.name} ${modeBadgeText}
+                ${map.name}${modeBadgeText}
               </h3>
             </div>
 
@@ -1705,7 +1758,7 @@ async function loadScrimsForDraftSelect() {
     }
 
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
-      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
+      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game \vert{}\vert{} '').toUpperCase()}]${scrim.title} (${scrim.current_players \vert{}\vert{} 0}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
@@ -1805,7 +1858,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'valo' ? 'border-left: 5px solid #ff4757;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #ff4757;">🔴 발로란트</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">아이디: <strong>${valo.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valo.tier || 'Unranked'}</strong> | 주포지션: <strong>${valo.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valo.tier \vert{}\vert{} 'Unranked'}</strong> \vert{} 주포지션: <strong>${valo.main_role || '없음'}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 요원:</div>
             ${renderAgentIcons(valo.main_agents, 'valo')}
           </div>
@@ -1813,7 +1866,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'ow' ? 'border-left: 5px solid #f97316;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #f97316;">🟠 오버워치 2</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">배틀태그: <strong>${ow.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${ow.tier || 'Unranked'}</strong> | 주포지션: <strong>${ow.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${ow.tier \vert{}\vert{} 'Unranked'}</strong> \vert{} 주포지션: <strong>${ow.main_role || '없음'}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 영웅:</div>
             ${renderAgentIcons(ow.main_agents, 'ow')}
           </div>
@@ -1821,7 +1874,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'lol' ? 'border-left: 5px solid #3b82f6;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #3b82f6;">🔵 리그 오브 레전드</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">소환사명: <strong>${lol.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lol.tier || 'Unranked'}</strong> | 주라인: <strong>${lol.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lol.tier \vert{}\vert{} 'Unranked'}</strong> \vert{} 주라인: <strong>${lol.main_role || '없음'}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 챔피언:</div>
             ${renderAgentIcons(lol.main_champs, 'lol')}
           </div>
@@ -1952,10 +2005,10 @@ function renderDraftBoard() {
 
   draftView.innerHTML = `
     <div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h3>📋 스네이크 드래프트 지명 중 [${gameKey.toUpperCase()}] (Round ${draftState.round})</h3>
+      <h3>📋 스네이크 드래프트 지명 중 [${gameKey.toUpperCase()}] (Round${draftState.round})</h3>
       <div style="display: flex; gap: 10px; align-items: center;">
         <span class="badge" style="background: ${draftState.turn === 'A' ? '#6366f1' : '#f43f5e'}; color: white; padding: 6px 14px;">
-          🎯 지명 차례: ${currentTeamName} ${isMyTurnToPick ? '(내 차례!)' : ''}
+          🎯 지명 차례: ${currentTeamName}${isMyTurnToPick ? '(내 차례!)' : ''}
         </span>
         ${isAdmin ? `<button class="btn-danger-sm" onclick="resetDraft()">드래프트 초기화</button>` : ''}
       </div>
@@ -2088,8 +2141,8 @@ async function loadAdminScrimManager() {
     html += `
       <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <div style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">[${(scrim.game || '').toUpperCase()}] ${scrim.title} ${isFinished ? '<span style="color:#10b981; font-size:0.85rem;">(경기 종료됨)</span>' : ''}</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">참가 인원: ${parts.length} / ${scrim.max_players}명 | 상태: ${scrim.status || '모집 중'}</div>
+          <div style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">[${(scrim.game || '').toUpperCase()}] ${scrim.title}${isFinished ? '<span style="color:#10b981; font-size:0.85rem;">(경기 종료됨)</span>' : ''}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">참가 인원: ${parts.length} / ${scrim.max_players}명 \vert{} 상태: ${scrim.status || '모집 중'}</div>
           <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">
             참가자 목록: ${parts.length > 0 ? parts.map(p => `<span style="background:rgba(99,102,241,0.15); padding:2px 6px; border-radius:4px; margin-right:4px; display:inline-block;">${p.profiles?.nickname || '알 수 없음'} <button style="background:none; border:none; color:#f43f5e; cursor:pointer; font-weight:bold;" onclick="adminForceKickUser('${scrim.id}', '${p.user_id}')" title="강제 퇴장">×</button></span>`).join('') : '없음'}
           </div>
@@ -2330,25 +2383,24 @@ const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/155078514279095091
 async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTime) {
   if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.trim() === '') return;
 
-  // 🎮 게임별 고유 색상 및 명칭, 아이콘 설정
   const gameConfig = {
     valo: {
       name: 'VALORANT',
-      color: 0xff4655, // 발로란트 레드
+      color: 0xff4655,
       icon: '🔴',
-      roleId: '1547272196102029322' // 발로란트 역할 ID
+      roleId: '1547272196102029322'
     },
     ow: {
       name: 'Overwatch 2',
-      color: 0xfa9c1e, // 오버워치 오렌지
+      color: 0xfa9c1e,
       icon: '🟠',
-      roleId: '1547272248082047007' // 오버워치 역할 ID
+      roleId: '1547272248082047007'
     },
     lol: {
       name: 'League of Legends',
-      color: 0x1e88e5, // 롤 블루
+      color: 0x1e88e5,
       icon: '🔵',
-      roleId: '1547272339056627763' // 롤 역할 ID
+      roleId: '1547272339056627763'
     }
   };
 
@@ -2445,7 +2497,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// 관리자가 팀을 구성한 후 세트/경기 결과를 기록하고 승/패 처리 (다전제/multi-match 지원)
 async function completeMatch(scrimId, winningTeam) {
   if (!currentProfile?.is_admin) {
     alert('경기 결과 기록 권한은 관리자에게만 있습니다.');
@@ -2476,9 +2527,8 @@ async function completeMatch(scrimId, winningTeam) {
   }
 
   const { teamA, teamB } = scrim.balanced_teams;
-  const gameType = scrim.game; // 'valo', 'ow', 'lol'
+  const gameType = scrim.game;
 
-  // 1. match_history에 매치 기록 저장
   const { error: matchErr } = await supabaseClient.from('match_history').insert([{
     scrim_id: scrimId,
     game: gameType,
@@ -2499,18 +2549,14 @@ async function completeMatch(scrimId, winningTeam) {
   const winCol = `${gameType}_wins`;
   const lossCol = `${gameType}_losses`;
   const mmrCol = `${gameType}_mmr`;
-
-  // 변동폭 설정 (승리 시 +15점, 패배 시 -15점으로 완만하게 조정)
   const MMR_CHANGE_AMOUNT = 15;
 
-  // 2. 승리 유저 처리 (승수 +1, MMR +15)
   for (const player of winningPlayers) {
     if (!player.user_id) continue;
     const { data: pData } = await supabaseClient.from('profiles').select(`${winCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
     
     const currentWins = pData ? (pData[winCol] || 0) : 0;
     
-    // 기존 MMR이 없으면 티어 기반 기본 MMR에서 시작
     let currentMMR = pData ? pData[mmrCol] : null;
     if (currentMMR === null || currentMMR === undefined) {
       let tier = 'Unranked';
@@ -2527,7 +2573,6 @@ async function completeMatch(scrimId, winningTeam) {
     await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
   }
 
-  // 3. 패배 유저 처리 (패배수 +1, MMR -15)
   for (const player of losingPlayers) {
     if (!player.user_id) continue;
     const { data: pData } = await supabaseClient.from('profiles').select(`${lossCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
@@ -2545,13 +2590,11 @@ async function completeMatch(scrimId, winningTeam) {
 
     const updateObj = {};
     updateObj[lossCol] = currentLosses + 1;
-    // MMR이 0 이하로 떨어지지 않도록 방어 코드 추가
     updateObj[mmrCol] = Math.max(100, currentMMR - MMR_CHANGE_AMOUNT);
 
     await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
   }
 
-  // 4. 추가 세트 진행 여부 확인
   const isContinue = confirm(`🏆 ${setNumber}세트 결과와 MMR(±15점)이 반영되었습니다!\n\n다음 세트/경기를 계속 진행하시겠습니까?\n[확인] : 내전 유지\n[취소] : 내전 최종 종료`);
 
   if (!isContinue) {
@@ -2565,80 +2608,9 @@ async function completeMatch(scrimId, winningTeam) {
   if (typeof loadAdminScrimManager === 'function') loadAdminScrimManager();
 }
 
-// 승/패를 기준으로 승률(%) 계산
 function calculateWinRate(wins = 0, losses = 0) {
   const total = wins + losses;
   if (total === 0) return '0% (0전)';
   const rate = Math.round((wins / total) * 100);
   return `${rate}% (${total}전 ${wins}승 ${losses}패)`;
-}
-
-// loadAdminScrimManager 내 카드 액션 영역 예시
-if (currentProfile?.is_admin) {
-  adminActionsHtml = `
-    <div style="display: flex; gap: 6px; margin-top: 8px;">
-      <button class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="completeMatch('${scrim.id}', 'A')">🏆 A팀 승리 처리</button>
-      <button class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem; background: #f43f5e;" onclick="completeMatch('${scrim.id}', 'B')">🏆 B팀 승리 처리</button>
-    </div>
-  `;
-}
-
-// 전체 동의 체크박스 토글 함수
-function toggleAllTerms(isChecked) {
-  const checkboxes = document.querySelectorAll('.term-checkbox');
-  checkboxes.forEach(cb => {
-    cb.checked = isChecked;
-  });
-}
-
-// 개별 체크박스 상태에 따른 전체 동의 동기화
-document.addEventListener('change', (e) => {
-  if (e.target.classList.contains('term-checkbox')) {
-    const checkboxes = Array.from(document.querySelectorAll('.term-checkbox'));
-    const allChecked = checkboxes.every(cb => cb.checked);
-    const agreeAllCb = document.getElementById('agreeAll');
-    if (agreeAllCb) agreeAllCb.checked = allChecked;
-  }
-});
-
-// 기존 handleSignUp 함수 업데이트 (4개 필수 약관 검증 추가)
-async function handleSignUp(e) {
-  e.preventDefault();
-
-  const term1 = document.getElementById('term1')?.checked;
-  const term2 = document.getElementById('term2')?.checked;
-  const term3 = document.getElementById('term3')?.checked;
-  const term4 = document.getElementById('term4')?.checked;
-
-  if (!term1 || !term2 || !term3 || !term4) {
-    alert('모든 필수 이용약관 및 동의 항목에 체크해 주셔야 회원가입이 가능합니다.');
-    return;
-  }
-
-  const username = document.getElementById('signupUsername').value;
-  const password = document.getElementById('signupPassword').value;
-  const nickname = document.getElementById('signupNickname').value;
-  
-  const email = makeEmailFromUsername(username);
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  
-  if (error) {
-    alert('회원가입 실패: ' + error.message);
-    return;
-  }
-
-  if (data.user) {
-    await supabaseClient
-      .from('profiles')
-      .upsert([{ 
-        id: data.user.id, 
-        nickname: nickname, 
-        is_admin: false,
-        terms_agreed: true // DB에 동의 여부 기록
-      }]);
-  }
-
-  await supabaseClient.auth.signOut();
-  alert('회원가입이 완료되었습니다! 가입하신 아이디와 비밀번호로 로그인해 주세요.');
-  document.getElementById('signupForm').reset();
 }
