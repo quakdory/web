@@ -2018,29 +2018,35 @@ function renderDraftBoard() {
       <div class="team-card-box team-a" style="border-color: ${draftState.turn === 'A' ? '#6366f1' : 'var(--border-color)'};">
         <h4 style="color: #6366f1;">👑 BLUE TEAM (A팀)</h4>
         <ul class="team-member-list">
-          ${draftState.teamA.map((p, i) => `
-            <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick='showPlayerProfileModal(${JSON.stringify(p)}, "${gameKey}")'>
-              <div>
-                ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
-                <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
-              </div>
-              <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
-            </li>
-          `).join('')}
+          ${draftState.teamA.map((p, i) => {
+            const playerStr = JSON.stringify(p).replace(/"/g, '&quot;');
+            return `
+              <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick='showPlayerProfileModal(JSON.parse("${playerStr}"), "${gameKey}")'>
+                <div>
+                  ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
+                  <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
+                </div>
+                <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
+              </li>
+            `;
+          }).join('')}
         </ul>
       </div>
       <div class="team-card-box team-b" style="border-color: ${draftState.turn === 'B' ? '#f43f5e' : 'var(--border-color)'};">
         <h4 style="color: #f43f5e;">👑 RED TEAM (B팀)</h4>
         <ul class="team-member-list">
-          ${draftState.teamB.map((p, i) => `
-            <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick='showPlayerProfileModal(${JSON.stringify(p)}, "${gameKey}")'>
-              <div>
-                ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
-                <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
-              </div>
-              <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
-            </li>
-          `).join('')}
+          ${draftState.teamB.map((p, i) => {
+            const playerStr = JSON.stringify(p).replace(/"/g, '&quot;');
+            return `
+              <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick='showPlayerProfileModal(JSON.parse("${playerStr}"), "${gameKey}")'>
+                <div>
+                  ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
+                  <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
+                </div>
+                <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
+              </li>
+            `;
+          }).join('')}
         </ul>
       </div>
     </div>
