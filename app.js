@@ -2082,17 +2082,29 @@ async function loadAdminScrimManager() {
   let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
   scrims.forEach(scrim => {
     const parts = scrim.scrim_participants || [];
+    const hasBalancedTeams = scrim.balanced_teams ? true : false;
+    const isFinished = scrim.status === '종료됨';
+
     html += `
       <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <div style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">[${(scrim.game || '').toUpperCase()}] ${scrim.title}</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">참가 인원: ${parts.length} / ${scrim.max_players}명 | 개설일: ${new Date(scrim.created_at).toLocaleDateString()}</div>
+          <div style="font-weight: bold; font-size: 1.1rem; color: var(--text-color);">[${(scrim.game || '').toUpperCase()}] ${scrim.title} ${isFinished ? '<span style="color:#10b981; font-size:0.85rem;">(경기 종료됨)</span>' : ''}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">참가 인원: ${parts.length} / ${scrim.max_players}명 | 상태: ${scrim.status || '모집 중'}</div>
           <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">
             참가자 목록: ${parts.length > 0 ? parts.map(p => `<span style="background:rgba(99,102,241,0.15); padding:2px 6px; border-radius:4px; margin-right:4px; display:inline-block;">${p.profiles?.nickname || '알 수 없음'} <button style="background:none; border:none; color:#f43f5e; cursor:pointer; font-weight:bold;" onclick="adminForceKickUser('${scrim.id}', '${p.user_id}')" title="강제 퇴장">×</button></span>`).join('') : '없음'}
           </div>
         </div>
-        <div>
-          <button class="btn-danger-sm" style="padding: 8px 14px; font-size: 0.85rem;" onclick="deleteScrim('${scrim.id}'); setTimeout(loadAdminScrimManager, 500);">내전 강제 삭제</button>
+        
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+          ${hasBalancedTeams && !isFinished ? `
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="completeMatch('${scrim.id}', 'A')">🏆 A팀 승리</button>
+              <button class="btn-primary" style="padding: 6px 10px; font-size: 0.8rem; background: #f43f5e;" onclick="completeMatch('${scrim.id}', 'B')">🏆 B팀 승리</button>
+            </div>
+          ` : ''}
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-danger-sm" style="padding: 6px 10px; font-size: 0.8rem;" onclick="deleteScrim('${scrim.id}'); setTimeout(loadAdminScrimManager, 500);">내전 강제 삭제</button>
+          </div>
         </div>
       </div>
     `;
@@ -2507,6 +2519,3 @@ if (currentProfile?.is_admin) {
 const valoWins = player.valo_wins || 0;
 const valoLosses = player.valo_losses || 0;
 const valoWinRate = calculateWinRate(valoWins, valoLosses);
-
-// 프로필 HTML 내 추가:
-// <p style="margin: 4px 0; font-size: 0.9rem;">전적/승률: <strong style="color: #10b981;">${valoWinRate}</strong></p>
