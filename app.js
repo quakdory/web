@@ -276,7 +276,6 @@ function switchAuthTab(type) {
   }
 }
 
-// 📜 필수 약관 동의 검증이 포함된 회원가입 처리 함수
 async function handleSignUp(e) {
   e.preventDefault();
 
@@ -318,7 +317,6 @@ async function handleSignUp(e) {
   document.getElementById('signupForm').reset();
 }
 
-// 전체 동의 체크박스 토글 함수
 function toggleAllTerms(isChecked) {
   const checkboxes = document.querySelectorAll('.term-checkbox');
   checkboxes.forEach(cb => {
@@ -326,7 +324,6 @@ function toggleAllTerms(isChecked) {
   });
 }
 
-// 개별 체크박스 상태에 따른 전체 동의 동기화
 document.addEventListener('change', (e) => {
   if (e.target.classList.contains('term-checkbox')) {
     const checkboxes = Array.from(document.querySelectorAll('.term-checkbox'));
@@ -393,7 +390,6 @@ async function checkAuthState() {
     const newScrimBtn = document.getElementById('newScrimBtn');
     const adminTabBtn = document.getElementById('adminTabBtn');
 
-    // 🔒 일반 로스터는 내전 생성 버튼과 관리자 탭이 보이지 않도록 엄격히 분기
     if (currentProfile?.is_admin) {
       if (newScrimBtn) newScrimBtn.style.display = 'inline-block';
       if (adminTabBtn) adminTabBtn.style.display = 'inline-block';
@@ -419,7 +415,6 @@ supabaseClient.auth.onAuthStateChange(() => {
   checkAuthState();
 });
 
-// 💡 모달 관련 함수 전역 등록
 window.openModal = function() {
   if (!currentProfile?.is_admin) {
     alert('내전 개설 권한은 관리자에게만 있습니다.');
@@ -464,7 +459,6 @@ window.closeModal = function() {
   document.getElementById('editingScrimId').value = '';
 };
 
-// 생성 및 수정 공통 처리 함수
 window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
@@ -482,7 +476,6 @@ window.saveScrim = async function(e) {
   }) : '일시 미정';
 
   if (editingId) {
-    // 🛠️ 수정 모드
     const { error } = await supabaseClient.from('scrims').update({
       game,
       title,
@@ -500,7 +493,6 @@ window.saveScrim = async function(e) {
     alert('내전 정보가 성공적으로 수정되었습니다.');
 
   } else {
-    // ➕ 생성 모드
     const { error } = await supabaseClient.from('scrims').insert([{ 
       game, 
       title, 
@@ -1077,7 +1069,6 @@ function renderScrims(scrims) {
     const scrimTimeRaw = scrim.scrim_time || '';
     const maxPlayers = scrim.max_players;
 
-    // 🔒 일반 로스터에게는 수정/삭제 버튼이 절대 보이지 않고, 오직 관리자이거나 본인이 만든 내전일 때만 보이도록 엄격히 제어
     const isOwnerOrAdmin = currentProfile?.is_admin || (currentUser && scrim.host_id === currentUser.id);
 
     card.innerHTML = `
@@ -1172,7 +1163,7 @@ async function loadTeamScrimSelect() {
   let html = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
   scrims.forEach(scrim => {
     const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
-    html += `<option value="${scrim.id}">[${gameLabel}]${scrim.title} (${scrim.current_players \vert{}\vert{} 0}/${scrim.max_players}명)</option>`;
+    html += `<option value="${scrim.id}">[${gameLabel}]${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
   });
 
   selectEl.innerHTML = html;
@@ -1382,7 +1373,7 @@ async function loadMapVoteScrims() {
       window.myActiveScrims.push(scrim);
       const opt = document.createElement('option');
       opt.value = scrim.id;
-      opt.textContent = `[${(scrim.game \vert{}\vert{} '').toUpperCase()}]${scrim.title} (${scrim.current_players \vert{}\vert{} 0}/${scrim.max_players}명)`;
+      opt.textContent = `[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)`;
       selectEl.appendChild(opt);
     }
   });
@@ -1758,7 +1749,7 @@ async function loadScrimsForDraftSelect() {
     }
 
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
-      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game \vert{}\vert{} '').toUpperCase()}]${scrim.title} (${scrim.current_players \vert{}\vert{} 0}/${scrim.max_players}명)</option>`;
+      return `<option value="${scrim.id}" data-game="${scrim.game}">[${(scrim.game || '').toUpperCase()}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
@@ -1858,7 +1849,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'valo' ? 'border-left: 5px solid #ff4757;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #ff4757;">🔴 발로란트</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">아이디: <strong>${valo.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valo.tier \vert{}\vert{} 'Unranked'}</strong> \vert{} 주포지션: <strong>${valo.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valo.tier || 'Unranked'}</strong> | 주포지션: <strong>${valo.main_role || '없음'}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 요원:</div>
             ${renderAgentIcons(valo.main_agents, 'valo')}
           </div>
@@ -1866,7 +1857,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'ow' ? 'border-left: 5px solid #f97316;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #f97316;">🟠 오버워치 2</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">배틀태그: <strong>${ow.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${ow.tier \vert{}\vert{} 'Unranked'}</strong> \vert{} 주포지션: <strong>${ow.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${ow.tier || 'Unranked'}</strong> | 주포지션: <strong>${ow.main_role || '없음'}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 영웅:</div>
             ${renderAgentIcons(ow.main_agents, 'ow')}
           </div>
@@ -1874,7 +1865,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${gameType === 'lol' ? 'border-left: 5px solid #3b82f6;' : ''}">
             <h4 style="margin: 0 0 8px 0; color: #3b82f6;">🔵 리그 오브 레전드</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">소환사명: <strong>${lol.game_id || '등록 안 함'}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lol.tier \vert{}\vert{} 'Unranked'}</strong> \vert{} 주라인: <strong>${lol.main_role || '없음'}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lol.tier || 'Unranked'}</strong> | 주라인: <strong>${lol.main_role || '없음'}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 챔피언:</div>
             ${renderAgentIcons(lol.main_champs, 'lol')}
           </div>
@@ -2018,35 +2009,29 @@ function renderDraftBoard() {
       <div class="team-card-box team-a" style="border-color: ${draftState.turn === 'A' ? '#6366f1' : 'var(--border-color)'};">
         <h4 style="color: #6366f1;">👑 BLUE TEAM (A팀)</h4>
         <ul class="team-member-list">
-          ${draftState.teamA.map((p, i) => {
-            const playerStr = JSON.stringify(p).replace(/"/g, '&quot;');
-            return `
-              <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick='showPlayerProfileModal(JSON.parse("${playerStr}"), "${gameKey}")'>
-                <div>
-                  ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
-                  <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
-                </div>
-                <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
-              </li>
-            `;
-          }).join('')}
+          ${draftState.teamA.map((p, i) => `
+            <li class="profile-click-item" data-player='${JSON.stringify(p)}' data-game="${gameKey}" style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+              <div>
+                ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
+            </li>
+          `).join('')}
         </ul>
       </div>
       <div class="team-card-box team-b" style="border-color: ${draftState.turn === 'B' ? '#f43f5e' : 'var(--border-color)'};">
         <h4 style="color: #f43f5e;">👑 RED TEAM (B팀)</h4>
         <ul class="team-member-list">
-          ${draftState.teamB.map((p, i) => {
-            const playerStr = JSON.stringify(p).replace(/"/g, '&quot;');
-            return `
-              <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick='showPlayerProfileModal(JSON.parse("${playerStr}"), "${gameKey}")'>
-                <div>
-                  ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
-                  <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
-                </div>
-                <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
-              </li>
-            `;
-          }).join('')}
+          ${draftState.teamB.map((p, i) => `
+            <li class="profile-click-item" data-player='${JSON.stringify(p)}' data-game="${gameKey}" style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+              <div>
+                ${i === 0 ? '👑 [팀장] ' : ''}<strong>${p.nickname}</strong>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.tier})</span>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--primary-color);">🔍 프로필</span>
+            </li>
+          `).join('')}
         </ul>
       </div>
     </div>
@@ -2060,7 +2045,7 @@ function renderDraftBoard() {
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 10px;">
         ${draftState.availablePlayers.map((player, idx) => `
           <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
-            <div style="cursor: pointer; text-align: center;" onclick='showPlayerProfileModal(${JSON.stringify(player)}, "${gameKey}")' title="클릭하여 상세 프로필 보기">
+            <div class="profile-click-item" data-player='${JSON.stringify(player)}' data-game="${gameKey}" style="cursor: pointer; text-align: center;" title="클릭하여 상세 프로필 보기">
               <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">${player.nickname} 🔍</div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">티어: ${player.tier}</div>${renderCardMiniIcons(player)}
             </div>
@@ -2466,8 +2451,19 @@ async function sendDiscordWebhook(title, description, game, maxPlayers, scrimTim
   }
 }
 
-// 이벤트 위임 처리
 document.addEventListener('click', (e) => {
+  const profileItem = e.target.closest('.profile-click-item');
+  if (profileItem) {
+    try {
+      const playerData = JSON.parse(profileItem.getAttribute('data-player'));
+      const gameType = profileItem.getAttribute('data-game') || 'valo';
+      showPlayerProfileModal(playerData, gameType);
+    } catch (err) {
+      console.error('플레이어 데이터 파싱 오류:', err);
+    }
+    return;
+  }
+
   const editBtn = e.target.closest('.edit-scrim-btn');
   if (editBtn) {
     const id = editBtn.getAttribute('data-id');
