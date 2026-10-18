@@ -1536,35 +1536,35 @@ function convertTierToMMR(gameType, tierName) {
   const lower = tierName.toLowerCase();
 
   if (gameType === 'valo') {
-    if (lower.includes('iron') || lower.includes('아이언')) return 800;
-    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
-    if (lower.includes('silver') || lower.includes('실버')) return 1200;
+    if (lower.includes('iron') || lower.includes('아이언')) return 500;
+    if (lower.includes('bronze') || lower.includes('브론즈')) return 800;
+    if (lower.includes('silver') || lower.includes('실버')) return 1100;
     if (lower.includes('gold') || lower.includes('골드')) return 1400;
-    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
-    if (lower.includes('diamond') || lower.includes('다이아')) return 1800;
-    if (lower.includes('ascendant') || lower.includes('초월자')) return 2000;
-    if (lower.includes('immortal') || lower.includes('불멸')) return 2200;
-    if (lower.includes('radiant') || lower.includes('레디언트')) return 2400;
+    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1700;
+    if (lower.includes('diamond') || lower.includes('다이아')) return 2000;
+    if (lower.includes('ascendant') || lower.includes('초월자')) return 2300;
+    if (lower.includes('immortal') || lower.includes('불멸')) return 2600;
+    if (lower.includes('radiant') || lower.includes('레디언트')) return 3000;
   } else if (gameType === 'ow') {
-    if (lower.includes('브론즈')) return 900;
-    if (lower.includes('실버')) return 1100;
-    if (lower.includes('골드')) return 1300;
+    if (lower.includes('브론즈')) return 600;
+    if (lower.includes('실버')) return 900;
+    if (lower.includes('골드')) return 1200;
     if (lower.includes('플래티넘')) return 1500;
-    if (lower.includes('다이아몬드')) return 1700;
-    if (lower.includes('마스터')) return 1900;
-    if (lower.includes('그랜드마스터')) return 2100;
-    if (lower.includes('챔피언') || lower.includes('챌린저')) return 2300;
+    if (lower.includes('다이아몬드')) return 1800;
+    if (lower.includes('마스터')) return 2100;
+    if (lower.includes('그랜드마스터')) return 2400;
+    if (lower.includes('챔피언') || lower.includes('챌린저')) return 2800;
   } else if (gameType === 'lol') {
-    if (lower.includes('iron') || lower.includes('아이언')) return 800;
-    if (lower.includes('bronze') || lower.includes('브론즈')) return 1000;
-    if (lower.includes('silver') || lower.includes('실버')) return 1200;
+    if (lower.includes('iron') || lower.includes('아이언')) return 500;
+    if (lower.includes('bronze') || lower.includes('브론즈')) return 800;
+    if (lower.includes('silver') || lower.includes('실버')) return 1100;
     if (lower.includes('gold') || lower.includes('골드')) return 1400;
-    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1600;
-    if (lower.includes('emerald') || lower.includes('에메랄드')) return 1750;
-    if (lower.includes('diamond') || lower.includes('다이아')) return 1900;
-    if (lower.includes('master') || lower.includes('마스터')) return 2100;
-    if (lower.includes('grandmaster') || lower.includes('그랜드마스터')) return 2300;
-    if (lower.includes('challenger') || lower.includes('챌린저')) return 2500;
+    if (lower.includes('platinum') || lower.includes('플래티넘')) return 1700;
+    if (lower.includes('emerald') || lower.includes('에메랄드')) return 1950;
+    if (lower.includes('diamond') || lower.includes('다이아')) return 2200;
+    if (lower.includes('master') || lower.includes('마스터')) return 2500;
+    if (lower.includes('grandmaster') || lower.includes('그랜드마스터')) return 2800;
+    if (lower.includes('challenger') || lower.includes('챌린저')) return 3200;
   }
 
   return 1200;
@@ -2426,7 +2426,6 @@ async function completeMatch(scrimId, winningTeam) {
     return;
   }
 
-  // 1. 내전 정보 및 팀 데이터 불러오기
   const { data: scrim, error: scrimErr } = await supabaseClient
     .from('scrims')
     .select('*')
@@ -2434,27 +2433,26 @@ async function completeMatch(scrimId, winningTeam) {
     .single();
 
   if (scrimErr || !scrim || !scrim.balanced_teams) {
-    alert('팀이 구성되지 않은 내전은 경기를 종료할 수 없습니다. 먼저 자동 팀 나누기나 드래프트를 완료해 주세요.');
+    alert('팀이 구성되지 않은 내전은 경기를 종료할 수 없습니다.');
     return;
   }
 
-  // 기존 기록된 세트 수를 확인하여 세트 번호 자동 부여
   const { data: existingMatches } = await supabaseClient
     .from('match_history')
     .select('id')
     .eq('scrim_id', scrimId);
 
   const setNumber = (existingMatches ? existingMatches.length : 0) + 1;
-
   const teamName = winningTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
-  if (!confirm(`[${setNumber}세트 / 매치 ${setNumber}] ${teamName}의 승리로 승패를 기록하시겠습니까?`)) {
+  
+  if (!confirm(`[${setNumber}세트] ${teamName}의 승리로 기록하고 승패 및 MMR을 반영하시겠습니까?`)) {
     return;
   }
 
   const { teamA, teamB } = scrim.balanced_teams;
   const gameType = scrim.game; // 'valo', 'ow', 'lol'
 
-  // 2. match_history에 매치 기록 저장 (세트 타이틀 포함)
+  // 1. match_history에 매치 기록 저장
   const { error: matchErr } = await supabaseClient.from('match_history').insert([{
     scrim_id: scrimId,
     game: gameType,
@@ -2469,37 +2467,66 @@ async function completeMatch(scrimId, winningTeam) {
     return;
   }
 
-  // 3. 참가 선수들의 승/패 데이터 업데이트
   const winningPlayers = winningTeam === 'A' ? teamA : teamB;
   const losingPlayers = winningTeam === 'A' ? teamB : teamA;
 
   const winCol = `${gameType}_wins`;
   const lossCol = `${gameType}_losses`;
+  const mmrCol = `${gameType}_mmr`;
 
-  // 승리 유저 처리
+  // 변동폭 설정 (승리 시 +15점, 패배 시 -15점으로 완만하게 조정)
+  const MMR_CHANGE_AMOUNT = 15;
+
+  // 2. 승리 유저 처리 (승수 +1, MMR +15)
   for (const player of winningPlayers) {
     if (!player.user_id) continue;
-    const { data: pData } = await supabaseClient.from('profiles').select(winCol).eq('id', player.user_id).single();
+    const { data: pData } = await supabaseClient.from('profiles').select(`${winCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
+    
     const currentWins = pData ? (pData[winCol] || 0) : 0;
     
+    // 기존 MMR이 없으면 티어 기반 기본 MMR에서 시작
+    let currentMMR = pData ? pData[mmrCol] : null;
+    if (currentMMR === null || currentMMR === undefined) {
+      let tier = 'Unranked';
+      if (gameType === 'valo') tier = pData?.valo_info?.tier || 'Unranked';
+      else if (gameType === 'ow') tier = pData?.ow_info?.tier || 'Unranked';
+      else if (gameType === 'lol') tier = pData?.lol_info?.tier || 'Unranked';
+      currentMMR = convertTierToMMR(gameType, tier);
+    }
+
     const updateObj = {};
     updateObj[winCol] = currentWins + 1;
+    updateObj[mmrCol] = currentMMR + MMR_CHANGE_AMOUNT;
+
     await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
   }
 
-  // 패배 유저 처리
+  // 3. 패배 유저 처리 (패배수 +1, MMR -15)
   for (const player of losingPlayers) {
     if (!player.user_id) continue;
-    const { data: pData } = await supabaseClient.from('profiles').select(lossCol).eq('id', player.user_id).single();
+    const { data: pData } = await supabaseClient.from('profiles').select(`${lossCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
+    
     const currentLosses = pData ? (pData[lossCol] || 0) : 0;
+
+    let currentMMR = pData ? pData[mmrCol] : null;
+    if (currentMMR === null || currentMMR === undefined) {
+      let tier = 'Unranked';
+      if (gameType === 'valo') tier = pData?.valo_info?.tier || 'Unranked';
+      else if (gameType === 'ow') tier = pData?.ow_info?.tier || 'Unranked';
+      else if (gameType === 'lol') tier = pData?.lol_info?.tier || 'Unranked';
+      currentMMR = convertTierToMMR(gameType, tier);
+    }
 
     const updateObj = {};
     updateObj[lossCol] = currentLosses + 1;
+    // MMR이 0 이하로 떨어지지 않도록 방어 코드 추가
+    updateObj[mmrCol] = Math.max(100, currentMMR - MMR_CHANGE_AMOUNT);
+
     await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
   }
 
-  // 4. 추가 매치 진행 여부 확인
-  const isContinue = confirm(`🏆 ${setNumber}세트 결과가 전적에 반영되었습니다!\n\n다음 세트/경기를 계속 진행하시겠습니까?\n[확인] : 내전 유지 (다음 경기 계속 기록 가능)\n[취소] : 내전 최종 종료`);
+  // 4. 추가 세트 진행 여부 확인
+  const isContinue = confirm(`🏆 ${setNumber}세트 결과와 MMR(±15점)이 반영되었습니다!\n\n다음 세트/경기를 계속 진행하시겠습니까?\n[확인] : 내전 유지\n[취소] : 내전 최종 종료`);
 
   if (!isContinue) {
     await supabaseClient.from('scrims').update({ status: '종료됨' }).eq('id', scrimId);
