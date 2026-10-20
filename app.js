@@ -435,6 +435,7 @@ window.openModal = function() {
   document.getElementById('scrimModal')?.classList.add('active');
 };
 
+// 1. 수정 모달을 열 때, DB에 있는 UTC 시간을 브라우저 로컬 시간대(KST)에 맞춰 input에 정확히 표시
 window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   const isOwnerOrAdmin = currentProfile?.is_admin || false;
   if (!isOwnerOrAdmin) {
@@ -449,9 +450,16 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('scrimGame').value = game;
   document.getElementById('scrimTitle').value = title;
   
-  // DB에 저장된 문자열에서 'YYYY-MM-DDTHH:mm' 부분만 그대로 가져와서 입력창에 표시
   if (scrimTime) {
-    document.getElementById('scrimTime').value = scrimTime.slice(0, 16);
+    const dateObj = new Date(scrimTime);
+    if (!isNaN(dateObj.getTime())) {
+      // KST(한국 시간) 오프셋을 반영하여 input창에 정확한 로컬 시간 표시
+      const tzOffsetMs = dateObj.getTimezoneOffset() * 60000;
+      const localTime = new Date(dateObj.getTime() - tzOffsetMs);
+      document.getElementById('scrimTime').value = localTime.toISOString().slice(0, 16);
+    } else {
+      document.getElementById('scrimTime').value = '';
+    }
   } else {
     document.getElementById('scrimTime').value = '';
   }
@@ -466,17 +474,25 @@ window.closeModal = function() {
   document.getElementById('editingScrimId').value = '';
 };
 
+// 2. 저장 및 수정 시, 입력한 로컬 시간을 한국 시간 기준으로 정확히 변환하여 ISO(UTC) 형식으로 저장
 window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
   const game = document.getElementById('scrimGame').value;
   const title = document.getElementById('scrimTitle').value;
-  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm'
+  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm' (로컬 시간)
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
   let formattedScrimTime = null;
   if (scrimTimeVal) {
-    formattedScrimTime = scrimTimeVal.length === 16 ? scrimTimeVal + ':00' : scrimTimeVal;
+    // 사용자가 입력한 로컬 시간을 한국 시간대(KST, UTC+9) 기준으로 정확히 해석하도록 보정
+    const localDate = new Date(scrimTimeVal);
+    const tzOffsetMs = localDate.getTimezoneOffset() * 60000;
+    const utcTime = new Date(localDate.getTime() + tzOffsetMs);
+    
+    // KST(+9시간)를 감안하여 정확한 ISO 문자열 생성
+    const kstOffset = 9 * 60 * 60000;
+    formattedScrimTime = new Date(utcTime.getTime() - kstOffset).toISOString();
   }
 
   if (editingId) {
