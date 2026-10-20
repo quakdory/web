@@ -435,7 +435,6 @@ window.openModal = function() {
   document.getElementById('scrimModal')?.classList.add('active');
 };
 
-// 💡 [시간 수정 완벽 해결] datetime-local 문자열 그대로 보존하여 밀림 현상 원천 차단
 window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   const isOwnerOrAdmin = currentProfile?.is_admin || false;
   if (!isOwnerOrAdmin) {
@@ -450,6 +449,7 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('scrimGame').value = game;
   document.getElementById('scrimTitle').value = title;
   
+  // DB에 저장된 문자열에서 'YYYY-MM-DDTHH:mm' 부분만 그대로 가져와서 입력창에 표시
   if (scrimTime) {
     document.getElementById('scrimTime').value = scrimTime.slice(0, 16);
   } else {
@@ -460,13 +460,6 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('scrimModal')?.classList.add('active');
 };
 
-window.closeModal = function() {
-  document.getElementById('scrimModal')?.classList.remove('active');
-  document.getElementById('scrimForm')?.reset();
-  document.getElementById('editingScrimId').value = '';
-};
-
-// 💡 [시간 저장 완벽 해결] 타임존 변환 없이 문자열 그대로 반영
 window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
@@ -475,6 +468,7 @@ window.saveScrim = async function(e) {
   const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm'
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
+  // 💡 핵심: 타임존 변환 함수를 거치지 않고 입력된 텍스트 그대로 뒤에 초(:00)만 붙여서 저장
   let formattedScrimTime = null;
   if (scrimTimeVal) {
     formattedScrimTime = scrimTimeVal.length === 16 ? scrimTimeVal + ':00' : scrimTimeVal;
