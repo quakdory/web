@@ -472,16 +472,15 @@ window.saveScrim = async function(e) {
   const editingId = document.getElementById('editingScrimId').value;
   const game = document.getElementById('scrimGame').value;
   const title = document.getElementById('scrimTitle').value;
-  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm' 형식 (로컬 시간)
+  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm'
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
-  // 💡 핵심 수정: 로컬 시간 밀림 현상을 방지하기 위해 타임존 오프셋을 반영한 ISO 문자열 생성
+  // 💡 입력된 로컬 시간을 정확히 고정된 UTC 시간으로 매핑하여 밀림 원천 차단
   let formattedScrimTime = null;
   if (scrimTimeVal) {
-    const localDate = new Date(scrimTimeVal);
-    // 현재 사용자의 로컬 타임존 오프셋(분 단위)을 적용하여 정확한 시간값 보정
-    const tzOffsetMs = localDate.getTimezoneOffset() * 60000;
-    formattedScrimTime = new Date(localDate.getTime() - tzOffsetMs).toISOString();
+    // scrimTimeVal 예: "2026-03-20T15:00"
+    // 뒤에 'Z'를 붙여주면 브라우저가 로컬 시간대로 해석하지 않고 입력된 숫자 그대로(UTC) 받아들입니다.
+    formattedScrimTime = new Date(scrimTimeVal + ':00.000Z').toISOString();
   }
 
   if (editingId) {
