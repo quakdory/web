@@ -472,14 +472,21 @@ window.saveScrim = async function(e) {
   const editingId = document.getElementById('editingScrimId').value;
   const game = document.getElementById('scrimGame').value;
   const title = document.getElementById('scrimTitle').value;
-  const scrimTimeVal = document.getElementById('scrimTime').value;
+  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm' 형식
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
+
+  // 입력된 로컬 시간을 정확한 ISO 문자열로 변환 (타임존 밀림 현상 방지)
+  let formattedScrimTime = null;
+  if (scrimTimeVal) {
+    const dateObj = new Date(scrimTimeVal);
+    formattedScrimTime = dateObj.toISOString();
+  }
 
   if (editingId) {
     const { error } = await supabaseClient.from('scrims').update({
       game,
       title,
-      scrim_time: scrimTimeVal,
+      scrim_time: formattedScrimTime,
       max_players
     }).eq('id', editingId);
 
@@ -496,7 +503,7 @@ window.saveScrim = async function(e) {
     const { error } = await supabaseClient.from('scrims').insert([{ 
       game, 
       title, 
-      scrim_time: scrimTimeVal, 
+      scrim_time: formattedScrimTime, 
       current_players: 1, 
       max_players, 
       status: '모집 중', 
@@ -506,8 +513,7 @@ window.saveScrim = async function(e) {
     if (!error) { 
       closeModal(); 
       fetchScrims(); 
-
-      await sendDiscordWebhook(title, title, game, max_players, scrimTimeVal);
+      await sendDiscordWebhook(title, title, game, max_players, formattedScrimTime);
     } else {
       alert('내전 생성 실패: ' + error.message);
     }
