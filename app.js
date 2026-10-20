@@ -435,7 +435,6 @@ window.openModal = function() {
   document.getElementById('scrimModal')?.classList.add('active');
 };
 
-// 1. 수정 모달을 열 때, DB에 있는 시간을 가져와 input창에 정확히 표시
 window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   const isOwnerOrAdmin = currentProfile?.is_admin || false;
   if (!isOwnerOrAdmin) {
@@ -451,7 +450,7 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('scrimTitle').value = title;
   
   if (scrimTime) {
-    // 타임존 변환 없이 문자열 앞에서 'YYYY-MM-DDTHH:mm' 까지만 깔끔하게 잘라내어 표시
+    // 순수 문자열 앞 16자리('YYYY-MM-DDTHH:mm')를 그대로 input에 주입
     document.getElementById('scrimTime').value = scrimTime.slice(0, 16);
   } else {
     document.getElementById('scrimTime').value = '';
@@ -467,7 +466,6 @@ window.closeModal = function() {
   document.getElementById('editingScrimId').value = '';
 };
 
-// 2. 저장 및 수정 시, 입력한 시간에 한국 타임존(+09:00)을 명시하여 완벽 고정
 window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
@@ -476,11 +474,10 @@ window.saveScrim = async function(e) {
   const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm'
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
+  // 타임존 기호(Z 또는 +09:00 등)를 일체 붙이지 않고 순수 문자열 형태로 고정 저장
   let formattedScrimTime = null;
   if (scrimTimeVal) {
-    // 입력된 시간 뒤에 초(:00)와 한국 타임존(+09:00)을 직접 붙여서 데이터베이스에 전달
-    const baseTime = scrimTimeVal.length === 16 ? scrimTimeVal + ':00' : scrimTimeVal;
-    formattedScrimTime = `${baseTime}+09:00`;
+    formattedScrimTime = scrimTimeVal.length === 16 ? scrimTimeVal + ':00' : scrimTimeVal;
   }
 
   if (editingId) {
@@ -982,13 +979,28 @@ function renderScrims(scrims) {
     const isFull = currentCount >= scrim.max_players;
     const isJoined = currentUser && participants.some(p => p.user_id === currentUser.id);
 
-    const timeDisplay = scrim.scrim_time ? new Date(scrim.scrim_time).toLocaleString('ko-KR', {
-      month: 'numeric',
-      day: 'numeric',
-      weekday: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    }) : '일시 미정';
+    // 💡 브라우저 타임존 개입을 원천 차단하고 저장된 문자열을 직접 파싱하여 표시
+    let timeDisplay = '일시 미정';
+    if (scrim.scrim_time) {
+      const tStr = scrim.scrim_time; // 예: "2026-10-20T22:00:00"
+      const datePart = tStr.split('T')[0]; // "2026-10-20"
+      const timePart = tStr.split('T')[1]; // "22:00:00" 또는 "22:00"
+      
+      if (datePart && timePart) {
+        const [year, month, day] = datePart.split('-');
+        const [hourStr, minStr] = timePart.split(':');
+        let hour = parseInt(hourStr, 10);
+        const ampm = hour >= 12 ? '오후' : '오전';
+        if (hour > 12) hour -= 12;
+        if (hour === 0) hour = 12;
+        
+        const dObj = new Date(`${datePart}T00:00:00`);
+        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+        const weekday = weekdays[dObj.getDay()];
+
+        timeDisplay = `${parseInt(month, 10)}. ${parseInt(day, 10)}. (${weekday}) ${ampm} ${String(hour).padStart(2, '0')}:${minStr}`;
+      }
+    }
 
     let participantsHtml = '<div class="scrim-participants-box" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);">';
     participantsHtml += `<p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">참여 멤버 (${currentCount}/${scrim.max_players})</p>`;
@@ -1095,7 +1107,7 @@ function renderScrims(scrims) {
       </div>
       <h3>${scrim.title}</h3>
       <p style="margin: 4px 0; font-size: 0.85rem; color: var(--primary-color); font-weight: bold;">⏰ 일시: ${timeDisplay}</p>
-      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> /${maxPlayers} 명</p>
+      <p style="margin: 4px 0; font-size: 0.9rem;">참여 인원: <strong>${currentCount}</strong> / ${maxPlayers} 명</p>
       ${participantsHtml}
       <div style="margin-top: 12px;">
         ${isJoined ? `<button class="btn-secondary full-width cancel-scrim-btn" data-id="${scrimId}">참가 취소</button>` : isFull ? `<button class="btn-secondary full-width" disabled>모집 마감</button>` : `<button class="btn-primary full-width apply-scrim-btn" data-id="${scrimId}" data-count="${currentCount}" data-max="${maxPlayers}">참가 신청</button>`}
