@@ -435,6 +435,7 @@ window.openModal = function() {
   document.getElementById('scrimModal')?.classList.add('active');
 };
 
+// 💡 [시간 수정 완벽 해결] datetime-local 문자열 그대로 보존하여 밀림 현상 원천 차단
 window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   const isOwnerOrAdmin = currentProfile?.is_admin || false;
   if (!isOwnerOrAdmin) {
@@ -450,16 +451,7 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('scrimTitle').value = title;
   
   if (scrimTime) {
-    const dateObj = new Date(scrimTime);
-    if (!isNaN(dateObj.getTime())) {
-      // 한국(KST, UTC+9) 등 브라우저 로컬 타임존으로 보정하여 'YYYY-MM-DDTHH:mm' 생성
-      const tzOffsetMs = dateObj.getTimezoneOffset() * 60000;
-      const localTime = new Date(dateObj.getTime() - tzOffsetMs);
-      const localIsoTime = localTime.toISOString().slice(0, 16);
-      document.getElementById('scrimTime').value = localIsoTime;
-    } else {
-      document.getElementById('scrimTime').value = '';
-    }
+    document.getElementById('scrimTime').value = scrimTime.slice(0, 16);
   } else {
     document.getElementById('scrimTime').value = '';
   }
@@ -474,6 +466,7 @@ window.closeModal = function() {
   document.getElementById('editingScrimId').value = '';
 };
 
+// 💡 [시간 저장 완벽 해결] 타임존 변환 없이 문자열 그대로 반영
 window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
@@ -482,12 +475,9 @@ window.saveScrim = async function(e) {
   const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm'
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
-  // 💡 입력된 로컬 시간을 정확히 고정된 UTC 시간으로 매핑하여 밀림 원천 차단
   let formattedScrimTime = null;
   if (scrimTimeVal) {
-    // scrimTimeVal 예: "2026-03-20T15:00"
-    // 뒤에 'Z'를 붙여주면 브라우저가 로컬 시간대로 해석하지 않고 입력된 숫자 그대로(UTC) 받아들입니다.
-    formattedScrimTime = new Date(scrimTimeVal + ':00.000Z').toISOString();
+    formattedScrimTime = scrimTimeVal.length === 16 ? scrimTimeVal + ':00' : scrimTimeVal;
   }
 
   if (editingId) {
@@ -1177,7 +1167,8 @@ async function loadTeamScrimSelect() {
   let html = '<option value="">-- 팀을 나눌 내전을 선택하세요 --</option>';
   scrims.forEach(scrim => {
     const gameLabel = scrim.game === 'valo' ? '발로란트' : scrim.game === 'ow' ? '오버워치' : '롤';
-    html += `<option value="${scrim.id}">[${gameLabel}] ${scrim.title} (${scrim.current_players || 0}/${scrim.max_players}명)</option>`;
+    const currentP = scrim.current_players || 0;
+    html += `<option value="${scrim.id}">[${gameLabel}]${scrim.title} (${currentP}/${scrim.max_players}명)</option>`;
   });
 
   selectEl.innerHTML = html;
@@ -1389,7 +1380,7 @@ async function loadMapVoteScrims() {
       opt.value = scrim.id;
       const gameUpper = (scrim.game || '').toUpperCase();
       const currentP = scrim.current_players || 0;
-      opt.textContent = `[${gameUpper}] ${scrim.title} (${currentP}/${scrim.max_players}명)`;
+      opt.textContent = `[${gameUpper}]${scrim.title} (${currentP}/${scrim.max_players}명)`;
       selectEl.appendChild(opt);
     }
   });
@@ -1675,7 +1666,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // -------------------------------------------------------------
-// [드래프트 관련 로직: 1 - 2 - 2 - 2 - 2 - 1 순서]
+// [드래프트 관련 로직]
 // -------------------------------------------------------------
 const DRAFT_PICK_SEQUENCE = [
   'A', 
@@ -1786,7 +1777,7 @@ async function loadScrimsForDraftSelect() {
     selectEl.innerHTML = '<option value="">-- 내전을 선택하세요 --</option>' + data.map(scrim => {
       const gameUpper = ((scrim.game || '')).toUpperCase();
       const currentP = scrim.current_players || 0;
-      return `<option value="${scrim.id}" data-game="${scrim.game}">[${gameUpper}] ${scrim.title} (${currentP}/${scrim.max_players}명)</option>`;
+      return `<option value="${scrim.id}" data-game="${scrim.game}">[${gameUpper}]${scrim.title} (${currentP}/${scrim.max_players}명)</option>`;
     }).join('');
   } catch (err) {
     console.error('드래프트 내전 로드 오류:', err);
@@ -1902,7 +1893,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${valoBorder}">
             <h4 style="margin: 0 0 8px 0; color: #ff4757;">🔴 발로란트</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">아이디: <strong>${valoGameId}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valoTier}</strong> | 주포지션: <strong>${valoMainRole}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${valoTier}</strong> \vert{} 주포지션: <strong>${valoMainRole}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 요원:</div>
             ${renderAgentIcons(valo.main_agents, 'valo')}
           </div>
@@ -1910,7 +1901,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${owBorder}">
             <h4 style="margin: 0 0 8px 0; color: #f97316;">🟠 오버워치 2</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">배틀태그: <strong>${owGameId}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${owTier}</strong> | 주포지션: <strong>${owMainRole}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${owTier}</strong> \vert{} 주포지션: <strong>${owMainRole}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 영웅:</div>
             ${renderAgentIcons(ow.main_agents, 'ow')}
           </div>
@@ -1918,7 +1909,7 @@ function showPlayerProfileModal(player, gameType = 'valo') {
           <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color); ${lolBorder}">
             <h4 style="margin: 0 0 8px 0; color: #3b82f6;">🔵 리그 오브 레전드</h4>
             <p style="margin: 4px 0; font-size: 0.9rem;">소환사명: <strong>${lolGameId}</strong></p>
-            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lolTier}</strong> | 주라인: <strong>${lolMainRole}</strong></p>
+            <p style="margin: 4px 0; font-size: 0.9rem;">티어: <strong>${lolTier}</strong> \vert{} 주라인: <strong>${lolMainRole}</strong></p>
             <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">주 선호 챔피언:</div>
             ${renderAgentIcons(lol.main_champs, 'lol')}
           </div>
@@ -2162,7 +2153,6 @@ async function resetDraft() {
   draftState.active = false;
   initDraftTab();
 }
-// -------------------------------------------------------------
 
 async function loadAdminScrimManager() {
   if (!currentProfile?.is_admin) return;
@@ -2565,6 +2555,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// 💡 [승패 MMR 반영 기능 포함] 경기 결과 종료 및 MMR 업데이트 함수
 async function completeMatch(scrimId, winningTeam) {
   if (!currentProfile?.is_admin) {
     alert('경기 결과 기록 권한은 관리자에게만 있습니다.');
@@ -2681,115 +2672,4 @@ function calculateWinRate(wins = 0, losses = 0) {
   if (total === 0) return '0% (0전)';
   const rate = Math.round((wins / total) * 100);
   return `${rate}% (${total}전 ${wins}승 ${losses}패)`;
-}
-
-async function completeMatch(scrimId, winningTeam) {
-  if (!currentProfile?.is_admin) {
-    alert('경기 결과 기록 권한은 관리자에게만 있습니다.');
-    return;
-  }
-
-  const { data: scrim, error: scrimErr } = await supabaseClient
-    .from('scrims')
-    .select('*')
-    .eq('id', scrimId)
-    .single();
-
-  if (scrimErr || !scrim || !scrim.balanced_teams) {
-    alert('팀이 구성되지 않은 내전은 경기를 종료할 수 없습니다.');
-    return;
-  }
-
-  const { data: existingMatches } = await supabaseClient
-    .from('match_history')
-    .select('id')
-    .eq('scrim_id', scrimId);
-
-  const setNumber = (existingMatches ? existingMatches.length : 0) + 1;
-  const teamName = winningTeam === 'A' ? 'BLUE TEAM (A팀)' : 'RED TEAM (B팀)';
-  
-  if (!confirm(`[${setNumber}세트] ${teamName}의 승리로 기록하고 승패 및 MMR을 반영하시겠습니까?`)) {
-    return;
-  }
-
-  const { teamA, teamB } = scrim.balanced_teams;
-  const gameType = scrim.game;
-
-  const { error: matchErr } = await supabaseClient.from('match_history').insert([{
-    scrim_id: scrimId,
-    game: gameType,
-    title: `${scrim.title} (${setNumber}세트)`,
-    winner_team: winningTeam,
-    team_a: teamA,
-    team_b: teamB
-  }]);
-
-  if (matchErr) {
-    alert('전적 기록 저장 실패: ' + matchErr.message);
-    return;
-  }
-
-  const winningPlayers = winningTeam === 'A' ? teamA : teamB;
-  const losingPlayers = winningTeam === 'A' ? teamB : teamA;
-
-  const winCol = `${gameType}_wins`;
-  const lossCol = `${gameType}_losses`;
-  const mmrCol = `${gameType}_mmr`;
-  const MMR_CHANGE_AMOUNT = 15;
-
-  for (const player of winningPlayers) {
-    if (!player.user_id) continue;
-    const { data: pData } = await supabaseClient.from('profiles').select(`${winCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
-    
-    const currentWins = pData ? (pData[winCol] || 0) : 0;
-    
-    let currentMMR = pData ? pData[mmrCol] : null;
-    if (currentMMR === null || currentMMR === undefined) {
-      let tier = 'Unranked';
-      if (gameType === 'valo') tier = pData?.valo_info?.tier || 'Unranked';
-      else if (gameType === 'ow') tier = pData?.ow_info?.tier || 'Unranked';
-      else if (gameType === 'lol') tier = pData?.lol_info?.tier || 'Unranked';
-      currentMMR = convertTierToMMR(gameType, tier);
-    }
-
-    const updateObj = {};
-    updateObj[winCol] = currentWins + 1;
-    updateObj[mmrCol] = currentMMR + MMR_CHANGE_AMOUNT;
-
-    await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
-  }
-
-  for (const player of losingPlayers) {
-    if (!player.user_id) continue;
-    const { data: pData } = await supabaseClient.from('profiles').select(`${lossCol}, ${mmrCol}, valo_info, ow_info, lol_info`).eq('id', player.user_id).single();
-    
-    const currentLosses = pData ? (pData[lossCol] || 0) : 0;
-
-    let currentMMR = pData ? pData[mmrCol] : null;
-    if (currentMMR === null || currentMMR === undefined) {
-      let tier = 'Unranked';
-      if (gameType === 'valo') tier = pData?.valo_info?.tier || 'Unranked';
-      else if (gameType === 'ow') tier = pData?.ow_info?.tier || 'Unranked';
-      else if (gameType === 'lol') tier = pData?.lol_info?.tier || 'Unranked';
-      currentMMR = convertTierToMMR(gameType, tier);
-    }
-
-    const updateObj = {};
-    updateObj[lossCol] = currentLosses + 1;
-    updateObj[mmrCol] = Math.max(100, currentMMR - MMR_CHANGE_AMOUNT);
-
-    await supabaseClient.from('profiles').update(updateObj).eq('id', player.user_id);
-  }
-
-  const isContinue = confirm(`🏆 ${setNumber}세트 결과와 MMR(±15점)이 반영되었습니다!\n\n다음 세트/경기를 계속 진행하시겠습니까?\n[확인] : 내전 유지\n[취소] : 내전 최종 종료`);
-
-  if (!isContinue) {
-    await supabaseClient.from('scrims').update({ status: '종료됨' }).eq('id', scrimId);
-    alert('내전이 최종 종료되었습니다.');
-  } else {
-    alert(`다음 세트를 진행합니다. (현재 기록된 총 세트: ${setNumber}경기)`);
-  }
-
-  fetchScrims();
-  if (typeof loadAdminScrimManager === 'function') loadAdminScrimManager();
 }
