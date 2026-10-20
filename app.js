@@ -472,14 +472,16 @@ window.saveScrim = async function(e) {
   const editingId = document.getElementById('editingScrimId').value;
   const game = document.getElementById('scrimGame').value;
   const title = document.getElementById('scrimTitle').value;
-  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm' 형식
+  const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm' 형식 (로컬 시간)
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
-  // 입력된 로컬 시간을 정확한 ISO 문자열로 변환 (타임존 밀림 현상 방지)
+  // 💡 핵심 수정: 로컬 시간 밀림 현상을 방지하기 위해 타임존 오프셋을 반영한 ISO 문자열 생성
   let formattedScrimTime = null;
   if (scrimTimeVal) {
-    const dateObj = new Date(scrimTimeVal);
-    formattedScrimTime = dateObj.toISOString();
+    const localDate = new Date(scrimTimeVal);
+    // 현재 사용자의 로컬 타임존 오프셋(분 단위)을 적용하여 정확한 시간값 보정
+    const tzOffsetMs = localDate.getTimezoneOffset() * 60000;
+    formattedScrimTime = new Date(localDate.getTime() - tzOffsetMs).toISOString();
   }
 
   if (editingId) {
