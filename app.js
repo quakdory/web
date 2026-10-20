@@ -451,8 +451,15 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   
   if (scrimTime) {
     const dateObj = new Date(scrimTime);
-    const localIsoTime = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-    document.getElementById('scrimTime').value = localIsoTime;
+    if (!isNaN(dateObj.getTime())) {
+      // 한국(KST, UTC+9) 등 브라우저 로컬 타임존으로 보정하여 'YYYY-MM-DDTHH:mm' 생성
+      const tzOffsetMs = dateObj.getTimezoneOffset() * 60000;
+      const localTime = new Date(dateObj.getTime() - tzOffsetMs);
+      const localIsoTime = localTime.toISOString().slice(0, 16);
+      document.getElementById('scrimTime').value = localIsoTime;
+    } else {
+      document.getElementById('scrimTime').value = '';
+    }
   } else {
     document.getElementById('scrimTime').value = '';
   }
