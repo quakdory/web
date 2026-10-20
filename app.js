@@ -460,6 +460,12 @@ window.openEditScrimModal = function(id, game, title, scrimTime, maxPlayers) {
   document.getElementById('scrimModal')?.classList.add('active');
 };
 
+window.closeModal = function() {
+  document.getElementById('scrimModal')?.classList.remove('active');
+  document.getElementById('scrimForm')?.reset();
+  document.getElementById('editingScrimId').value = '';
+};
+
 window.saveScrim = async function(e) {
   e.preventDefault();
   const editingId = document.getElementById('editingScrimId').value;
@@ -468,7 +474,6 @@ window.saveScrim = async function(e) {
   const scrimTimeVal = document.getElementById('scrimTime').value; // 'YYYY-MM-DDTHH:mm'
   const max_players = parseInt(document.getElementById('scrimMax').value, 10);
 
-  // 💡 핵심: 타임존 변환 함수를 거치지 않고 입력된 텍스트 그대로 뒤에 초(:00)만 붙여서 저장
   let formattedScrimTime = null;
   if (scrimTimeVal) {
     formattedScrimTime = scrimTimeVal.length === 16 ? scrimTimeVal + ':00' : scrimTimeVal;
